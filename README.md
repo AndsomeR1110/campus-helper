@@ -38,6 +38,16 @@ Each member implements the frontend, API, database logic and tests for their own
 7. Shared UI components and the global layout are maintained by Member 1.
 8. A feature is done only when it passes the corresponding PRD acceptance criteria.
 
+## Documentation
+
+| Document | Contents |
+|---|---|
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Branches, commits, PR flow, code ownership, code style, API conventions, Definition of Done |
+| [docs/design/ui-ux-spec.md](docs/design/ui-ux-spec.md) | Design tokens, layout, shared components, interaction states, copy & date formats, accessibility |
+| [docs/frontend-architecture.md](docs/frontend-architecture.md) | Directory structure, route map, layering rules, data fetching, shared interfaces |
+
+Read all three before opening your first PR.
+
 ## Getting Started
 
 > Project scaffolding (Next.js + TypeScript + Tailwind CSS) lands in `chore/project-setup`. This section will be filled in there.
