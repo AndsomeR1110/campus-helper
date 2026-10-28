@@ -14,19 +14,19 @@
 
 ## 1. 技术选型
 
-| 部分     | 选型                                     | 说明                                              |
-| -------- | ---------------------------------------- | ------------------------------------------------- |
-| 框架     | Next.js App Router + React               | 具体版本以 `chore/project-setup` 锁定的为准       |
-| 语言     | TypeScript（strict）                     |                                                   |
-| 样式     | Tailwind CSS                             | Token 定义在 `src/app/globals.css` 的 `@theme` 中 |
-| 图标     | lucide-react                             |                                                   |
-| 类名合并 | `clsx` + `tailwind-merge`，封装为 `cn()` | `src/lib/utils.ts`                                |
-| 校验     | zod                                      | 前后端共用 schema                                 |
-| 表单     | react-hook-form + zod resolver           | 提案：全组统一，避免各模块写法不同                |
-| 时间     | date-fns + `@date-fns/tz`                | 统一封装在 `src/lib/time.ts`                      |
-| 数据库   | PostgreSQL + Prisma                      | Member 2 负责                                     |
-| 认证     | Auth.js 或等效方案                       | Member 2 在 `feat/auth-and-roles` 中确定          |
-| 测试     | Vitest、Playwright                       |                                                   |
+| 部分     | 选型                                                              | 说明                                              |
+| -------- | ----------------------------------------------------------------- | ------------------------------------------------- |
+| 框架     | Next.js App Router + React                                        | 具体版本以 `chore/project-setup` 锁定的为准       |
+| 语言     | TypeScript（strict）                                              |                                                   |
+| 样式     | Tailwind CSS                                                      | Token 定义在 `src/app/globals.css` 的 `@theme` 中 |
+| 图标     | lucide-react                                                      |                                                   |
+| 类名合并 | `clsx` + `tailwind-merge`，封装为 `cn()`                          | `src/lib/utils.ts`                                |
+| 校验     | zod                                                               | 前后端共用 schema                                 |
+| 表单     | react-hook-form + zod resolver                                    | 提案：全组统一，避免各模块写法不同                |
+| 时间     | `Intl.DateTimeFormat`（无额外依赖），统一封装在 `src/lib/time.ts` | 周次等复杂计算如需 date-fns，由 Member 4 引入     |
+| 数据库   | PostgreSQL + Prisma                                               | Member 2 负责                                     |
+| 认证     | Auth.js 或等效方案                                                | Member 2 在 `feat/auth-and-roles` 中确定          |
+| 测试     | Vitest、Playwright                                                |                                                   |
 
 新增依赖须在 PR 中说明原因（见协作规范第 4 节）。
 
@@ -186,14 +186,15 @@ src/features/spaces/
 
 本项目使用 Next.js 16，部分约定与网上较早的教程不同。遇到疑问时以 `node_modules/next/dist/docs/` 中随版本附带的文档为准。
 
-| 主题                | 本项目约定                                                                                                                                               |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 构建工具            | 开发和构建默认使用 Turbopack，不添加自定义 `webpack` 配置                                                                                                |
-| 请求拦截            | 使用 `src/proxy.ts`（原 `middleware.ts` 已更名为 Proxy），供 Member 2 实现登录跳转。Proxy 只做快速跳转判断，**权限必须在页面、查询函数和接口中再次检查** |
-| 异步请求 API        | `params`、`searchParams`、`cookies()`、`headers()` 均为异步，需要 `await`                                                                                |
-| Cache Components    | 已在 `next.config.ts` 中开启（`cacheComponents: true`）。读取 cookies、会话或数据库实时数据的组件需包在 `<Suspense>` 中，并提供 Skeleton 作为 fallback   |
-| `"use cache"`       | **禁止**用于任何与当前用户相关的数据（预约、课程、通知、认领）。只有演示空间列表、教师公开资料等公共数据可以考虑缓存，并须配合 `cacheLife`               |
-| `GET` Route Handler | 开启 Cache Components 后，`GET` 处理器默认按页面方式预渲染；返回用户数据的接口必须读取会话等请求数据，确保按请求执行                                     |
+| 主题                | 本项目约定                                                                                                                                                                          |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 构建工具            | 开发和构建默认使用 Turbopack，不添加自定义 `webpack` 配置                                                                                                                           |
+| 请求拦截            | 使用 `src/proxy.ts`（原 `middleware.ts` 已更名为 Proxy），供 Member 2 实现登录跳转。Proxy 只做快速跳转判断，**权限必须在页面、查询函数和接口中再次检查**                            |
+| 异步请求 API        | `params`、`searchParams`、`cookies()`、`headers()` 均为异步，需要 `await`                                                                                                           |
+| Cache Components    | 已在 `next.config.ts` 中开启（`cacheComponents: true`）。读取 cookies、会话或数据库实时数据的组件需包在 `<Suspense>` 中，并提供 Skeleton 作为 fallback                              |
+| `"use cache"`       | **禁止**用于任何与当前用户相关的数据（预约、课程、通知、认领）。只有演示空间列表、教师公开资料等公共数据可以考虑缓存，并须配合 `cacheLife`                                          |
+| 当前时间            | 预渲染阶段不能读取 `new Date()` / `Date.now()`，否则构建失败。依赖当前时间的内容（“Today”、“5 min ago”、即将到来的课程）放在请求时渲染的组件中（`<Suspense>` 内），或显式传入 `now` |
+| `GET` Route Handler | 开启 Cache Components 后，`GET` 处理器默认按页面方式预渲染；返回用户数据的接口必须读取会话等请求数据，确保按请求执行                                                                |
 
 ## 6. 数据获取与修改
 
