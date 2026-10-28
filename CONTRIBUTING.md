@@ -12,13 +12,13 @@
 
 ## 1. 分支规范
 
-| 类型 | 格式 | 示例 |
-|---|---|---|
-| 新功能 | `feat/<module>-<task>` | `feat/space-availability` |
-| 缺陷修复 | `fix/<module>-<desc>` | `fix/office-hour-double-booking` |
-| 工程 / 配置 | `chore/<desc>` | `chore/project-setup` |
-| 文档 | `docs/<desc>` | `docs/api-spec` |
-| 测试 | `test/<module>-<desc>` | `test/lost-found-e2e` |
+| 类型        | 格式                   | 示例                             |
+| ----------- | ---------------------- | -------------------------------- |
+| 新功能      | `feat/<module>-<task>` | `feat/space-availability`        |
+| 缺陷修复    | `fix/<module>-<desc>`  | `fix/office-hour-double-booking` |
+| 工程 / 配置 | `chore/<desc>`         | `chore/project-setup`            |
+| 文档        | `docs/<desc>`          | `docs/api-spec`                  |
+| 测试        | `test/<module>-<desc>` | `test/lost-found-e2e`            |
 
 - 所有分支从**最新的 `main`** 创建：`git switch main && git pull && git switch -c feat/xxx`。
 - `main` 受保护：禁止直接推送，禁止 force push。
@@ -33,15 +33,15 @@
 <type>(<scope>): <summary>
 ```
 
-| type | 含义 |
-|---|---|
-| `feat` | 新功能 |
-| `fix` | 修复缺陷 |
-| `style` | 仅格式调整，无逻辑变化 |
-| `refactor` | 重构，无功能变化 |
-| `test` | 添加或修改测试 |
-| `docs` | 文档 |
-| `chore` | 构建、依赖、配置 |
+| type       | 含义                   |
+| ---------- | ---------------------- |
+| `feat`     | 新功能                 |
+| `fix`      | 修复缺陷               |
+| `style`    | 仅格式调整，无逻辑变化 |
+| `refactor` | 重构，无功能变化       |
+| `test`     | 添加或修改测试         |
+| `docs`     | 文档                   |
+| `chore`    | 构建、依赖、配置       |
 
 `scope` 使用模块名：`ui`、`layout`、`pwa`、`auth`、`office-hours`、`spaces`、`bookings`、`courses`、`schedule`、`notifications`、`lost-found`、`admin`、`db`。
 
@@ -77,15 +77,15 @@ test(lost-found): cover private claim visibility (LF-AC-06)
 
 ## 4. 代码所有权与跨模块修改
 
-| 路径 | 负责人 | 修改要求 |
-|---|---|---|
+| 路径                                                                                    | 负责人   | 修改要求                                                        |
+| --------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------- |
 | `src/components/ui/`、`src/app/layout.tsx`、`src/app/globals.css`、设计 Token、PWA 配置 | Member 1 | 其他成员需要新组件或修改组件时，先提 Issue 或在 PR 中 @Member 1 |
-| `prisma/schema.prisma`、`prisma/migrations/`、`src/lib/auth/` | Member 2 | 任何 Schema 改动必须由 Member 2 Review |
-| `src/features/office-hours/` | Member 2 | |
-| `src/features/spaces/`、`src/features/bookings/` | Member 3 | |
-| `src/features/courses/`、`src/features/notifications/`、统一日程接口 | Member 4 | 统一日程事件类型和通知接口的变更需 Member 4 确认 |
-| `src/features/lost-found/`、`src/features/admin/` | Member 5 | |
-| `package.json` 新增依赖 | 提出者 | 在 PR 中说明用途和替代方案，由 Member 1 确认 |
+| `prisma/schema.prisma`、`prisma/migrations/`、`src/lib/auth/`                           | Member 2 | 任何 Schema 改动必须由 Member 2 Review                          |
+| `src/features/office-hours/`                                                            | Member 2 |                                                                 |
+| `src/features/spaces/`、`src/features/bookings/`                                        | Member 3 |                                                                 |
+| `src/features/courses/`、`src/features/notifications/`、统一日程接口                    | Member 4 | 统一日程事件类型和通知接口的变更需 Member 4 确认                |
+| `src/features/lost-found/`、`src/features/admin/`                                       | Member 5 |                                                                 |
+| `package.json` 新增依赖                                                                 | 提出者   | 在 PR 中说明用途和替代方案，由 Member 1 确认                    |
 
 - **不得直接修改他人模块的内部文件**。需要调用其他模块时，只能通过该模块的 `index.ts` 公开接口（见前端架构规范第 4 节）。
 - 业务模块需要的通用组件若尚未提供，可先在本模块的 `components/` 中实现，再提 Issue 申请提升为公共组件。
@@ -93,21 +93,21 @@ test(lost-found): cover private claim visibility (LF-AC-06)
 ## 5. 代码风格
 
 - TypeScript `strict` 模式。禁止无说明的 `any`；确有必要时添加注释说明原因。
-- 由 ESLint + Prettier 统一格式，不手动争论格式问题。提交前运行 `npm run lint` 和 `npm run typecheck`。
+- 由 ESLint + Prettier 统一格式，不手动争论格式问题。推送前运行 `npm run check`（lint + 格式检查 + 类型检查 + 测试）。
 - 路径导入使用别名 `@/`，例如 `import { Button } from "@/components/ui/button"`。
 
 ### 命名约定
 
-| 对象 | 约定 | 示例 |
-|---|---|---|
-| 文件名、文件夹名 | `kebab-case` | `booking-card.tsx`、`time-slot-picker.tsx` |
-| React 组件 | `PascalCase` | `BookingCard` |
-| 函数、变量 | `camelCase` | `getAvailableSeats` |
-| 常量 | `UPPER_SNAKE_CASE` | `MAX_BOOKING_MINUTES` |
-| 类型、接口 | `PascalCase`，不加 `I` 前缀 | `SpaceBooking`、`ScheduleEvent` |
-| 枚举值 / 状态 | 与 Prisma 枚举保持一致 | `CONFIRMED`、`CANCELLED` |
-| API 路径 | 复数名词、`kebab-case` | `/api/office-slots/[id]/bookings` |
-| 测试文件 | 与被测文件同名 + `.test.ts` | `availability.test.ts` |
+| 对象             | 约定                        | 示例                                       |
+| ---------------- | --------------------------- | ------------------------------------------ |
+| 文件名、文件夹名 | `kebab-case`                | `booking-card.tsx`、`time-slot-picker.tsx` |
+| React 组件       | `PascalCase`                | `BookingCard`                              |
+| 函数、变量       | `camelCase`                 | `getAvailableSeats`                        |
+| 常量             | `UPPER_SNAKE_CASE`          | `MAX_BOOKING_MINUTES`                      |
+| 类型、接口       | `PascalCase`，不加 `I` 前缀 | `SpaceBooking`、`ScheduleEvent`            |
+| 枚举值 / 状态    | 与 Prisma 枚举保持一致      | `CONFIRMED`、`CANCELLED`                   |
+| API 路径         | 复数名词、`kebab-case`      | `/api/office-slots/[id]/bookings`          |
+| 测试文件         | 与被测文件同名 + `.test.ts` | `availability.test.ts`                     |
 
 ## 6. API 约定（提案，需 Member 2 在 `feat/database-foundation` 中确认）
 
@@ -123,16 +123,16 @@ test(lost-found): cover private claim visibility (LF-AC-06)
 { "error": { "code": "SLOT_ALREADY_BOOKED", "message": "This slot has just been booked by someone else." } }
 ```
 
-| HTTP 状态码 | 使用场景 |
-|---|---|
-| `200` / `201` | 成功 / 创建成功 |
-| `400` | 参数校验失败（`VALIDATION_ERROR`，附 `fields`） |
-| `401` | 未登录 |
-| `403` | 已登录但无权限 |
-| `404` | 资源不存在或对当前用户不可见 |
-| `409` | 业务冲突：重复预约、时段已满、状态不允许变更 |
-| `429` | 触发频率限制 |
-| `500` | 服务器错误，不暴露内部信息 |
+| HTTP 状态码   | 使用场景                                        |
+| ------------- | ----------------------------------------------- |
+| `200` / `201` | 成功 / 创建成功                                 |
+| `400`         | 参数校验失败（`VALIDATION_ERROR`，附 `fields`） |
+| `401`         | 未登录                                          |
+| `403`         | 已登录但无权限                                  |
+| `404`         | 资源不存在或对当前用户不可见                    |
+| `409`         | 业务冲突：重复预约、时段已满、状态不允许变更    |
+| `429`         | 触发频率限制                                    |
+| `500`         | 服务器错误，不暴露内部信息                      |
 
 - `error.code` 使用 `UPPER_SNAKE_CASE`，前端根据 `code` 决定提示，`message` 可直接展示给用户。
 - **不信任客户端传入的身份和最终状态**：用户 ID 从会话中获取；状态变化通过动作接口（如 `POST /api/space-bookings/[id]/cancel`）完成，而不是 `PATCH { status: "CANCELLED" }`。
@@ -152,11 +152,11 @@ test(lost-found): cover private claim visibility (LF-AC-06)
 
 ## 9. 测试
 
-| 层级 | 工具 | 覆盖内容 |
-|---|---|---|
-| 单元测试 | Vitest | 时间计算、冲突规则、字段校验、提醒时间、权限判断 |
-| 集成测试 | Vitest + 测试数据库 | API、事务、并发预约 |
-| 端到端测试 | Playwright | PRD 12.2 节 TC-01 ~ TC-10 |
+| 层级       | 工具                | 覆盖内容                                         |
+| ---------- | ------------------- | ------------------------------------------------ |
+| 单元测试   | Vitest              | 时间计算、冲突规则、字段校验、提醒时间、权限判断 |
+| 集成测试   | Vitest + 测试数据库 | API、事务、并发预约                              |
+| 端到端测试 | Playwright          | PRD 12.2 节 TC-01 ~ TC-10                        |
 
 - 测试名称中标注对应的 AC 编号，例如 `it("rejects a second booking for the same slot (OH-AC-04)")`。
 - 每个 P0 业务规则至少有一个自动化测试。

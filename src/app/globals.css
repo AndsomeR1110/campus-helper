@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — see docs/design/ui-ux-spec.md §2.
+ *
+ * Tailwind's default color, radius, shadow and font-size scales are reset on
+ * purpose: feature code may only use the semantic tokens below (e.g.
+ * `bg-primary`, `text-text-muted`, `rounded-md`, `text-title`), never raw
+ * palette classes such as `bg-indigo-600`.
+ */
+@theme {
+  /* ---- Colors ---------------------------------------------------------- */
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Brand */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-subtle: #eef2ff;
+  --color-on-primary: #ffffff;
+
+  /* Neutrals */
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-text-disabled: #94a3b8;
+  --color-focus-ring: #6366f1;
+  --color-overlay: rgb(15 23 42 / 0.5);
+
+  /* Semantic: <name> = text/icon, -subtle = tinted background, -solid = filled background with white text */
+  --color-success: #15803d;
+  --color-success-subtle: #f0fdf4;
+  --color-success-solid: #15803d;
+  --color-warning: #b45309;
+  --color-warning-subtle: #fffbeb;
+  --color-warning-solid: #b45309;
+  --color-danger: #b91c1c;
+  --color-danger-subtle: #fef2f2;
+  --color-danger-solid: #dc2626;
+  --color-info: #2563eb;
+  --color-info-subtle: #eff6ff;
+  --color-info-solid: #2563eb;
+  --color-neutral: #475569;
+  --color-neutral-subtle: #f1f5f9;
+
+  /* Schedule event types */
+  --color-event-class: #2563eb;
+  --color-event-class-subtle: #eff6ff;
+  --color-event-office: #7c3aed;
+  --color-event-office-subtle: #f5f3ff;
+  --color-event-space: #0f766e;
+  --color-event-space-subtle: #f0fdfa;
+
+  /* Lost & Found post types */
+  --color-lost: #c2410c;
+  --color-lost-subtle: #fff7ed;
+  --color-found: #047857;
+  --color-found-subtle: #ecfdf5;
+
+  /* ---- Typography ------------------------------------------------------ */
+  --text-*: initial;
+  --text-display: 28px;
+  --text-display--line-height: 36px;
+  --text-display--font-weight: 700;
+  --text-title-lg: 22px;
+  --text-title-lg--line-height: 28px;
+  --text-title-lg--font-weight: 600;
+  --text-title: 18px;
+  --text-title--line-height: 26px;
+  --text-title--font-weight: 600;
+  --text-subtitle: 16px;
+  --text-subtitle--line-height: 24px;
+  --text-subtitle--font-weight: 600;
+  --text-body: 16px;
+  --text-body--line-height: 24px;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-caption--font-weight: 500;
+
+  /* ---- Radius ---------------------------------------------------------- */
+  --radius-*: initial;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* ---- Shadows --------------------------------------------------------- */
+  --shadow-*: initial;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-overlay: 0 8px 24px rgb(15 23 42 / 0.12);
+
+  /* ---- Layout ---------------------------------------------------------- */
+  --container-content: 640px; /* detail & form pages */
+  --container-list: 960px; /* list pages */
+  --spacing-top-bar: 56px;
+  --spacing-bottom-nav: 64px;
+  --spacing-side-nav: 240px;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* next/font exposes Inter as a CSS variable on <html>; `inline` makes the
+ * utilities reference it directly. */
+@theme inline {
+  --font-sans:
+    var(--font-inter), "PingFang SC", "Noto Sans SC", "Microsoft YaHei", ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background font-sans text-body text-text antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

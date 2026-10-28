@@ -13,17 +13,17 @@ A campus companion PWA for students: book teacher office hours, reserve study sp
 
 ## Tech Stack
 
-Next.js (App Router) · TypeScript · Tailwind CSS · PostgreSQL · Prisma
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · PostgreSQL · Prisma · Vitest
 
 ## Team & Module Ownership
 
-| Member | Role | Owns | Branches |
-|---|---|---|---|
-| Member 1 — Ran An | Project lead, UI/UX, integration | `src/components/ui/`, `src/app/layout.tsx`, design system, PWA foundation | `chore/project-setup`, `feat/design-system`, `feat/app-layout`, `feat/pwa-foundation` |
-| Member 2 | Auth & Office Hours | `src/features/office-hours/`, `src/lib/auth/` | `feat/auth-and-roles`, `feat/database-foundation`, `feat/office-hour-management`, `feat/office-hour-booking` |
-| Member 3 | Study Spaces & Bookings | `src/features/spaces/`, `src/features/bookings/` | `feat/space-list-and-filter`, `feat/space-availability`, `feat/space-booking`, `feat/unified-bookings` |
-| Member 4 | Courses, Schedule & Notifications | `src/features/courses/`, `src/features/notifications/` | `feat/course-management`, `feat/weekly-schedule`, `feat/unified-calendar`, `feat/notification-service`, `feat/calendar-export` |
-| Member 5 | Lost & Found & Admin | `src/features/lost-found/`, `src/features/admin/` | `feat/lost-found-posts`, `feat/lost-found-search`, `feat/lost-found-claims`, `feat/admin-moderation` |
+| Member            | Role                              | Owns                                                                      | Branches                                                                                                                       |
+| ----------------- | --------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Member 1 — Ran An | Project lead, UI/UX, integration  | `src/components/ui/`, `src/app/layout.tsx`, design system, PWA foundation | `chore/project-setup`, `feat/design-system`, `feat/app-layout`, `feat/pwa-foundation`                                          |
+| Member 2          | Auth & Office Hours               | `src/features/office-hours/`, `src/lib/auth/`                             | `feat/auth-and-roles`, `feat/database-foundation`, `feat/office-hour-management`, `feat/office-hour-booking`                   |
+| Member 3          | Study Spaces & Bookings           | `src/features/spaces/`, `src/features/bookings/`                          | `feat/space-list-and-filter`, `feat/space-availability`, `feat/space-booking`, `feat/unified-bookings`                         |
+| Member 4          | Courses, Schedule & Notifications | `src/features/courses/`, `src/features/notifications/`                    | `feat/course-management`, `feat/weekly-schedule`, `feat/unified-calendar`, `feat/notification-service`, `feat/calendar-export` |
+| Member 5          | Lost & Found & Admin              | `src/features/lost-found/`, `src/features/admin/`                         | `feat/lost-found-posts`, `feat/lost-found-search`, `feat/lost-found-claims`, `feat/admin-moderation`                           |
 
 Each member implements the frontend, API, database logic and tests for their own module.
 
@@ -40,14 +40,46 @@ Each member implements the frontend, API, database logic and tests for their own
 
 ## Documentation
 
-| Document | Contents |
-|---|---|
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Branches, commits, PR flow, code ownership, code style, API conventions, Definition of Done |
-| [docs/design/ui-ux-spec.md](docs/design/ui-ux-spec.md) | Design tokens, layout, shared components, interaction states, copy & date formats, accessibility |
-| [docs/frontend-architecture.md](docs/frontend-architecture.md) | Directory structure, route map, layering rules, data fetching, shared interfaces |
+| Document                                                       | Contents                                                                                         |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                             | Branches, commits, PR flow, code ownership, code style, API conventions, Definition of Done      |
+| [docs/design/ui-ux-spec.md](docs/design/ui-ux-spec.md)         | Design tokens, layout, shared components, interaction states, copy & date formats, accessibility |
+| [docs/frontend-architecture.md](docs/frontend-architecture.md) | Directory structure, route map, layering rules, data fetching, shared interfaces                 |
 
 Read all three before opening your first PR.
 
 ## Getting Started
 
-> Project scaffolding (Next.js + TypeScript + Tailwind CSS) lands in `chore/project-setup`. This section will be filled in there.
+**Requirements:** Node.js 22 (see `.nvmrc`; `nvm use` picks it up) and npm.
+
+```bash
+git clone https://github.com/AndsomeR1110/campus-helper.git
+cd campus-helper
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+Open <http://localhost:3000>.
+
+### Scripts
+
+| Command                                   | What it does                                                    |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| `npm run dev`                             | Start the dev server (Turbopack)                                |
+| `npm run build` / `npm start`             | Production build / serve it                                     |
+| `npm run lint` / `npm run lint:fix`       | ESLint (Next.js rules + module import boundaries)               |
+| `npm run format` / `npm run format:check` | Prettier (also sorts Tailwind classes)                          |
+| `npm run typecheck`                       | Generate route types and run `tsc --noEmit`                     |
+| `npm test` / `npm run test:watch`         | Vitest unit tests (`src/**/*.test.ts(x)`)                       |
+| `npm run check`                           | Lint + format check + typecheck + tests — run before every push |
+
+CI runs the same checks plus `next build` on every pull request.
+
+### Editor
+
+VS Code users: install the recommended extensions when prompted (`.vscode/extensions.json`). Format on save and ESLint auto-fix are pre-configured.
+
+### Versions
+
+Dependencies are pinned to exact versions (`package-lock.json` is committed). Always install with `npm ci`, and add new dependencies with `npm install --save-exact`. This project uses **Next.js 16** — read `AGENTS.md` and [docs/frontend-architecture.md §5.1](docs/frontend-architecture.md) for the conventions that differ from older Next.js tutorials.

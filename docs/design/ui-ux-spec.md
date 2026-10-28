@@ -1,11 +1,11 @@
 # CAMPUS HELPER — UI/UX Specification
 
-| 项目 | 内容 |
-|---|---|
-| 文档编号 | 01 — UI/UX Specification（PRD 第 18 节） |
-| 版本 | V1.0 Draft |
-| 负责人 | Member 1（Ran An） |
-| 适用范围 | 所有页面、公共组件、Figma 原型 |
+| 项目     | 内容                                                     |
+| -------- | -------------------------------------------------------- |
+| 文档编号 | 01 — UI/UX Specification（PRD 第 18 节）                 |
+| 版本     | V1.0 Draft                                               |
+| 负责人   | Member 1（Ran An）                                       |
+| 适用范围 | 所有页面、公共组件、Figma 原型                           |
 | 实现位置 | Token：`src/app/globals.css`；组件：`src/components/ui/` |
 
 本文档是全组的统一 UI 依据。Figma 中的样式名称、代码中的 Token 名称和组件名称三者保持一致。
@@ -15,13 +15,13 @@
 
 ## 1. 设计原则
 
-| 原则 | 具体要求 |
-|---|---|
+| 原则             | 具体要求                                                                    |
+| ---------------- | --------------------------------------------------------------------------- |
 | **Mobile First** | 先设计 375px 手机布局，再扩展到平板和桌面。主操作放在拇指容易触及的下半屏。 |
-| **Simple** | 每个页面只有一个主操作（Primary Button）。三步以内完成核心任务。 |
-| **Reliable** | 任何操作都有明确反馈；结果以服务端返回为准，不显示虚假成功。 |
-| **Consistent** | 相同的含义使用相同的颜色、图标和文案。 |
-| **Honest** | 演示数据明确标注为学术项目数据，不模仿学校官方视觉标识。 |
+| **Simple**       | 每个页面只有一个主操作（Primary Button）。三步以内完成核心任务。            |
+| **Reliable**     | 任何操作都有明确反馈；结果以服务端返回为准，不显示虚假成功。                |
+| **Consistent**   | 相同的含义使用相同的颜色、图标和文案。                                      |
+| **Honest**       | 演示数据明确标注为学术项目数据，不模仿学校官方视觉标识。                    |
 
 > 本项目不使用学校 Logo、校徽或官方配色，避免测试用户误认为是学校官方系统（PRD 2.3）。
 
@@ -35,49 +35,49 @@
 
 #### 品牌色与中性色
 
-| Token | 色值 | Tailwind 类示例 | 用途 |
-|---|---|---|---|
-| `primary` | `#4F46E5` | `bg-primary` `text-primary` | 主按钮、选中状态、链接 |
-| `primary-hover` | `#4338CA` | `hover:bg-primary-hover` | 主按钮悬停 / 按下 |
-| `primary-subtle` | `#EEF2FF` | `bg-primary-subtle` | 选中项背景、轻量强调 |
-| `on-primary` | `#FFFFFF` | `text-on-primary` | 主色背景上的文字 |
-| `background` | `#F8FAFC` | `bg-background` | 页面背景 |
-| `surface` | `#FFFFFF` | `bg-surface` | 卡片、弹窗、导航栏 |
-| `surface-muted` | `#F1F5F9` | `bg-surface-muted` | 输入框禁用、分组背景、骨架屏 |
-| `border` | `#E2E8F0` | `border-border` | 卡片边框、分隔线 |
-| `border-strong` | `#CBD5E1` | `border-border-strong` | 输入框边框 |
-| `text` | `#0F172A` | `text-text` | 正文、标题 |
-| `text-muted` | `#64748B` | `text-text-muted` | 次要信息、说明文字 |
-| `text-disabled` | `#94A3B8` | `text-text-disabled` | 禁用文字（不得用于需要阅读的信息） |
-| `focus-ring` | `#6366F1` | `ring-focus-ring` | 键盘焦点环 |
+| Token            | 色值      | Tailwind 类示例             | 用途                               |
+| ---------------- | --------- | --------------------------- | ---------------------------------- |
+| `primary`        | `#4F46E5` | `bg-primary` `text-primary` | 主按钮、选中状态、链接             |
+| `primary-hover`  | `#4338CA` | `hover:bg-primary-hover`    | 主按钮悬停 / 按下                  |
+| `primary-subtle` | `#EEF2FF` | `bg-primary-subtle`         | 选中项背景、轻量强调               |
+| `on-primary`     | `#FFFFFF` | `text-on-primary`           | 主色背景上的文字                   |
+| `background`     | `#F8FAFC` | `bg-background`             | 页面背景                           |
+| `surface`        | `#FFFFFF` | `bg-surface`                | 卡片、弹窗、导航栏                 |
+| `surface-muted`  | `#F1F5F9` | `bg-surface-muted`          | 输入框禁用、分组背景、骨架屏       |
+| `border`         | `#E2E8F0` | `border-border`             | 卡片边框、分隔线                   |
+| `border-strong`  | `#CBD5E1` | `border-border-strong`      | 输入框边框                         |
+| `text`           | `#0F172A` | `text-text`                 | 正文、标题                         |
+| `text-muted`     | `#64748B` | `text-text-muted`           | 次要信息、说明文字                 |
+| `text-disabled`  | `#94A3B8` | `text-text-disabled`        | 禁用文字（不得用于需要阅读的信息） |
+| `focus-ring`     | `#6366F1` | `ring-focus-ring`           | 键盘焦点环                         |
 
 #### 语义色
 
 每种语义色有三个 Token：`<name>`（文字 / 图标）、`<name>-subtle`（浅色背景）、`<name>-solid`（实心背景，配白色文字）。
 
-| 语义 | `<name>` 文字色 | `<name>-subtle` 背景 | `<name>-solid` | 用途 |
-|---|---|---|---|---|
-| `success` | `#15803D` | `#F0FDF4` | `#15803D` | 预约成功、Approved、Resolved |
-| `warning` | `#B45309` | `#FFFBEB` | `#B45309` | 待处理、即将开始、Pending |
-| `danger` | `#B91C1C` | `#FEF2F2` | `#DC2626` | 错误、删除、取消预约、Rejected |
-| `info` | `#2563EB` | `#EFF6FF` | `#2563EB` | 提示信息、Open 状态 |
-| `neutral` | `#475569` | `#F1F5F9` | — | 已完成、已取消等非活跃状态 |
+| 语义      | `<name>` 文字色 | `<name>-subtle` 背景 | `<name>-solid` | 用途                           |
+| --------- | --------------- | -------------------- | -------------- | ------------------------------ |
+| `success` | `#15803D`       | `#F0FDF4`            | `#15803D`      | 预约成功、Approved、Resolved   |
+| `warning` | `#B45309`       | `#FFFBEB`            | `#B45309`      | 待处理、即将开始、Pending      |
+| `danger`  | `#B91C1C`       | `#FEF2F2`            | `#DC2626`      | 错误、删除、取消预约、Rejected |
+| `info`    | `#2563EB`       | `#EFF6FF`            | `#2563EB`      | 提示信息、Open 状态            |
+| `neutral` | `#475569`       | `#F1F5F9`            | —              | 已完成、已取消等非活跃状态     |
 
 #### 日程事件类型色
 
 Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标组合。**颜色不能是唯一区分方式**，必须同时显示图标或文字标签。
 
-| 事件类型 | Token | 文字色 | 浅色背景 | 图标（lucide） |
-|---|---|---|---|---|
-| Class 课程 | `event-class` | `#2563EB` | `#EFF6FF` | `BookOpen` |
-| Office Hour 教师预约 | `event-office` | `#7C3AED` | `#F5F3FF` | `UserRound` |
-| Study Space 学习空间 | `event-space` | `#0F766E` | `#F0FDFA` | `Armchair` |
+| 事件类型             | Token          | 文字色    | 浅色背景  | 图标（lucide） |
+| -------------------- | -------------- | --------- | --------- | -------------- |
+| Class 课程           | `event-class`  | `#2563EB` | `#EFF6FF` | `BookOpen`     |
+| Office Hour 教师预约 | `event-office` | `#7C3AED` | `#F5F3FF` | `UserRound`    |
+| Study Space 学习空间 | `event-space`  | `#0F766E` | `#F0FDFA` | `Armchair`     |
 
 #### Lost & Found 帖子类型色
 
-| 类型 | Token | 文字色 | 浅色背景 | 图标 |
-|---|---|---|---|---|
-| Lost 遗失 | `lost` | `#C2410C` | `#FFF7ED` | `SearchX` |
+| 类型       | Token   | 文字色    | 浅色背景  | 图标           |
+| ---------- | ------- | --------- | --------- | -------------- |
+| Lost 遗失  | `lost`  | `#C2410C` | `#FFF7ED` | `SearchX`      |
 | Found 拾获 | `found` | `#047857` | `#ECFDF5` | `PackageCheck` |
 
 > 上述文字色在白色和对应浅色背景上、`-solid` 色与白色文字搭配时，对比度均 ≥ 4.5:1（WCAG AA）。新增颜色时须先检查对比度。
@@ -86,47 +86,47 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 
 全项目的业务状态统一使用 `StatusBadge` 组件展示，颜色映射固定如下。各模块不得自定义状态颜色。
 
-| 实体 | 状态（枚举值） | 显示文案 | 语义色 |
-|---|---|---|---|
-| OfficeBooking / SpaceBooking | `CONFIRMED` | Confirmed | success |
-| | `COMPLETED` | Completed | neutral |
-| | `CANCELLED` | Cancelled | neutral |
-| | `EXPIRED` | Expired | neutral |
-| OfficeSlot | `OPEN` | Available | info |
-| | `BOOKED` | Booked | neutral |
-| | `CANCELLED` | Withdrawn | danger |
-| LostFoundPost | `OPEN` | Open | info |
-| | `CLAIM_PENDING` | Claim pending | warning |
-| | `RESOLVED` | Resolved | success |
-| | `CLOSED` | Closed | neutral |
-| | `HIDDEN` | Hidden（仅管理员可见） | danger |
-| LostFoundClaim | `PENDING` | Pending | warning |
-| | `APPROVED` | Approved | success |
-| | `REJECTED` | Rejected | danger |
-| Report | `PENDING` / `RESOLVED` / `DISMISSED` | Pending / Resolved / Dismissed | warning / success / neutral |
+| 实体                         | 状态（枚举值）                       | 显示文案                       | 语义色                      |
+| ---------------------------- | ------------------------------------ | ------------------------------ | --------------------------- |
+| OfficeBooking / SpaceBooking | `CONFIRMED`                          | Confirmed                      | success                     |
+|                              | `COMPLETED`                          | Completed                      | neutral                     |
+|                              | `CANCELLED`                          | Cancelled                      | neutral                     |
+|                              | `EXPIRED`                            | Expired                        | neutral                     |
+| OfficeSlot                   | `OPEN`                               | Available                      | info                        |
+|                              | `BOOKED`                             | Booked                         | neutral                     |
+|                              | `CANCELLED`                          | Withdrawn                      | danger                      |
+| LostFoundPost                | `OPEN`                               | Open                           | info                        |
+|                              | `CLAIM_PENDING`                      | Claim pending                  | warning                     |
+|                              | `RESOLVED`                           | Resolved                       | success                     |
+|                              | `CLOSED`                             | Closed                         | neutral                     |
+|                              | `HIDDEN`                             | Hidden（仅管理员可见）         | danger                      |
+| LostFoundClaim               | `PENDING`                            | Pending                        | warning                     |
+|                              | `APPROVED`                           | Approved                       | success                     |
+|                              | `REJECTED`                           | Rejected                       | danger                      |
+| Report                       | `PENDING` / `RESOLVED` / `DISMISSED` | Pending / Resolved / Dismissed | warning / success / neutral |
 
 `neutral` 使用 `neutral-subtle` 背景 + `neutral` 文字（`text-muted` 在该背景上对比度不足，不可替代）。
 枚举值以 Member 2 的 Prisma Schema 为准；若最终命名不同，在本表同步更新。
 
 ### 2.3 字体
 
-| 项 | 规范 |
-|---|---|
-| 英文字体 | **Inter**（通过 `next/font` 加载） |
+| 项       | 规范                                                                              |
+| -------- | --------------------------------------------------------------------------------- |
+| 英文字体 | **Inter**（通过 `next/font` 加载）                                                |
 | 中文回退 | `"PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif`（P1 中文界面使用） |
-| 数字 | 时间、日期和座位号使用 `tabular-nums`，保证对齐 |
+| 数字     | 时间、日期和座位号使用 `tabular-nums`，保证对齐                                   |
 
 **字号层级**（移动端与桌面端相同，桌面端不放大正文）：
 
-| Token | 字号 / 行高 | 字重 | 用途 |
-|---|---|---|---|
-| `text-display` | 28 / 36 px | 700 | Home 欢迎语 |
-| `text-title-lg` | 22 / 28 px | 600 | 页面标题（TopBar 大标题） |
-| `text-title` | 18 / 26 px | 600 | 区块标题、弹窗标题 |
-| `text-subtitle` | 16 / 24 px | 600 | 卡片标题、列表项主信息 |
-| `text-body` | 16 / 24 px | 400 | 正文、**表单输入**（不得小于 16px，避免 iOS 自动缩放） |
-| `text-body-sm` | 14 / 20 px | 400 | 次要信息、辅助说明 |
-| `text-caption` | 12 / 16 px | 500 | 标签、徽章、时间戳 |
+| Token           | 字号 / 行高 | 字重 | 用途                                                   |
+| --------------- | ----------- | ---- | ------------------------------------------------------ |
+| `text-display`  | 28 / 36 px  | 700  | Home 欢迎语                                            |
+| `text-title-lg` | 22 / 28 px  | 600  | 页面标题（TopBar 大标题）                              |
+| `text-title`    | 18 / 26 px  | 600  | 区块标题、弹窗标题                                     |
+| `text-subtitle` | 16 / 24 px  | 600  | 卡片标题、列表项主信息                                 |
+| `text-body`     | 16 / 24 px  | 400  | 正文、**表单输入**（不得小于 16px，避免 iOS 自动缩放） |
+| `text-body-sm`  | 14 / 20 px  | 400  | 次要信息、辅助说明                                     |
+| `text-caption`  | 12 / 16 px  | 500  | 标签、徽章、时间戳                                     |
 
 - 单个页面最多使用 3 种字号层级。
 - 不使用 12px 以下的字号。
@@ -135,37 +135,37 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 
 基于 **4px 网格**，只使用以下值：`0 / 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 / 48 / 64`（对应 Tailwind `0 / 1 / 2 / 3 / 4 / 5 / 6 / 8 / 10 / 12 / 16`）。
 
-| 场景 | 值 |
-|---|---|
+| 场景         | 值                         |
+| ------------ | -------------------------- |
 | 页面左右边距 | 手机 16px，平板及以上 24px |
-| 区块之间 | 24px |
-| 卡片内边距 | 16px |
-| 列表项之间 | 12px |
-| 表单字段之间 | 16px |
-| 图标与文字 | 8px |
+| 区块之间     | 24px                       |
+| 卡片内边距   | 16px                       |
+| 列表项之间   | 12px                       |
+| 表单字段之间 | 16px                       |
+| 图标与文字   | 8px                        |
 
 ### 2.5 圆角
 
-| Token | 值 | 用途 |
-|---|---|---|
-| `rounded-sm` | 8px | 按钮、输入框、小标签 |
-| `rounded-md` | 12px | 卡片、列表项 |
-| `rounded-lg` | 16px | 弹窗、底部抽屉、大图片 |
-| `rounded-full` | 9999px | 徽章、筛选 Chip、头像 |
+| Token          | 值     | 用途                   |
+| -------------- | ------ | ---------------------- |
+| `rounded-sm`   | 8px    | 按钮、输入框、小标签   |
+| `rounded-md`   | 12px   | 卡片、列表项           |
+| `rounded-lg`   | 16px   | 弹窗、底部抽屉、大图片 |
+| `rounded-full` | 9999px | 徽章、筛选 Chip、头像  |
 
 ### 2.6 阴影与层级
 
-| Token | 用途 |
-|---|---|
-| `shadow-card` | `0 1px 2px rgb(15 23 42 / 0.06)`：卡片（与 1px 边框配合使用） |
-| `shadow-overlay` | `0 8px 24px rgb(15 23 42 / 0.12)`：弹窗、下拉菜单、Toast |
+| Token            | 用途                                                          |
+| ---------------- | ------------------------------------------------------------- |
+| `shadow-card`    | `0 1px 2px rgb(15 23 42 / 0.06)`：卡片（与 1px 边框配合使用） |
+| `shadow-overlay` | `0 8px 24px rgb(15 23 42 / 0.12)`：弹窗、下拉菜单、Toast      |
 
-| 层级（z-index） | 值 |
-|---|---|
-| TopBar / BottomNav | 30 |
-| 下拉菜单 | 40 |
-| Modal / BottomSheet 遮罩与内容 | 50 |
-| Toast | 60 |
+| 层级（z-index）                | 值  |
+| ------------------------------ | --- |
+| TopBar / BottomNav             | 30  |
+| 下拉菜单                       | 40  |
+| Modal / BottomSheet 遮罩与内容 | 50  |
+| Toast                          | 60  |
 
 ### 2.7 动效
 
@@ -185,11 +185,11 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 
 ### 3.1 断点
 
-| 视口 | 测试宽度 | Tailwind 断点 | 布局 |
-|---|---|---|---|
-| 手机 | 375px | 默认 | 单列，底部导航 |
-| 平板 | 768px | `md` | 单列加宽，列表可两列卡片，仍使用底部导航 |
-| 桌面 | 1280px | `lg`（≥ 1024px） | 左侧导航栏 + 内容区，列表可三列卡片 |
+| 视口 | 测试宽度 | Tailwind 断点    | 布局                                     |
+| ---- | -------- | ---------------- | ---------------------------------------- |
+| 手机 | 375px    | 默认             | 单列，底部导航                           |
+| 平板 | 768px    | `md`             | 单列加宽，列表可两列卡片，仍使用底部导航 |
+| 桌面 | 1280px   | `lg`（≥ 1024px） | 左侧导航栏 + 内容区，列表可三列卡片      |
 
 ### 3.2 App Shell
 
@@ -214,22 +214,22 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 
 ### 3.3 页面层级与导航规则
 
-| 层级 | 页面 | TopBar | BottomNav | 主操作位置 |
-|---|---|---|---|---|
-| 一级（Tab 页） | Home、Services、Schedule、Profile | 大标题，无返回 | 显示 | 页面内 |
-| 二级（列表页） | Office Hour List、Find Space、Lost & Found List、My Bookings、Notifications、My Posts | 标题 + 返回 | 显示，高亮所属 Tab | 页面内 / 右上角 |
-| 三级（详情 / 表单） | Teacher Detail、Space Detail、Booking Detail、Post Detail、Create Post、Course Editor | 标题 + 返回 | **隐藏** | **底部固定操作栏** |
-| 角色页面 | Teacher Dashboard、Admin Dashboard | 标题 + 返回 + 角色标识 | 隐藏，桌面端使用侧边导航 | 页面内 |
-| 认证页面 | Login、Register | 无 | 隐藏 | 页面内 |
+| 层级                | 页面                                                                                  | TopBar                 | BottomNav                | 主操作位置         |
+| ------------------- | ------------------------------------------------------------------------------------- | ---------------------- | ------------------------ | ------------------ |
+| 一级（Tab 页）      | Home、Services、Schedule、Profile                                                     | 大标题，无返回         | 显示                     | 页面内             |
+| 二级（列表页）      | Office Hour List、Find Space、Lost & Found List、My Bookings、Notifications、My Posts | 标题 + 返回            | 显示，高亮所属 Tab       | 页面内 / 右上角    |
+| 三级（详情 / 表单） | Teacher Detail、Space Detail、Booking Detail、Post Detail、Create Post、Course Editor | 标题 + 返回            | **隐藏**                 | **底部固定操作栏** |
+| 角色页面            | Teacher Dashboard、Admin Dashboard                                                    | 标题 + 返回 + 角色标识 | 隐藏，桌面端使用侧边导航 | 页面内             |
+| 认证页面            | Login、Register                                                                       | 无                     | 隐藏                     | 页面内             |
 
 **Tab 归属**（用于高亮 BottomNav）：
 
-| Tab | 包含路由 |
-|---|---|
-| Home | `/home`、`/notifications` |
+| Tab      | 包含路由                                                     |
+| -------- | ------------------------------------------------------------ |
+| Home     | `/home`、`/notifications`                                    |
 | Services | `/services`、`/office-hours/*`、`/spaces/*`、`/lost-found/*` |
-| Schedule | `/schedule`、`/courses/*` |
-| Profile | `/profile`、`/bookings/*`、`/my/posts` |
+| Schedule | `/schedule`、`/courses/*`                                    |
+| Profile  | `/profile`、`/bookings/*`、`/my/posts`                       |
 
 - 返回按钮优先使用浏览器历史返回；没有历史时（如从通知直接打开）返回所属 Tab 首页。
 - 教师和管理员入口放在 Profile 页的“Role tools”区块中，仅对应角色可见。
@@ -243,18 +243,18 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 
 ### 4.1 Button
 
-| 变体 `variant` | 样式 | 用途 |
-|---|---|---|
-| `primary` | 主色实心，白字 | 页面主操作，每屏最多一个 |
-| `secondary` | 白底，`border-strong` 边框，正文色文字 | 次要操作 |
-| `ghost` | 无背景，主色文字 | 低强调操作、卡片内链接式操作 |
-| `danger` | `danger-solid` 实心，白字 | 不可逆操作（取消预约、删除），仅在确认弹窗中使用 |
+| 变体 `variant` | 样式                                   | 用途                                             |
+| -------------- | -------------------------------------- | ------------------------------------------------ |
+| `primary`      | 主色实心，白字                         | 页面主操作，每屏最多一个                         |
+| `secondary`    | 白底，`border-strong` 边框，正文色文字 | 次要操作                                         |
+| `ghost`        | 无背景，主色文字                       | 低强调操作、卡片内链接式操作                     |
+| `danger`       | `danger-solid` 实心，白字              | 不可逆操作（取消预约、删除），仅在确认弹窗中使用 |
 
-| 尺寸 `size` | 高度 | 字号 | 用途 |
-|---|---|---|---|
-| `sm` | 36px | 14px | 卡片内、筛选栏 |
-| `md`（默认） | 44px | 16px | 常规 |
-| `lg` | 52px | 16px | 底部固定操作栏、登录页 |
+| 尺寸 `size`  | 高度 | 字号 | 用途                   |
+| ------------ | ---- | ---- | ---------------------- |
+| `sm`         | 36px | 14px | 卡片内、筛选栏         |
+| `md`（默认） | 44px | 16px | 常规                   |
+| `lg`         | 52px | 16px | 底部固定操作栏、登录页 |
 
 **状态**：default / hover / active（`scale-[0.98]`）/ focus-visible（2px `focus-ring` 外环，2px 间距）/ disabled（50% 不透明度，`cursor-not-allowed`）/ **loading**（显示 Spinner，文字保留，按钮禁用，防止重复提交）。
 
@@ -372,10 +372,10 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 
 Office Hour 时段和 Study Space 时段选择使用相同的视觉：
 
-| 状态 | 样式 |
-|---|---|
-| 可选 | `secondary` 按钮样式，显示 `14:00–14:30` |
-| 已选 | `primary` 实心 + `Check` 图标 |
+| 状态   | 样式                                                                                          |
+| ------ | --------------------------------------------------------------------------------------------- |
+| 可选   | `secondary` 按钮样式，显示 `14:00–14:30`                                                      |
+| 已选   | `primary` 实心 + `Check` 图标                                                                 |
 | 不可用 | `surface-muted` 背景 + `text-disabled` + 删除线，`aria-disabled`，并显示原因（Booked / Past） |
 
 ---
@@ -384,14 +384,14 @@ Office Hour 时段和 Study Space 时段选择使用相同的视觉：
 
 每个数据驱动的页面或区块**必须**实现以下状态（PRD 4.3）：
 
-| 状态 | 表现 | 组件 |
-|---|---|---|
-| Loading | Skeleton；提交时按钮 Loading | Skeleton、Button |
-| Empty | 说明 + 引导操作 | EmptyState |
-| Error | 原因 + 重试 | ErrorState |
-| Success | 结果页 / 详情页 / Toast | Toast |
-| Offline | 横幅 + 禁用提交 | OfflineBanner |
-| Disabled | 禁用样式 + **说明原因** | Button、TimeSlotButton |
+| 状态     | 表现                         | 组件                   |
+| -------- | ---------------------------- | ---------------------- |
+| Loading  | Skeleton；提交时按钮 Loading | Skeleton、Button       |
+| Empty    | 说明 + 引导操作              | EmptyState             |
+| Error    | 原因 + 重试                  | ErrorState             |
+| Success  | 结果页 / 详情页 / Toast      | Toast                  |
+| Offline  | 横幅 + 禁用提交              | OfflineBanner          |
+| Disabled | 禁用样式 + **说明原因**      | Button、TimeSlotButton |
 
 **关键规则**：
 
@@ -429,16 +429,16 @@ Office Hour 时段和 Study Space 时段选择使用相同的视觉：
 
 所有时间按 **`Asia/Shanghai`** 展示，统一使用 `src/lib/time.ts` 中的格式化函数，不在组件中自行格式化。
 
-| 场景 | 格式 | 示例 |
-|---|---|---|
-| 日期 | `EEE d MMM` | Mon 3 Nov |
-| 带年份日期 | `d MMM yyyy` | 3 Nov 2026 |
-| 时间 | 24 小时制 `HH:mm` | 14:00 |
-| 时间段 | `HH:mm–HH:mm`（en dash） | 14:00–16:00 |
-| 完整 | `EEE d MMM, HH:mm–HH:mm` | Mon 3 Nov, 14:00–16:00 |
-| 相对时间 | 今天 / 明天使用 Today / Tomorrow | Today, 14:00 |
-| 通知时间戳 | 1 小时内用相对时间 | 5 min ago |
-| 教学周 | `Week n` | Week 7 |
+| 场景       | 格式                             | 示例                   |
+| ---------- | -------------------------------- | ---------------------- |
+| 日期       | `EEE d MMM`                      | Mon 3 Nov              |
+| 带年份日期 | `d MMM yyyy`                     | 3 Nov 2026             |
+| 时间       | 24 小时制 `HH:mm`                | 14:00                  |
+| 时间段     | `HH:mm–HH:mm`（en dash）         | 14:00–16:00            |
+| 完整       | `EEE d MMM, HH:mm–HH:mm`         | Mon 3 Nov, 14:00–16:00 |
+| 相对时间   | 今天 / 明天使用 Today / Tomorrow | Today, 14:00           |
+| 通知时间戳 | 1 小时内用相对时间               | 5 min ago              |
+| 教学周     | `Week n`                         | Week 7                 |
 
 ### 7.3 隐私
 
@@ -544,11 +544,11 @@ Office Hour 时段和 Study Space 时段选择使用相同的视觉：
 
 其他成员的页面按以下三种模板搭建：
 
-| 模板 | 结构 | 适用页面 |
-|---|---|---|
-| **List** | TopBar → 搜索框（可选）→ 筛选 Chip 行 → 结果数量 → 卡片列表 → 分页 / 加载更多 | PG-04、PG-06、PG-08、PG-13、PG-14、PG-17 |
-| **Detail** | TopBar → 主信息卡（标题、状态、类型标签）→ 信息分组（时间、地点、说明）→ StickyActionBar | PG-05、PG-09、PG-10、PG-16 |
-| **Form** | TopBar → 分组字段 → StickyActionBar（提交） | PG-12、PG-15 |
+| 模板       | 结构                                                                                     | 适用页面                                 |
+| ---------- | ---------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **List**   | TopBar → 搜索框（可选）→ 筛选 Chip 行 → 结果数量 → 卡片列表 → 分页 / 加载更多            | PG-04、PG-06、PG-08、PG-13、PG-14、PG-17 |
+| **Detail** | TopBar → 主信息卡（标题、状态、类型标签）→ 信息分组（时间、地点、说明）→ StickyActionBar | PG-05、PG-09、PG-10、PG-16               |
+| **Form**   | TopBar → 分组字段 → StickyActionBar（提交）                                              | PG-12、PG-15                             |
 
 ---
 
@@ -571,15 +571,15 @@ Member 1 在合并前按此清单检查 UI：
 
 ## 11. Figma 组织方式
 
-| Figma Page | 内容 |
-|---|---|
-| `00 Cover` | 项目名、版本、更新日期 |
-| `01 Foundations` | 颜色、字体、间距、圆角、阴影、图标，名称与本文档 Token 一致 |
-| `02 Components` | 第 4 节全部组件及其状态变体 |
-| `03 Flows` | Flow 01–04 用户流程图 |
-| `04 Mobile 375` | 所有页面，Frame 命名 `PG-xx Page Name / State`，如 `PG-08 Find Space / Empty` |
-| `05 Tablet & Desktop` | 关键页面的 768px 与 1280px 版本 |
-| `99 Archive` | 废弃方案 |
+| Figma Page            | 内容                                                                          |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `00 Cover`            | 项目名、版本、更新日期                                                        |
+| `01 Foundations`      | 颜色、字体、间距、圆角、阴影、图标，名称与本文档 Token 一致                   |
+| `02 Components`       | 第 4 节全部组件及其状态变体                                                   |
+| `03 Flows`            | Flow 01–04 用户流程图                                                         |
+| `04 Mobile 375`       | 所有页面，Frame 命名 `PG-xx Page Name / State`，如 `PG-08 Find Space / Empty` |
+| `05 Tablet & Desktop` | 关键页面的 768px 与 1280px 版本                                               |
+| `99 Archive`          | 废弃方案                                                                      |
 
 - 每个页面至少包含 Default、Loading、Empty、Error 四个状态 Frame。
 - Figma 更新后在对应 Issue 或 PR 中附上 Frame 链接。
@@ -588,6 +588,6 @@ Member 1 在合并前按此清单检查 UI：
 
 ## 12. 变更记录
 
-| 版本 | 日期 | 修改内容 | 作者 |
-|---|---|---|---|
+| 版本       | 日期       | 修改内容                                          | 作者     |
+| ---------- | ---------- | ------------------------------------------------- | -------- |
 | V1.0 Draft | 2026-10-28 | 初稿：Token、布局、组件、状态、文案、核心页面框架 | Member 1 |

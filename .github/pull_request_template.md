@@ -24,8 +24,8 @@
 <!-- 375px mobile screenshot is required for UI changes. Add 768px / 1280px when layout changes. -->
 
 | 375px | 768px | 1280px |
-|---|---|---|
-|   |   |   |
+| ----- | ----- | ------ |
+|       |       |        |
 
 ## Checklist
 
