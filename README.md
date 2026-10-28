@@ -42,11 +42,13 @@ Each member implements the frontend, API, database logic and tests for their own
 
 | Document                                                       | Contents                                                                                         |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [docs/prd.md](docs/prd.md)                                     | Product requirements (PRD V1.0): scope, user flows, FR / AC IDs, test plan                       |
+| [docs/team-assignment.md](docs/team-assignment.md)             | Team roles, owned modules, pages, entities and PR list                                           |
 | [CONTRIBUTING.md](CONTRIBUTING.md)                             | Branches, commits, PR flow, code ownership, code style, API conventions, Definition of Done      |
 | [docs/design/ui-ux-spec.md](docs/design/ui-ux-spec.md)         | Design tokens, layout, shared components, interaction states, copy & date formats, accessibility |
 | [docs/frontend-architecture.md](docs/frontend-architecture.md) | Directory structure, route map, layering rules, data fetching, shared interfaces                 |
 
-Read all three before opening your first PR.
+Read these before opening your first PR. Using an AI coding agent? See [docs/agent-prompts.md](docs/agent-prompts.md); project rules for agents live in `AGENTS.md`.
 
 ## Getting Started
 
