@@ -26,9 +26,10 @@ const TYPES = {
 
 export type TagType = keyof typeof TYPES;
 
-/** Icon + colour for an event type or post type, so the meaning never relies on colour alone. */
-export function typeIcon(type: TagType) {
-  return TYPES[type].icon;
+/** The icon for an event type or post type. Pair it with text so meaning never relies on colour alone. */
+export function TypeIcon({ type, className }: { type: TagType; className?: string }) {
+  const Icon = TYPES[type].icon;
+  return <Icon className={className} aria-hidden />;
 }
 
 /** Text + background classes for a type, e.g. to tint a schedule block. */

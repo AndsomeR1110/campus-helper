@@ -16,7 +16,7 @@ import { Button, FormField, Input, StatusBadge, toast } from "@/components/ui";
 | `FormField` + `Input` / `Textarea` / `Select` | Every form control. FormField wires label, hint, error and `aria-*` automatically.                          |
 | `Card`, `cardStyles()`, `ListItem`            | List rows and content blocks. `cardStyles({ interactive: true })` on a `<Link>` for tappable cards.         |
 | `StatusBadge`                                 | Any business status: `<StatusBadge kind="booking" status="CONFIRMED" />`. Never pick colours yourself.      |
-| `TypeTag`, `typeIcon()`, `typeColorClasses()` | Class / Office Hour / Study Space / Lost / Found labels and colours.                                        |
+| `TypeTag`, `TypeIcon`, `typeColorClasses()`   | Class / Office Hour / Study Space / Lost / Found labels and colours.                                        |
 | `Chip`, `ChipGroup`                           | Filter rows.                                                                                                |
 | `TimeSlotButton`                              | Office hour and study space slot pickers. Pass `unavailableReason` instead of hiding a slot.                |
 | `Modal`                                       | Bottom sheet on phones, dialog on tablet/desktop.                                                           |

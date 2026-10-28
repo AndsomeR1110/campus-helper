@@ -34,4 +34,4 @@ export {
 export { Textarea, type TextareaProps } from "./textarea";
 export { TimeSlotButton, type TimeSlotButtonProps } from "./time-slot-button";
 export { Toaster, toast } from "./toast";
-export { TypeTag, typeColorClasses, typeIcon, type TagType } from "./type-tag";
+export { TypeIcon, TypeTag, typeColorClasses, type TagType } from "./type-tag";

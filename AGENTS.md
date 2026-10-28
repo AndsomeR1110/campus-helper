@@ -44,6 +44,7 @@ Ask the user which member / module they are if it is not clear. Then stay inside
 
 ## UI rules
 
+- Build every page inside the app frame from `@/components/layout`: start with `<TopBar>`, wrap content in `<PageContainer>`, and put the primary action of detail / form pages in `<StickyActionBar>`. When you add a detail or form route, add its pattern to `FOCUSED_ROUTES` in `src/components/layout/nav-config.ts` (mention Member 1 in the PR).
 - Build pages from `@/components/ui`. Do not hand-roll buttons, inputs, modals, badges, toasts or empty/error states.
 - Colours, sizes, radii and shadows come from the semantic tokens only (`bg-primary`, `text-text-muted`, `text-title`, `rounded-md`…). Raw palette classes (`bg-blue-500`) and hex values are not allowed — the default palette is disabled anyway.
 - Business statuses use `<StatusBadge kind=… status=… />`. Event / post types use `TypeTag`.
@@ -72,6 +73,8 @@ Ask the user which member / module they are if it is not clear. Then stay inside
 - Never use `"use cache"` for anything user-specific.
 - Don't read the current time (`new Date()`, `Date.now()`) during prerender; render it inside `<Suspense>` or pass `now` explicitly.
 - `params`, `searchParams`, `cookies()` and `headers()` are async.
+- Every route with a dynamic segment (`[id]`) needs a `loading.tsx` (Skeleton), otherwise awaiting `params` fails the build.
+- `error.tsx` receives `retry()` (not `reset()`); pass it to `ErrorState onRetry`.
 
 ## Tests
 
