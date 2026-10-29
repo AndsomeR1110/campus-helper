@@ -16,15 +16,23 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test"
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "node --experimental-strip-types prisma/seed.ts",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/client": "6.19.3",
+    "bcryptjs": "3.0.3",
     "clsx": "2.1.1",
+    "jose": "6.2.13",
     "lucide-react": "1.58.0",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "tailwind-merge": "3.7.0"
+    "tailwind-merge": "3.7.0",
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
@@ -42,6 +50,7 @@
     "jsdom": "29.1.1",
     "prettier": "3.9.10",
     "prettier-plugin-tailwindcss": "0.8.1",
+    "prisma": "6.19.3",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "5.0.5"
