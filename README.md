@@ -78,6 +78,16 @@ Open <http://localhost:3000>.
 
 CI runs the same checks plus `next build` on every pull request.
 
+### Windows
+
+Line endings are normalised to LF by `.gitattributes`. If you cloned **before** that file existed and `npm run format:check` reports many files, commit or stash your work, then refresh your checkout once:
+
+```bash
+git rm -r --cached . -q && git reset --hard
+```
+
+Fonts are self-hosted (`src/app/fonts/`), so `npm run build` works without access to Google Fonts.
+
 ### Editor
 
 VS Code users: install the recommended extensions when prompted (`.vscode/extensions.json`). Format on save and ESLint auto-fix are pre-configured.

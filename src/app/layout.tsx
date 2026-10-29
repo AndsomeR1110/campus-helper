@@ -1,11 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { Toaster } from "@/components/ui";
 import "./globals.css";
 
-const inter = Inter({
+// Self-hosted so builds work without access to Google Fonts (e.g. on the campus
+// network). Inter variable font, Latin subset, SIL OFL — see fonts/Inter-OFL.txt.
+const inter = localFont({
+  src: "./fonts/inter-latin-wght-normal.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
