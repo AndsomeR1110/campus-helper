@@ -1,0 +1,14 @@
+# Normalise line endings to LF for everyone (Prettier and CI expect LF).
+# Without this, Windows clones with core.autocrlf=true check files out as CRLF
+# and `npm run format:check` fails locally while CI passes.
+* text=auto eol=lf
+
+# Binary files: never touch line endings.
+*.woff2 binary
+*.woff binary
+*.ttf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
