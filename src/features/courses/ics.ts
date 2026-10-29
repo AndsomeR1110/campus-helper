@@ -158,8 +158,10 @@ export function buildIcsCalendar(options: IcsCalendarOptions): string {
 /** Maps timetable occurrences to calendar events with a stable UID per class. */
 export function courseOccurrencesToIcsEvents(occurrences: CourseOccurrence[]): IcsEvent[] {
   return occurrences.map((occurrence) => ({
-    // Occurrence ids are already `${courseId}:${startsAt}`, i.e. stable across regeneration.
-    uid: `campus-helper-class-${occurrence.id}@campus-helper`,
+    // Keyed by course + teaching week, not by start time, so the UID survives
+    // editing the class time: re-importing updates the event instead of
+    // adding a duplicate (CR-AC-03).
+    uid: `campus-helper-class-${occurrence.courseId}-w${occurrence.weekNumber}@campus-helper`,
     summary: `${occurrence.courseCode} ${occurrence.courseName}`,
     description: `Week ${occurrence.weekNumber}`,
     location: occurrence.location,

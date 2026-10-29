@@ -175,9 +175,7 @@ describe("course occurrences to .ics", () => {
     const events = courseOccurrencesToIcsEvents(occurrences);
 
     expect(events).toHaveLength(2);
-    expect(events[0]?.uid).toBe(
-      "campus-helper-class-course-1:2026-09-07T01:00:00.000Z@campus-helper",
-    );
+    expect(events[0]?.uid).toBe("campus-helper-class-course-1-w1@campus-helper");
     expect(events[0]?.summary).toBe("CS101 Database Systems");
     expect(events[0]?.description).toBe("Week 1");
     expect(events[0]?.location).toBe("Library D, 1F");
@@ -191,6 +189,20 @@ describe("course occurrences to .ics", () => {
       }),
     );
     expect(again.map((item) => item.uid)).toEqual(events.map((item) => item.uid));
+  });
+
+  it("keeps the UID when the class time is edited (CR-AC-03)", () => {
+    const range = {
+      from: new Date("2026-09-01T00:00:00.000Z"),
+      to: new Date("2026-10-01T00:00:00.000Z"),
+    };
+    const before = courseOccurrencesToIcsEvents(expandOccurrences(makeCourse(), TERM_START, range));
+    const moved = courseOccurrencesToIcsEvents(
+      expandOccurrences(makeCourse({ startTime: "14:00", endTime: "15:50" }), TERM_START, range),
+    );
+
+    expect(moved.map((item) => item.uid)).toEqual(before.map((item) => item.uid));
+    expect(moved[0]?.startsAt).not.toBe(before[0]?.startsAt);
   });
 
   it("builds the whole document in one call", () => {
