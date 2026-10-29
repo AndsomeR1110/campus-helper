@@ -93,8 +93,7 @@ No AC is claimed as fully accepted until its integration column passes.
 - `npm run check`: passed (45 tests including existing project tests).
 - `npm run build`: passed after moving the failed restricted build cache aside
   and running with network/process permissions for the existing font/CSS build.
-- `screenshots/picker-{375,768,1280}.png`: isolated SpacePicker markup with
-  the actual production CSS, four demo fixtures, one unavailable seat. Checked
-  visually and measured document scroll width equal to viewport at each size.
-  These are **component previews**, not authenticated route/E2E screenshots;
-  browser behavior and AppShell integration remain pending.
+- Component preview screenshots (375 / 768 / 1280px) belong in the PR
+  description rather than committed. They show isolated SpacePicker markup,
+  not authenticated route/E2E screenshots; browser behavior and AppShell
+  integration remain pending.

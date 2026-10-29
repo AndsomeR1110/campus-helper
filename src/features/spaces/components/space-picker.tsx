@@ -16,6 +16,7 @@ import {
   TimeSlotButton,
 } from "@/components/ui";
 import { formatTimeRange } from "@/lib/time";
+import { SEAT_TYPE_LABELS, SEAT_TYPES } from "../constants";
 import type { Space, TimeRange } from "../types";
 
 /** Request-time composition supplies availability and a real server mutation.
@@ -100,9 +101,11 @@ export function SpacePicker({
         <FormField label="Seat type">
           <Select name="type" defaultValue={params.get("type") ?? ""}>
             <option value="">All types</option>
-            <option value="QUIET">Quiet</option>
-            <option value="DISCUSSION">Discussion</option>
-            <option value="COMPUTER">Computer</option>
+            {SEAT_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {SEAT_TYPE_LABELS[type]}
+              </option>
+            ))}
           </Select>
         </FormField>
         <Button type="submit" variant="secondary">
@@ -142,8 +145,9 @@ export function SpacePicker({
                   {s.campus} · {s.building} · Floor {s.floor}
                 </p>
                 <p className="text-body-sm">
-                  {s.type} · Capacity {s.capacity} · {s.power ? "Power socket" : "No power socket"}{" "}
-                  · {s.discussion ? "Discussion allowed" : "Quiet study"}
+                  {SEAT_TYPE_LABELS[s.type]} · Capacity {s.capacity} ·{" "}
+                  {s.power ? "Power socket" : "No power socket"} ·{" "}
+                  {s.discussion ? "Discussion allowed" : "Quiet study"}
                 </p>
               </Card>
             ))}

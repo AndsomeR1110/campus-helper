@@ -1,3 +1,4 @@
+import { SEAT_TYPES } from "./constants";
 import type { SpaceFilters, TimeRange } from "./types";
 
 /** URL input is validated before it reaches a database adapter. No implicit local timezone. */
@@ -14,7 +15,7 @@ export function parseSpaceFilters(
     !/^([01]\d|2[0-3]):(00|30)$/.test(start) ||
     !/^([01]\d|2[0-3]):(00|30)$/.test(end) ||
     (floor !== null && !/^[1-9]\d?$/.test(floor)) ||
-    (type !== null && !["QUIET", "DISCUSSION", "COMPUTER"].includes(type))
+    (type !== null && !(SEAT_TYPES as string[]).includes(type))
   )
     return null;
   const startsAt = new Date(`${date}T${start}:00+08:00`);
