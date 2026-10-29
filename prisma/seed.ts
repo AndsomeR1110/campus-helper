@@ -198,22 +198,21 @@ async function main() {
     select: { id: true },
   });
   if (firstSlot && studentIds[0]) {
-    await prisma.officeBooking.upsert({
-      where: {
-        slotId_studentId_status: {
+    // Idempotent: the partial unique index allows one CONFIRMED booking per slot.
+    const existing = await prisma.officeBooking.findFirst({
+      where: { slotId: firstSlot.id, status: "CONFIRMED" },
+      select: { id: true },
+    });
+    if (!existing) {
+      await prisma.officeBooking.create({
+        data: {
           slotId: firstSlot.id,
           studentId: studentIds[0],
           status: "CONFIRMED",
+          reason: "Problem set 3, question 4",
         },
-      },
-      update: {},
-      create: {
-        slotId: firstSlot.id,
-        studentId: studentIds[0],
-        status: "CONFIRMED",
-        reason: "Problem set 3, question 4",
-      },
-    });
+      });
+    }
   }
 
   const [users, teachers, slots, bookings] = await Promise.all([
