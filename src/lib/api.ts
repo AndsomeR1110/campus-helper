@@ -23,6 +23,7 @@ export type ApiErrorCode =
   | "BOOKING_NOT_CANCELLABLE"
   | "EMAIL_ALREADY_REGISTERED"
   | "INVALID_CREDENTIALS"
+  | "CONFLICT"
   | "INTERNAL_ERROR";
 
 const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
@@ -37,6 +38,7 @@ const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
   SLOT_ALREADY_STARTED: 409,
   BOOKING_NOT_CANCELLABLE: 409,
   EMAIL_ALREADY_REGISTERED: 409,
+  CONFLICT: 409,
   INTERNAL_ERROR: 500,
 };
 
@@ -90,18 +92,37 @@ export function toErrorResponse(error: unknown): NextResponse {
     return fail("VALIDATION_ERROR", "Some fields are invalid.", fields);
   }
 
-  // Prisma 唯一约束冲突（并发预约的兜底）
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: string }).code === "P2002"
-  ) {
-    return fail("SLOT_ALREADY_BOOKED", "This slot has just been booked by someone else.");
+  // Prisma 唯一约束冲突的兜底。只有 OfficeBooking.slotId 上的冲突才是「时段已被预约」；
+  // 其他唯一约束（邮箱、时段开始时间、通知 dedupeKey…）返回通用 CONFLICT，
+  // 需要更具体提示的调用方应自行捕获 P2002 并抛出自己的 ApiError。
+  if (isUniqueViolation(error)) {
+    if (uniqueTarget(error).includes("slotId")) {
+      return fail("SLOT_ALREADY_BOOKED", "This slot has just been booked by someone else.");
+    }
+    return fail("CONFLICT", "This conflicts with an existing record.");
   }
 
   console.error("[api] unhandled error:", error);
   return fail("INTERNAL_ERROR", "Something went wrong. Please try again.");
+}
+
+function isUniqueViolation(
+  error: unknown,
+): error is { code: "P2002"; meta?: { target?: unknown } } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "P2002"
+  );
+}
+
+/** Prisma reports the violated fields in `meta.target`, e.g. ["slotId"] or ["email"]. */
+function uniqueTarget(error: { meta?: { target?: unknown } }): string[] {
+  const target = error.meta?.target;
+  if (Array.isArray(target)) return target.map(String);
+  if (typeof target === "string") return [target];
+  return [];
 }
 
 /** 解析 JSON body，body 非法时抛 VALIDATION_ERROR。 */

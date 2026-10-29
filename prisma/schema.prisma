@@ -125,11 +125,12 @@ model OfficeBooking {
   updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
   cancelledAt DateTime? @db.Timestamptz(3)
 
-  /// One active booking per student per slot (double-submit guard).
-  /// The stronger "one student per slot" rule is a partial unique index in
+  /// "One CONFIRMED booking per slot" (OH-AC-03, and the same student
+  /// double-submitting) is a partial unique index in
   /// prisma/migrations/…_add_active_booking_unique — Prisma cannot express
-  /// partial indexes, so it lives in hand-written SQL.
-  @@unique([slotId, studentId, status])
+  /// partial indexes, so it lives in hand-written SQL. Do not add a unique key
+  /// that includes `status`: a student must be able to cancel the same slot
+  /// more than once (book → cancel → rebook → cancel).
   @@index([studentId, status])
   @@index([slotId, status])
 }

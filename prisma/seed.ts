@@ -1,8 +1,8 @@
 /**
  * 种子数据（虚构数据，CONTRIBUTING.md §7）。
  *
- * 运行： npx prisma db seed      （package.json 已配 prisma.seed = tsx prisma/seed.ts）
- * 或：   node --experimental-strip-types prisma/seed.ts   （Node >= 22.18 可直接跑 TS）
+ * 运行： npm run db:seed   或   npx prisma db seed
+ *        （两者都执行 node --experimental-strip-types prisma/seed.ts，Node 22.12+ 可用）
  *
  * 只使用虚构人名 / 学号 / 邮箱，绝不使用真实个人信息。
  */
