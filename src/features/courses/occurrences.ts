@@ -58,6 +58,23 @@ export function listActiveWeeks(
   return weeks;
 }
 
+/** Builds the dated occurrence of `course` in teaching week `week`. */
+function buildOccurrence(course: Course, termStart: string, week: number): CourseOccurrence {
+  const dayOffset = (week - 1) * 7 + weekdayIndex(course.weekday);
+  const startsAt = toUtcInstant(termStart, dayOffset, course.startTime).toISOString();
+
+  return {
+    id: `${course.id}:${startsAt}`,
+    courseId: course.id,
+    courseCode: course.code,
+    courseName: course.name,
+    location: course.location,
+    startsAt,
+    endsAt: toUtcInstant(termStart, dayOffset, course.endTime).toISOString(),
+    weekNumber: week,
+  };
+}
+
 /**
  * Expands a weekly course rule into dated occurrences inside `range`.
  * Occurrences come back in ascending start order, which is what the week view
@@ -72,30 +89,15 @@ export function expandOccurrences(
 
   const fromMs = range.from.getTime();
   const toMs = range.to.getTime();
-  const offset = weekdayIndex(course.weekday);
   const occurrences: CourseOccurrence[] = [];
 
   for (const week of listActiveWeeks(course)) {
-    const dayOffset = (week - 1) * 7 + offset;
-    const startsAt = toUtcInstant(termStart, dayOffset, course.startTime);
+    const occurrence = buildOccurrence(course, termStart, week);
+    const startMs = Date.parse(occurrence.startsAt);
 
-    if (startsAt.getTime() < fromMs || startsAt.getTime() > toMs) {
-      continue;
+    if (startMs >= fromMs && startMs <= toMs) {
+      occurrences.push(occurrence);
     }
-
-    const endsAt = toUtcInstant(termStart, dayOffset, course.endTime);
-    const isoStart = startsAt.toISOString();
-
-    occurrences.push({
-      id: `${course.id}:${isoStart}`,
-      courseId: course.id,
-      courseCode: course.code,
-      courseName: course.name,
-      location: course.location,
-      startsAt: isoStart,
-      endsAt: endsAt.toISOString(),
-      weekNumber: week,
-    });
   }
 
   return occurrences.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
@@ -113,23 +115,7 @@ export function getOccurrencesInWeek(
     return [];
   }
 
-  const dayOffset = (weekNumber - 1) * 7 + weekdayIndex(course.weekday);
-  const startsAt = toUtcInstant(termStart, dayOffset, course.startTime);
-  const endsAt = toUtcInstant(termStart, dayOffset, course.endTime);
-  const isoStart = startsAt.toISOString();
-
-  return [
-    {
-      id: `${course.id}:${isoStart}`,
-      courseId: course.id,
-      courseCode: course.code,
-      courseName: course.name,
-      location: course.location,
-      startsAt: isoStart,
-      endsAt: endsAt.toISOString(),
-      weekNumber,
-    },
-  ];
+  return [buildOccurrence(course, termStart, weekNumber)];
 }
 
 /** The next class from `now` onwards, or null when the course has finished. */
