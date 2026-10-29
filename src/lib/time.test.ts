@@ -4,6 +4,7 @@ import {
   formatDate,
   formatDateTimeRange,
   formatDateWithYear,
+  formatGreeting,
   formatRelativeDay,
   formatRelativeTime,
   formatTime,
@@ -51,5 +52,14 @@ describe("time formatting (Asia/Shanghai)", () => {
 
   it("uses three-letter month names", () => {
     expect(formatDate("2026-09-15T04:00:00Z")).toBe("Tue 15 Sep");
+  });
+});
+
+describe("formatGreeting", () => {
+  it("greets by Shanghai local time", () => {
+    expect(formatGreeting("2026-11-03T00:30:00Z")).toBe("Good morning"); // 08:30
+    expect(formatGreeting("2026-11-03T04:00:00Z")).toBe("Good afternoon"); // 12:00
+    expect(formatGreeting("2026-11-03T10:00:00Z")).toBe("Good evening"); // 18:00
+    expect(formatGreeting("2026-11-02T19:00:00Z")).toBe("Good evening"); // 03:00
   });
 });
