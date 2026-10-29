@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   HIDDEN_SCHEDULE_STATUSES,
+  SCHEDULE_TAG_TYPE,
   countEventsByType,
   createScheduleEvent,
   filterEventsInRange,
@@ -197,5 +198,15 @@ describe("countEventsByType", () => {
     ]);
 
     expect(counts).toEqual({ CLASS: 2, OFFICE_HOUR: 1, STUDY_SPACE: 1 });
+  });
+});
+
+describe("SCHEDULE_TAG_TYPE", () => {
+  it("maps every event type to a UI tag type (FR-CR-05)", () => {
+    expect(SCHEDULE_TAG_TYPE).toEqual({
+      CLASS: "class",
+      OFFICE_HOUR: "office",
+      STUDY_SPACE: "space",
+    });
   });
 });

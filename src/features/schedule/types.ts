@@ -1,3 +1,5 @@
+import type { TagType } from "@/components/ui";
+
 /**
  * Unified schedule contract (docs/frontend-architecture.md §7.1).
  *
@@ -7,6 +9,16 @@
  */
 
 export type ScheduleEventType = "CLASS" | "OFFICE_HOUR" | "STUDY_SPACE";
+
+/**
+ * Maps an event type to the shared UI tag type, for `<TypeTag type=… />`,
+ * `<TypeIcon type=… />` and `typeColorClasses()`.
+ */
+export const SCHEDULE_TAG_TYPE: Record<ScheduleEventType, TagType> = {
+  CLASS: "class",
+  OFFICE_HOUR: "office",
+  STUDY_SPACE: "space",
+};
 
 /**
  * What a provider hands over. The `id` is derived by `createScheduleEvent()`
