@@ -156,17 +156,28 @@ async function main() {
     for (const [dayOffset, hour, duration] of t.slots) {
       const startsAt = at(dayOffset, hour);
       const endsAt = new Date(startsAt.getTime() + duration * 60 * 1000);
-      await prisma.officeSlot.upsert({
-        where: { teacherId_startsAt: { teacherId: profile.id, startsAt } },
-        update: { endsAt, status: "OPEN" },
-        create: {
-          teacherId: profile.id,
-          startsAt,
-          endsAt,
-          status: "OPEN",
-          location: t.office,
-        },
+      // No compound unique on (teacherId, startsAt) any more — it is a partial unique
+      // index over OPEN rows only — so look the row up instead of using an upsert key.
+      const existingSlot = await prisma.officeSlot.findFirst({
+        where: { teacherId: profile.id, startsAt },
+        select: { id: true },
       });
+      if (existingSlot) {
+        await prisma.officeSlot.update({
+          where: { id: existingSlot.id },
+          data: { endsAt, status: "OPEN", location: t.office },
+        });
+      } else {
+        await prisma.officeSlot.create({
+          data: {
+            teacherId: profile.id,
+            startsAt,
+            endsAt,
+            status: "OPEN",
+            location: t.office,
+          },
+        });
+      }
     }
   }
 

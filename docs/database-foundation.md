@@ -71,6 +71,30 @@ Serializable 事务里检查 slot 状态 → create → 捕获 `P2002` 转成
 删掉部分唯一索引，改用 `SELECT … FOR UPDATE` 锁 slot 行 + 统计有效预约数。
 现在 PRD 是 1 人/时段，**不要动**。
 
+### ⚠️ 业务状态会变化时，唯一约束必须带 `WHERE`（partial index）
+
+code review 抓到过两个"过度约束"的 `@@unique`。它们都不是并发问题，而是**历史状态挡住了未来状态**。
+两个都已删除，以后不要再加回来：
+
+| 被删掉的普通唯一约束                       | 它为什么会出错                                                                                                | 现在的做法                                                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `OfficeBooking(slotId, studentId, status)` | 同一学生对同一时段「预约 → 取消 → 再预约 → 再取消」需要**两条 CANCELLED**，唯一约束直接报错，学生永远取消不掉 | 删除；防重复只需 `office_bookings_active_slot_unique`（`WHERE status='CONFIRMED'`）+ 事务里的已预约检查   |
+| `OfficeSlot(teacherId, startsAt)`          | 教师撤销时段后，那条 CANCELLED 记录仍占着 `(teacherId, startsAt)`，**同一时间再也无法重新开放**               | 换成 `office_slots_open_teacher_start_unique ON "OfficeSlot"("teacherId","startsAt") WHERE status='OPEN'` |
+
+验证方式（`migrations/…_drop_booking_status_unique`、`…_partial_unique_open_slot` 之后）：
+
+```sql
+-- 1) 同一学生两次「预约→取消」都成功
+INSERT ... CONFIRMED; UPDATE ... CANCELLED; INSERT ... CONFIRMED; UPDATE ... CANCELLED;
+-- 2) 撤销时段后同一时间可以再建
+UPDATE "OfficeSlot" SET status='CANCELLED' ...; INSERT ... ('OPEN', 同一时间);  -- 成功
+-- 3) 但同一时段仍然只能有一个人
+INSERT ... CONFIRMED;  INSERT ... CONFIRMED;  -- 第二个必须报 unique violation
+```
+
+> 教训：**状态会变，唯一约束就要加 `WHERE`**；Prisma 的 `@@unique` 表达不了 partial index，
+> 必须手写进 `migration.sql`。
+
 ---
 
 ## 4. 时区

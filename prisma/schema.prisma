@@ -104,8 +104,11 @@ model OfficeSlot {
 
   bookings OfficeBooking[]
 
-  /// A teacher cannot create two slots with the same start time
-  @@unique([teacherId, startsAt])
+  /// "A teacher cannot hold two OPEN slots at the same start time" is enforced by a
+  /// **partial** unique index (`WHERE status = 'OPEN'`) in
+  /// prisma/migrations/…_partial_unique_open_slot. Deliberately not `@@unique` here:
+  /// a plain unique would also block re-creating a slot at a time the teacher had
+  /// previously withdrawn, because the cancelled row still occupies (teacherId, startsAt).
   @@index([startsAt, status])
 }
 
