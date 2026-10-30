@@ -1,9 +1,6 @@
-# Study Spaces
+# Study space persistence — Member 3
 
-Owner: **Member 3**. Study space list, filters, availability and seat bookings.
-
-- Pages: PG-08, PG-09
-- Entities: `Space`, `SpaceBooking`
-- Acceptance: SP-AC-01 – SP-AC-08
-
-Structure and rules: [docs/frontend-architecture.md §4](../../../docs/frontend-architecture.md).
+This branch implements models, migrations, dual range exclusion constraints,
+Prisma persistence, transactional booking/cancellation and API handler factories.
+Member 2 reviews the schema. See [INTEGRATION.md](INTEGRATION.md) for dependencies
+and real PostgreSQL test commands. UI and unified bookings are separate tasks.
