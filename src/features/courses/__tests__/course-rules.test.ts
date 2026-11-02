@@ -133,6 +133,10 @@ describe("validateCourseDraft", () => {
     }
   });
 
+  it.each(["CPT203", "ENT207TC", "mth013"])("accepts the course code %s (CR-AC-01)", (code) => {
+    expect(validateCourseDraft(makeDraft({ code }))).toEqual({ ok: true });
+  });
+
   it("rejects a malformed course code", () => {
     const result = validateCourseDraft(makeDraft({ code: "cs-101" }));
 

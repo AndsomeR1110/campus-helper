@@ -47,8 +47,8 @@ export const REMINDER_OFFSET_MINUTES = [10, 15, 30, 60] as const;
 
 export const DEFAULT_REMINDER_OFFSET_MINUTES = 15;
 
-/** e.g. CS101, ENT201, MTH013. */
-export const COURSE_CODE_PATTERN = /^[A-Z]{2,6}\d{3}$/;
+/** e.g. CS101, CPT203, MTH013, and suffixed codes such as ENT207TC. */
+export const COURSE_CODE_PATTERN = /^[A-Z]{2,6}\d{3}[A-Z]{0,3}$/;
 
 export const MAX_COURSE_NAME_LENGTH = 80;
 

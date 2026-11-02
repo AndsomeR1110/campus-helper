@@ -193,6 +193,7 @@ src/features/spaces/
 | 异步请求 API        | `params`、`searchParams`、`cookies()`、`headers()` 均为异步，需要 `await`                                                                                                           |
 | Cache Components    | 已在 `next.config.ts` 中开启（`cacheComponents: true`）。读取 cookies、会话或数据库实时数据的组件需包在 `<Suspense>` 中，并提供 Skeleton 作为 fallback                              |
 | `"use cache"`       | **禁止**用于任何与当前用户相关的数据（预约、课程、通知、认领）。只有演示空间列表、教师公开资料等公共数据可以考虑缓存，并须配合 `cacheLife`                                          |
+| 动态路由            | 带 `[id]` 等动态参数的页面必须有 `loading.tsx`（用 Skeleton 占位），否则 `await params` 会让构建失败。也可以不在页面顶层 `await params`，改在 `<Suspense>` 内部读取                 |
 | 当前时间            | 预渲染阶段不能读取 `new Date()` / `Date.now()`，否则构建失败。依赖当前时间的内容（“Today”、“5 min ago”、即将到来的课程）放在请求时渲染的组件中（`<Suspense>` 内），或显式传入 `now` |
 | `GET` Route Handler | 开启 Cache Components 后，`GET` 处理器默认按页面方式预渲染；返回用户数据的接口必须读取会话等请求数据，确保按请求执行                                                                |
 
