@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#4f46e5" />
+    <title>You're offline · CAMPUS HELPER</title>
+    <!--
+      Served by public/sw.js when a page can't be loaded without a connection.
+      Deliberately self-contained (inline styles, no scripts, no fonts) so it
+      renders even when nothing else is cached. Colours mirror the design tokens
+      in src/app/globals.css.
+    -->
+    <style>
+      :root {
+        --background: #f8fafc;
+        --surface: #ffffff;
+        --border: #e2e8f0;
+        --text: #0f172a;
+        --text-muted: #64748b;
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+        background: var(--background);
+        color: var(--text);
+        font:
+          16px/24px system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          "PingFang SC",
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      main {
+        width: 100%;
+        max-width: 400px;
+        padding: 32px 24px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--surface);
+        box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+        text-align: center;
+      }
+      svg {
+        width: 48px;
+        height: 48px;
+        color: #94a3b8;
+      }
+      h1 {
+        margin: 16px 0 8px;
+        font-size: 22px;
+        line-height: 28px;
+        font-weight: 600;
+      }
+      p {
+        margin: 0 0 8px;
+        color: var(--text-muted);
+        font-size: 14px;
+        line-height: 20px;
+      }
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        margin-top: 16px;
+        padding: 0 20px;
+        border-radius: 8px;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 500;
+        text-decoration: none;
+      }
+      a:hover {
+        background: var(--primary-hover);
+      }
+      a:focus-visible {
+        outline: 2px solid #6366f1;
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 20h.01" />
+        <path d="M8.5 16.43a5 5 0 0 1 7 0" />
+        <path d="M5 12.86a10 10 0 0 1 5.17-2.69" />
+        <path d="M19 12.86a10 10 0 0 0-2-1.43" />
+        <path d="M2 8.82a15 15 0 0 1 4.18-2.65" />
+        <path d="M22 8.82a15 15 0 0 0-11.29-3.76" />
+        <path d="m2 2 20 20" />
+      </svg>
+      <h1>You're offline</h1>
+      <p>CAMPUS HELPER needs a connection to load this page.</p>
+      <p>Bookings and posts are unavailable until you reconnect.</p>
+      <a href="">Try again</a>
+    </main>
+  </body>
+</html>

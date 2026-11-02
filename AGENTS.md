@@ -49,6 +49,7 @@ Ask the user which member / module they are if it is not clear. Then stay inside
 - Colours, sizes, radii and shadows come from the semantic tokens only (`bg-primary`, `text-text-muted`, `text-title`, `rounded-md`…). Raw palette classes (`bg-blue-500`) and hex values are not allowed — the default palette is disabled anyway.
 - Business statuses use `<StatusBadge kind=… status=… />`. Event / post types use `TypeTag`.
 - Every data view has Loading (Skeleton), Empty (`EmptyState`) and Error (`ErrorState` + retry) states. Every cancel / delete goes through `ConfirmDialog`. Buttons that submit use `loading`.
+- Disable submit buttons while offline: `const offline = useOffline()` from `@/components/ui`, then `disabled={offline}` and a short "Unavailable offline" hint (PWA-AC-04).
 - Never show success before the server confirms (no optimistic bookings). On `409` keep the user's input and explain the conflict.
 - Format dates and times only with `@/lib/time` (Asia/Shanghai, 24h, "Mon 3 Nov, 14:00–16:00").
 - Office hour and study space pages show `DemoDataNotice` (SP-AC-07).
@@ -71,6 +72,7 @@ Ask the user which member / module they are if it is not clear. Then stay inside
 - Read `node_modules/next/dist/docs/` for any API you are unsure about — training data is outdated.
 - Cache Components is on: wrap request-time data (session, cookies, DB reads for the current user) in `<Suspense>` with a Skeleton fallback.
 - Never use `"use cache"` for anything user-specific.
+- Never cache API responses or personal pages in the service worker (`public/sw.js`, Member 1). It only caches hashed static assets and `/offline.html`.
 - Don't read the current time (`new Date()`, `Date.now()`) during prerender; render it inside `<Suspense>` or pass `now` explicitly.
 - `params`, `searchParams`, `cookies()` and `headers()` are async.
 - Every route with a dynamic segment (`[id]`) needs a `loading.tsx` (Skeleton), otherwise awaiting `params` fails the build.
