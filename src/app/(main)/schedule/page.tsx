@@ -12,6 +12,9 @@ import { formatDate, formatTimeRange } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Schedule" };
 
+/** Reads the session, searchParams or the database per request. */
+export const instant = false;
+
 const weekLink = buttonStyles({ variant: "ghost", size: "sm", className: "size-9 px-0" });
 
 /** PG-11 weekly timetable (FR-CR-05 entry point, CR-AC-01). */
