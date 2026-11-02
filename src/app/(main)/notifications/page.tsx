@@ -12,6 +12,9 @@ import { formatRelativeTime } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Notifications" };
 
+/** Reads the session, searchParams or the database per request. */
+export const instant = false;
+
 /** PG-13 notification list (NT-AC-02, NT-AC-03). */
 async function NotificationList() {
   await connection();
