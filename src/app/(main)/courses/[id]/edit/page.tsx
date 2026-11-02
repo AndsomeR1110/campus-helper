@@ -12,18 +12,21 @@ export const metadata: Metadata = { title: "Edit course" };
 
 async function CourseEditor({ id }: { id: string }) {
   await connection();
+  const user = await getCurrentUser();
 
+  // Read outside the JSX: react-hooks/error-boundaries forbids returning JSX
+  // from inside a try block, because React renders it later.
+  let course: Awaited<ReturnType<typeof getCourse>>;
   try {
-    const user = await getCurrentUser();
-    const course = await getCourse(user.id, id);
-
-    return <CourseForm course={course} />;
+    course = await getCourse(user.id, id);
   } catch (error) {
     if (error instanceof ApiError && error.code === "NOT_FOUND") {
       notFound();
     }
     throw error;
   }
+
+  return <CourseForm course={course} />;
 }
 
 function EditorSkeleton() {
