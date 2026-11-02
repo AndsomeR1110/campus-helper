@@ -1,9 +1,11 @@
-# Study Spaces
+# Study spaces — Member 3
 
-Owner: **Member 3**. Study space list, filters, availability and seat bookings.
+This PR contains only demo fixtures, URL filters and pure availability/booking rules
+(FR-SP-01/02/03, SP-AC-01/02/05). No booking UI, routes or persistence.
 
-- Pages: PG-08, PG-09
-- Entities: `Space`, `SpaceBooking`
-- Acceptance: SP-AC-01 – SP-AC-08
+Member 3 owns Space/SpaceBooking models, migrations, exclusion constraints, Prisma
+adapter, routes and real PostgreSQL concurrency tests. Member 2 reviews schema
+changes; Member 2 is not responsible for implementing this module.
 
-Structure and rules: [docs/frontend-architecture.md §4](../../../docs/frontend-architecture.md).
+Follow-up tasks: UI list/filter; transactional booking on database foundation #5;
+unified bookings using Office Hour's public server API.
