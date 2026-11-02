@@ -1,0 +1,145 @@
+// Prisma schema — Database Foundation
+// Owner: Member 2 (Auth & Office Hours)
+// Branch: feat/database-foundation
+//
+// Conventions (CONTRIBUTING.md §7):
+//   - All timestamps are UTC (DateTime @db.Timestamptz(3)); display converts to Asia/Shanghai
+//   - Enum values stay in sync with src/components/ui/status-badge.tsx STATUS_MAP
+//     (status changes go through action endpoints, never PATCH { status })
+//   - Business objects are never physically deleted; use a status field (CANCELLED, …)
+//   - Seed data uses fictional names / IDs / emails only
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- enums
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+/// Slot lifecycle: teacher opens a slot; it becomes BOOKED while a confirmed
+/// booking exists (derived, not stored) and CANCELLED when the teacher withdraws it.
+enum SlotStatus {
+  OPEN
+  CANCELLED
+}
+
+/// Matches STATUS_MAP.booking. EXPIRED is set by the background job in the
+/// notification service (Member 4) after the slot has passed.
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  EXPIRED
+}
+
+// ---------------------------------------------------------------- core
+
+/// All roles share one table, distinguished by `role`.
+/// Teachers have an extra TeacherProfile row; admins are only marked by role.
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  /// bcrypt hash — never returned to the client
+  passwordHash String
+  name         String
+  role         Role    @default(STUDENT)
+  /// Student / staff number (fictional in seed data)
+  studentNo    String? @unique
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  teacherProfile TeacherProfile?
+  officeBookings OfficeBooking[]
+
+  @@index([role])
+}
+
+// ---------------------------------------------------------- office hours
+
+model TeacherProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  displayName String
+  department  String
+  office      String?
+  /// Teacher search keywords (department, course names…), lowercase
+  keywords    String[] @default([])
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  slots OfficeSlot[]
+
+  @@index([department])
+}
+
+model OfficeSlot {
+  id        String         @id @default(cuid())
+  teacherId String
+  teacher   TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt   DateTime @db.Timestamptz(3)
+
+  status   SlotStatus @default(OPEN)
+  location String?
+  note     String?
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  bookings OfficeBooking[]
+
+  /// "A teacher cannot hold two OPEN slots at the same start time" is enforced by a
+  /// **partial** unique index (`WHERE status = 'OPEN'`) in
+  /// prisma/migrations/…_partial_unique_open_slot. Deliberately not `@@unique` here:
+  /// a plain unique would also block re-creating a slot at a time the teacher had
+  /// previously withdrawn, because the cancelled row still occupies (teacherId, startsAt).
+  @@index([startsAt, status])
+}
+
+model OfficeBooking {
+  id String @id @default(cuid())
+
+  slotId String
+  slot   OfficeSlot @relation(fields: [slotId], references: [id], onDelete: Restrict)
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  status BookingStatus @default(CONFIRMED)
+  reason String?
+
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+  cancelledAt DateTime? @db.Timestamptz(3)
+
+  /// "One CONFIRMED booking per slot" (OH-AC-03, and the same student
+  /// double-submitting) is a partial unique index in
+  /// prisma/migrations/…_add_active_booking_unique — Prisma cannot express
+  /// partial indexes, so it lives in hand-written SQL. Do not add a unique key
+  /// that includes `status`: a student must be able to cancel the same slot
+  /// more than once (book → cancel → rebook → cancel).
+  @@index([studentId, status])
+  @@index([slotId, status])
+}
+
+// ---------------------------------------------------------------- other modules
+// Added by the owning member, reviewed by Member 2:
+//   M3: Space / SpaceBooking (overlapping ranges need tstzrange, not unique indexes)
+//   M4: Course / CourseOccurrence / ReminderRule / Notification (dedupeKey @unique)
+//   M5: LostFoundPost / LostFoundClaim / Report / AuditLog (claim.message is private)
