@@ -62,6 +62,7 @@ model User {
 
   teacherProfile TeacherProfile?
   officeBookings OfficeBooking[]
+  spaceBookings  SpaceBooking[]
 
   @@index([role])
 }
@@ -143,3 +144,42 @@ model OfficeBooking {
 //   M3: Space / SpaceBooking (overlapping ranges need tstzrange, not unique indexes)
 //   M4: Course / CourseOccurrence / ReminderRule / Notification (dedupeKey @unique)
 //   M5: LostFoundPost / LostFoundClaim / Report / AuditLog (claim.message is private)
+
+// Member 3 owns these entities; schema/migration review by Member 2.
+enum SeatType {
+  QUIET
+  DISCUSSION
+  COMPUTER
+}
+
+model Space {
+  id         String         @id
+  campus     String
+  building   String
+  floor      Int
+  seat       String
+  type       SeatType
+  discussion Boolean
+  capacity   Int
+  power      Boolean
+  bookings   SpaceBooking[]
+
+  @@index([building, floor, type])
+}
+
+model SpaceBooking {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  spaceId     String
+  space       Space         @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+  startsAt    DateTime      @db.Timestamptz(3)
+  endsAt      DateTime      @db.Timestamptz(3)
+  status      BookingStatus @default(CONFIRMED)
+  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
+  cancelledAt DateTime?     @db.Timestamptz(3)
+
+  // Partial GiST exclusion constraints live in the migration (seat AND student).
+  @@index([userId, status])
+  @@index([spaceId, startsAt, endsAt])
+}

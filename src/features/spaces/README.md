@@ -1,11 +1,14 @@
 # Study spaces — Member 3
 
-This PR contains only demo fixtures, URL filters and pure availability/booking rules
-(FR-SP-01/02/03, SP-AC-01/02/05). No booking UI, routes or persistence.
+Owner: **Member 3**. Member 2 reviews schema changes.
 
-Member 3 owns Space/SpaceBooking models, migrations, exclusion constraints, Prisma
-adapter, routes and real PostgreSQL concurrency tests. Member 2 reviews schema
-changes; Member 2 is not responsible for implementing this module.
+**In place:**
 
-Follow-up tasks: UI list/filter; transactional booking on database foundation #5;
-unified bookings using Office Hour's public server API.
+- Demo fixtures, URL filters and pure availability/booking rules (FR-SP-01/02/03, SP-AC-01/02/05).
+- Seat selection UI: `SpacePicker` / `SpaceSelectionView`.
+- Persistence: `Space` / `SpaceBooking` models, migrations, seat and student range exclusion
+  constraints (SP-AC-04), Prisma repository, transactional booking/cancellation and API handler
+  factories. See [INTEGRATION.md](INTEGRATION.md) for real PostgreSQL test commands.
+
+**Still to do:** routes (once `feat/auth-and-roles` provides the session), seeding the demo seats
+from `prisma/seed.ts`, and unified bookings using Office Hour's public server API.
