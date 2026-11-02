@@ -116,3 +116,11 @@ export function formatRelativeTime(value: DateInput, now: DateInput = new Date()
   if (hours < 24) return `${hours} h ago`;
   return formatDate(value);
 }
+
+/** "Good morning" (05:00–11:59), "Good afternoon" (12:00–17:59) or "Good evening", in the app time zone. */
+export function formatGreeting(now: DateInput) {
+  const hour = Number(zonedParts(now).hour);
+  if (hour >= 5 && hour < 12) return "Good morning";
+  if (hour >= 12 && hour < 18) return "Good afternoon";
+  return "Good evening";
+}

@@ -124,7 +124,7 @@ export function validateCourseDraft(draft: CourseDraft): CourseValidationResult 
 
   const code = draft.code.trim().toUpperCase();
   if (!COURSE_CODE_PATTERN.test(code)) {
-    push("code", "COURSE_CODE_INVALID", "Course code must look like CS101.");
+    push("code", "COURSE_CODE_INVALID", "Course code must look like CPT203 or ENT207TC.");
   }
 
   const name = draft.name.trim();
