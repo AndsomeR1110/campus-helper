@@ -63,6 +63,7 @@ model User {
   teacherProfile TeacherProfile?
   officeBookings OfficeBooking[]
   spaceBookings  SpaceBooking[]
+  courses        Course[]
 
   @@index([role])
 }
