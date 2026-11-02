@@ -10,6 +10,9 @@ import { getCourse, getCurrentUser } from "@/features/courses/server";
 
 export const metadata: Metadata = { title: "Edit course" };
 
+/** Reads the session, searchParams or the database per request. */
+export const instant = false;
+
 async function CourseEditor({ id }: { id: string }) {
   await connection();
   const user = await getCurrentUser();

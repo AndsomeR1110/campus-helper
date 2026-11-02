@@ -10,7 +10,10 @@ import { getCurrentUser, listCourses } from "@/features/courses/server";
 
 export const metadata: Metadata = { title: "My courses" };
 
-/** PG-12 course list â€” the timetable is edited from here. */
+/** Reads the session, searchParams or the database per request. */
+export const instant = false;
+
+/** PG-12 course list â€?the timetable is edited from here. */
 async function CourseList() {
   await connection();
   const user = await getCurrentUser();
@@ -48,7 +51,7 @@ async function CourseList() {
             <Card className="w-full p-4">
               <ListItem
                 title={`${course.code} ${course.name}`}
-                description={`${WEEKDAY_LABELS[course.weekday]} ${course.startTime}â€“${course.endTime}${
+                description={`${WEEKDAY_LABELS[course.weekday]} ${course.startTime}â€?{course.endTime}${
                   course.location ? ` Â· ${course.location}` : ""
                 }`}
               />
