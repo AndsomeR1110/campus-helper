@@ -40,5 +40,14 @@ it("uses shared API error envelopes and 409 for conflicts (SP-AC-04)", async () 
     }),
   );
   expect(r.status).toBe(409);
-  expect(await r.json()).toMatchObject({ error: { code: "CONFLICT" } });
+  expect(await r.json()).toMatchObject({ error: { code: "BOOKING_CONFLICT" } });
+});
+it("falls back to the status code for other space errors", async () => {
+  const f = fixture();
+  f.service.cancel.mockRejectedValue(new SpaceError("CANNOT_CANCEL", "Too late to cancel.", 409));
+  const r = await f.handlers.cancel("b1");
+  expect(r.status).toBe(409);
+  expect(await r.json()).toMatchObject({
+    error: { code: "CONFLICT", message: "Too late to cancel." },
+  });
 });

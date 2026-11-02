@@ -1,23 +1,26 @@
-import { ApiError, created, ok, readJson, toErrorResponse } from "@/lib/api";
+import { ApiError, created, ok, readJson, toErrorResponse, type ApiErrorCode } from "@/lib/api";
 import { spaceBookingSchema } from "../schemas";
 import { SpaceError } from "./rules";
 import type { createSpaceService } from "./service";
 
+/** Space codes the client needs verbatim; anything else falls back to its HTTP status. */
+const SPECIFIC_CODES: Partial<Record<string, ApiErrorCode>> = {
+  BOOKING_CONFLICT: "BOOKING_CONFLICT",
+  INVALID_TIME_RANGE: "INVALID_TIME_RANGE",
+};
+
+const CODE_BY_STATUS: Record<SpaceError["status"], ApiErrorCode> = {
+  400: "VALIDATION_ERROR",
+  401: "UNAUTHENTICATED",
+  403: "FORBIDDEN",
+  404: "NOT_FOUND",
+  409: "CONFLICT",
+};
+
 function response(error: unknown) {
   if (error instanceof SpaceError)
     return toErrorResponse(
-      new ApiError(
-        error.status === 409
-          ? "CONFLICT"
-          : error.status === 400
-            ? "VALIDATION_ERROR"
-            : error.status === 401
-              ? "UNAUTHENTICATED"
-              : error.status === 403
-                ? "FORBIDDEN"
-                : "NOT_FOUND",
-        error.message,
-      ),
+      new ApiError(SPECIFIC_CODES[error.code] ?? CODE_BY_STATUS[error.status], error.message),
     );
   return toErrorResponse(error);
 }
