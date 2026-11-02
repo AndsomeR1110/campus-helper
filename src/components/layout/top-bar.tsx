@@ -3,7 +3,7 @@
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { IconButton } from "@/components/ui";
+import { IconButton, OfflineBanner } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { hasInAppHistory } from "./navigation-history";
 
@@ -20,7 +20,10 @@ export interface TopBarProps {
   variant?: "default" | "large";
 }
 
-/** Page header (ui-ux-spec §4.11). Render it as the first child of every page. */
+/**
+ * Page header (ui-ux-spec §4.11). Render it as the first child of every page.
+ * Includes the offline banner (§4.15) underneath the bar.
+ */
 export function TopBar({ title, backHref, actions, variant = "default" }: TopBarProps) {
   const router = useRouter();
   const large = variant === "large";
@@ -52,6 +55,7 @@ export function TopBar({ title, backHref, actions, variant = "default" }: TopBar
         </h1>
         {actions && <div className="ml-auto flex items-center">{actions}</div>}
       </div>
+      <OfflineBanner />
     </header>
   );
 }

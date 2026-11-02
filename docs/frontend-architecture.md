@@ -268,18 +268,26 @@ createNotification({
 
 ## 8. PWA 与缓存边界（Member 1）
 
-| 资源                            | 缓存策略                        |
-| ------------------------------- | ------------------------------- |
-| 静态资源（JS、CSS、字体、图标） | 缓存优先                        |
-| `/offline` 页面                 | 安装 Service Worker 时预缓存    |
-| 页面导航请求                    | 网络优先，断网时返回 `/offline` |
-| `/api/*` 和所有个人数据         | **不缓存**（FR-PWA-04）         |
-| Lost & Found 上传图片           | 不缓存                          |
+| 文件                  | 作用                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `src/app/manifest.ts` | Web App Manifest（`/manifest.webmanifest`），`start_url: /home`，`display: standalone` |
+| `public/icons/`       | 192 / 512 / maskable 512 / Apple 180 图标                                              |
+| `public/sw.js`        | 原生 Service Worker，生产环境由 `src/components/pwa/service-worker-registrar.tsx` 注册 |
+| `public/offline.html` | 自包含离线页（内联样式、无脚本），断网时一定可以显示                                   |
+| `next.config.ts`      | `experimental.useOffline`、全局安全头、`/sw.js` 不缓存                                 |
 
-- 断网时不允许提交，界面行为见设计规范 4.15。
-- Web Push 的订阅与发送由 Member 4 在 PWA 基础完成后集成，Service Worker 文件由 Member 1 维护，推送事件处理部分由 Member 4 提交 PR。
+| 资源                                | 缓存策略                                                                   |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| `/_next/static/*`、`/icons/*`、字体 | 缓存优先（内容带哈希或版本，不含个人数据）                                 |
+| `/offline.html`                     | 安装 Service Worker 时预缓存                                               |
+| 页面导航请求                        | **只走网络**，失败时返回 `/offline.html`；页面不缓存，因为可能包含个人数据 |
+| `/api/*`、非 GET 请求、其他资源     | **不拦截**（FR-PWA-04）                                                    |
 
----
+- 软导航（点击链接）断网时，Next.js 的 `useOffline` 会保持加载状态并在恢复联网后自动重试；`TopBar` 中的 `OfflineBanner` 提示用户。整页刷新断网时显示 `/offline.html`。
+- 业务模块用 `fetch()` 调用的接口不会被自动重试：断网时请求失败，按 Error 处理，并用 `useOffline()` 提前禁用提交按钮（PWA-AC-04）。
+- 修改缓存规则时，同步修改 `public/sw.js` 中的 `VERSION`，旧缓存会在激活时被清理。
+- Web Push 的 `push` / `notificationclick` 处理由 Member 4 加到 `public/sw.js`，提交 PR 由 Member 1 审核。通知权限只能在用户点击后申请（FR-PWA-03）。
+- 测试离线行为必须用 `npm run build && npm start`；开发模式不注册 Service Worker。
 
 ## 9. 开发顺序与依赖
 

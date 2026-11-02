@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { ServiceWorkerRegistrar } from "@/components/pwa";
 import { Toaster } from "@/components/ui";
 import "./globals.css";
 
@@ -21,6 +22,15 @@ export const metadata: Metadata = {
   description:
     "Your campus, made simple. Office hours, study spaces, class reminders and lost & found in one place. An academic project — not an official university service.",
   applicationName: "CAMPUS HELPER",
+  // iOS ignores the manifest for home-screen launches; these cover PWA-AC-02 there.
+  appleWebApp: {
+    capable: true,
+    title: "Campus Helper",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -36,6 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         {children}
         <Toaster />
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );

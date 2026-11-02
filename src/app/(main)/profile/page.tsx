@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { PageContainer, TopBar } from "@/components/layout";
+import { InstallAppCard } from "@/components/pwa";
 import { DemoDataNotice, buttonStyles } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Profile" };
@@ -76,6 +77,8 @@ export default function ProfilePage() {
             Notifications
           </MenuLink>
         </MenuGroup>
+
+        <InstallAppCard />
 
         <DemoDataNotice variant="footer" className="mt-4" />
       </PageContainer>

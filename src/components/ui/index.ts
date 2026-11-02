@@ -21,6 +21,7 @@ export { FormField, useFormField, type FormFieldProps } from "./form-field";
 export { IconButton, type IconButtonProps } from "./icon-button";
 export { Input, type InputProps } from "./input";
 export { Modal, type ModalProps } from "./modal";
+export { OfflineBanner } from "./offline-banner";
 export { Select, type SelectProps } from "./select";
 export { Skeleton } from "./skeleton";
 export { Spinner } from "./spinner";
@@ -35,3 +36,9 @@ export { Textarea, type TextareaProps } from "./textarea";
 export { TimeSlotButton, type TimeSlotButtonProps } from "./time-slot-button";
 export { Toaster, toast } from "./toast";
 export { TypeIcon, TypeTag, typeColorClasses, type TagType } from "./type-tag";
+
+/**
+ * `true` while the app has no connection (PWA-AC-04). Disable submit buttons
+ * with it and say why, e.g. `disabled={offline}` plus "Unavailable offline".
+ */
+export { useOffline } from "next/offline";
