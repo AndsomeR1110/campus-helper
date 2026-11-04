@@ -11,6 +11,14 @@ export const MIN_WEEK = 1;
 /** XJTLU semesters run at most 20 teaching weeks. */
 export const MAX_WEEK = 20;
 
+/**
+ * Monday of teaching week 1, in Asia/Shanghai. CR-AC-01 needs a fixed anchor to
+ * turn "Monday 09:00" into a real date.
+ *
+ * TODO(Member 4): move to a term setting once an admin page owns it (PG-19).
+ */
+export const TERM_START_DATE = "2026-09-07";
+
 export const WEEKDAYS: readonly Weekday[] = [
   "MONDAY",
   "TUESDAY",
