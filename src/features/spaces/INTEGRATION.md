@@ -1,43 +1,54 @@
-# Member 3 — persistence integration
+# Member 3 — pages and booking API integration
 
-Member 3 implements Space/SpaceBooking models, migration, dual btree_gist
-exclusion constraints, Prisma repository, schemas, service and API handler factory.
-Member 2 reviews schema changes. Ownership is not delegated to Member 2.
+The database, rules and shared layout are now on main. Issue #26 connects the
+space list/detail routes and API without mixing in issue #27 (unified bookings).
 
-This branch is based on database foundation #5, which is not yet on main.
-Core rules/fixtures match #15. Do not merge this branch into main before #5 and
-#15; after they merge retarget to main and resolve the expected overlapping core files.
-UI is submitted separately in #16. No screenshots or unified bookings in this PR.
+## Acceptance evidence
 
-`createPrismaSpaceRepository(prisma)` is the persistent adapter. Call `seedSpaces`
-from the seed composition when integrating fixtures. All new schema fields use
-UTC timestamptz; confirmed bookings exclude overlapping spaceId AND userId.
-Cancellation locks the owner-filtered row and updates status without deletion.
-PostgreSQL SQLSTATE 23P01 is translated to a business 409 after transaction rollback.
+| Criterion | Verification                                                                                                                                     |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| SP-AC-01  | Real list URL with East/floor 2/Quiet returns exactly 3 seats; filter links survive navigation                                                   |
+| SP-AC-02  | Browser booking persists after reload and changes the list's live availability                                                                   |
+| SP-AC-03  | Browser submits a valid booking and sees Confirmed only after HTTP 201                                                                           |
+| SP-AC-04  | Existing 3 real-PostgreSQL tests pass; real API race returns one 201 and one 409                                                                 |
+| SP-AC-05  | Past/invalid query feedback, server invalid interval 400 and strict identity injection rejection                                                 |
+| SP-AC-06  | Confirmation dialog cancels in the database, retains history and restores availability                                                           |
+| SP-AC-07  | Both real routes show demo data and shared demo-account notices                                                                                  |
+| SP-AC-08  | Current seat's records and GET API persist correctly; unified `/bookings` is issue #27; Schedule UI remains M4's task, not claimed complete here |
 
-`createSpaceHandlers(service)` uses src/lib/api.ts and strict zod input schemas.
-It is not a public endpoint yet. The real auth-and-roles server resolver is not
-present in #5 or main: route composition must inject that resolver before these
-handlers are exported as app API routes. No fake authentication is introduced.
-Office Hour / Schedule aggregation is a separate task after their server APIs land.
+## Verification performed
 
-## Real database test
+- `npm run check`: 188 tests passed; 3 PostgreSQL tests skipped without the opt-in URL.
+- `npm run build`: passed on the latest main base.
+- Separate isolated PostgreSQL 18 run: all six migrations and shared/user/seat
+  seeds applied; 3/3 existing database tests passed using independent connections.
+- Headless browser against the real production server: filters, list-to-detail,
+  booking, reload persistence, cancellation, 201/409 race, 400/403 validation,
+  foreign-record cancellation/list filtering, inactive demo actor 401,
+  personal no-store responses, past input retention and unknown-seat not-found.
+- List/detail measured and captured at 375/768/1280px; no horizontal overflow.
+  Screenshots are outside the source tree, for PR attachments.
+- Tests use only a disposable local database; the app/database processes stop
+  after verification. No project dependencies, shared UI, auth or schema changed.
 
-Use a disposable PostgreSQL database with btree_gist extension permission:
+## Reproduce database tests
 
-1. npm ci && npm run db:generate
-2. DATABASE_URL=<disposable-url> npx prisma migrate deploy
-3. TEST_DATABASE_URL=<same-disposable-url> npm test -- src/features/spaces/server/repository.postgres.test.ts
+Use an isolated PostgreSQL database with btree_gist extension permission:
 
-Tests opt in only via TEST_DATABASE_URL, create unique fictional fixtures, use two
-independent Prisma clients, and clean only those fixtures. They prove actual seat
-and student exclusions, persistence, cancellation/rebooking and adjacent intervals.
-Normal npm run check skips these three tests unless the test URL is provided.
+1. `npm ci && npm run db:generate`
+2. `DATABASE_URL=<disposable-url> npx prisma migrate deploy`
+3. `TEST_DATABASE_URL=<same-url> npm test -- src/features/spaces/server/repository.postgres.test.ts`
 
-## Local verification
+The tests opt in only via TEST_DATABASE_URL, create uniquely named fictional
+fixtures and clean only their fixtures. Normal check skips them without this URL.
 
-- npm run check: 48 passed, 3 real-database tests skipped without TEST_DATABASE_URL.
-- npm run build: passed.
-- Disposable PostgreSQL 18 with all five migrations applied: 3/3 database tests
-  passed using two independent Prisma clients. No external database was used.
-- Prisma format/generate passed; no dependency additions to this branch.
+## Remaining integration
+
+- Replace the explicitly permitted demo actor in server/runtime.ts with
+  `@/lib/auth` once auth-and-roles lands. Until then all visitors share Mia's demo
+  bookings; the account is never selected by the browser and no privacy claim is made.
+- Issue #27 consumes Office Hour through its public server API and unifies
+  bookings. Member 4 consumes seat schedule DTOs for Schedule. Neither module is
+  changed by this route-focused PR.
+- The `/spaces/[id]` focused pattern and navigation tests already exist; no
+  duplicate or unrelated change to Member 1's nav-config is needed.

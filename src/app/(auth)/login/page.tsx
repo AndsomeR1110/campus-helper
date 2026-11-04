@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { DemoDataNotice } from "@/components/ui";
 import { safeRedirectPath } from "@/lib/auth/redirect";
 
 import { LoginForm } from "./login-form";
@@ -42,6 +43,8 @@ export default async function LoginPage({
           Password: <code className="font-mono">Password123!</code>
         </dd>
       </dl>
+
+      <DemoDataNotice variant="footer" />
     </main>
   );
 }

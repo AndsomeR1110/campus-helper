@@ -24,9 +24,7 @@ function response(error: unknown) {
     );
   return toErrorResponse(error);
 }
-/** Bind ONLY to a service constructed with the real server-session resolver.
- * No app route is exposed until auth-and-roles supplies that resolver.
- */
+/** Bind to the server identity resolver. Issue #26 allows a temporary demo actor. */
 export function createSpaceHandlers(service: ReturnType<typeof createSpaceService>) {
   return {
     async POST(request: Request) {
