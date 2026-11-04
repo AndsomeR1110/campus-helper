@@ -101,7 +101,9 @@ async function HeaderActions() {
 function PushSection() {
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-caption tracking-wide text-text-muted uppercase">Browser notifications</h2>
+      <h2 className="text-caption tracking-wide text-text-muted uppercase">
+        Browser notifications
+      </h2>
       <EnablePushButton />
     </section>
   );
@@ -128,4 +130,3 @@ export default function NotificationsPage() {
     </>
   );
 }
-

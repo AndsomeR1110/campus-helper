@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { BellRing } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button, toast } from "@/components/ui";
 
 /** Chrome/Edge expose the Push API only in a service-worker scope. */
@@ -35,25 +35,13 @@ function urlBase64ToUint8Array(base64url: string) {
  * says so instead of nagging.
  */
 export function EnablePushButton() {
+  // Derived once on the client: no setState inside an effect (react-hooks rule).
   const [state, setState] = useState<"idle" | "unsupported" | "denied" | "enabled" | "pending">(
-    "idle",
+    () => {
+      if (!isSupported()) return "unsupported";
+      return Notification.permission === "denied" ? "denied" : "idle";
+    },
   );
-
-  useEffect(() => {
-    if (!isSupported()) {
-      setState("unsupported");
-      return;
-    }
-
-    if (Notification.permission === "denied") {
-      setState("denied");
-    } else if (Notification.permission === "granted") {
-      navigator.serviceWorker.ready
-        .then((registration) => registration.pushManager.getSubscription())
-        .then((subscription) => setState(subscription ? "enabled" : "idle"))
-        .catch(() => setState("idle"));
-    }
-  }, []);
 
   async function handleEnable() {
     setState("pending");
@@ -118,15 +106,9 @@ export function EnablePushButton() {
   }
 
   return (
-    <Button
-      variant="secondary"
-      size="sm"
-      onClick={handleEnable}
-      loading={state === "pending"}
-    >
+    <Button variant="secondary" size="sm" onClick={handleEnable} loading={state === "pending"}>
       <BellRing className="size-4" aria-hidden />
       Enable notifications
     </Button>
   );
 }
-

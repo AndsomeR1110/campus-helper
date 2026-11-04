@@ -1,8 +1,11 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import { ApiError, created, ok, readJson, toErrorResponse } from "@/lib/api";
 import { getCurrentUser } from "@/features/courses/server";
-import { deleteSubscription, saveSubscription } from "@/features/notifications/server";
-import { readVapidKeys } from "@/features/notifications/push";
+import {
+  deleteSubscription,
+  readVapidKeys,
+  saveSubscription,
+} from "@/features/notifications/server";
 
 const subscribeSchema = z
   .object({
@@ -14,7 +17,7 @@ const subscribeSchema = z
 
 const unsubscribeSchema = z.object({ endpoint: z.string().url() }).strict();
 
-/** POST /api/push/subscribe — register this browser for push (task #30). */
+/** POST /api/push/subscribe 鈥?register this browser for push (task #30). */
 export async function POST(request: Request) {
   try {
     const user = await getCurrentUser();
@@ -27,7 +30,7 @@ export async function POST(request: Request) {
   }
 }
 
-/** DELETE /api/push/subscribe — stop pushing to this browser. */
+/** DELETE /api/push/subscribe 鈥?stop pushing to this browser. */
 export async function DELETE(request: Request) {
   try {
     const user = await getCurrentUser();
@@ -40,7 +43,7 @@ export async function DELETE(request: Request) {
   }
 }
 
-/** GET /api/push/subscribe — the VAPID public key the browser needs. */
+/** GET /api/push/subscribe 鈥?the VAPID public key the browser needs. */
 export async function GET() {
   try {
     const keys = readVapidKeys();

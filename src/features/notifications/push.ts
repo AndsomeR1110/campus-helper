@@ -93,7 +93,11 @@ export interface PushResult {
 }
 
 /** Sends one payload-less push. 404/410 mean the subscription is gone. */
-export async function sendPush(target: PushTarget, keys: VapidKeys, now: Date): Promise<PushResult> {
+export async function sendPush(
+  target: PushTarget,
+  keys: VapidKeys,
+  now: Date,
+): Promise<PushResult> {
   const jwt = buildVapidJwt(target.endpoint, keys, now);
 
   const response = await fetch(target.endpoint, {
@@ -112,4 +116,3 @@ export async function sendPush(target: PushTarget, keys: VapidKeys, now: Date): 
 export function isExpiredSubscription(result: PushResult): boolean {
   return result.status === 404 || result.status === 410 || result.status === 403;
 }
-

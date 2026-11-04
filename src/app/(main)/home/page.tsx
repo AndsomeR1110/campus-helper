@@ -56,7 +56,10 @@ async function NextClass() {
           title="No upcoming classes"
           description="Add your timetable to see your next class here."
           action={
-            <Link href="/courses/new" className={buttonStyles({ variant: "secondary", size: "sm" })}>
+            <Link
+              href="/courses/new"
+              className={buttonStyles({ variant: "secondary", size: "sm" })}
+            >
               Add a course
             </Link>
           }
