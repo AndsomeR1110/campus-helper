@@ -186,15 +186,6 @@ code {
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
 }
-.logo rect {
-  fill: #1f5c4a;
-}
-.logo path {
-  fill: none;
-  stroke: #fff;
-  stroke-width: 6;
-  stroke-linecap: round;
-}
 h1 {
   margin: 0;
   font-size: 18px;
