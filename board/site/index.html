@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#4f46e5" />
+    <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <title>CAMPUS HELPER · 项目看板</title>
     <link
       rel="icon"
@@ -15,13 +17,29 @@
   <body>
     <header class="topbar">
       <div class="wrap topbar-inner">
-        <div>
-          <h1>CAMPUS HELPER 项目看板</h1>
-          <p class="muted" id="updated">正在读取 GitHub…</p>
+        <div class="brand">
+          <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="16" />
+            <path d="M41.5 23.5a12 12 0 1 0 0 17" />
+          </svg>
+          <div>
+            <h1>CAMPUS HELPER <span class="h1-sub">项目看板</span></h1>
+            <p class="muted" id="updated">正在读取 GitHub…</p>
+          </div>
         </div>
         <div class="actions">
-          <button type="button" class="btn secondary" id="refresh">刷新</button>
-          <a class="btn primary" id="new-task" target="_blank" rel="noopener">布置新任务</a>
+          <button type="button" class="btn secondary" id="refresh">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" />
+            </svg>
+            <span>刷新</span>
+          </button>
+          <a class="btn primary" id="new-task" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>布置新任务</span>
+          </a>
         </div>
       </div>
     </header>
@@ -31,12 +49,34 @@
 
       <section aria-labelledby="overview-title" class="section">
         <h2 id="overview-title" class="section-title">总体进度</h2>
+        <div class="overview">
+          <div class="panel progress-panel" id="progress">
+            <div class="skeleton skeleton-ring"></div>
+          </div>
+          <div class="panel contrib-panel">
+            <div class="panel-head">
+              <h3 class="panel-title">每个人推进了多少</h3>
+              <p class="muted">每一段是一位同学完成的任务，所有段加起来就是项目的总进度。</p>
+            </div>
+            <div id="contrib"><div class="skeleton skeleton-bar"></div></div>
+          </div>
+        </div>
         <div class="stats" id="stats"></div>
       </section>
 
-      <section aria-labelledby="members-title" class="section">
-        <h2 id="members-title" class="section-title">成员</h2>
-        <div class="members" id="members"></div>
+      <section aria-labelledby="map-title" class="section">
+        <div class="section-head">
+          <h2 id="map-title" class="section-title">项目关系图</h2>
+          <p class="muted section-hint">
+            箭头 = 谁的成果被谁用到。点一位同学，看 TA 的任务会影响哪些模块。
+          </p>
+        </div>
+        <div class="panel map-panel">
+          <div class="impact" id="impact" aria-live="polite"></div>
+          <div class="map" id="map">
+            <svg class="map-edges" id="map-edges" aria-hidden="true"></svg>
+          </div>
+        </div>
       </section>
 
       <section aria-labelledby="board-title" class="section">
@@ -62,7 +102,8 @@
         数据实时来自 GitHub：带 <code>task</code> 标签的 Issue 是任务。负责人看
         <code>owner:M1</code>–<code>owner:M5</code> 标签；状态：Issue 关闭 = 已完成，有开着的 PR
         写了 <code>Closes #编号</code> = 审查中，<code>status:in-progress</code> = 进行中，
-        <code>status:blocked</code> = 阻塞。
+        <code>status:blocked</code> = 阻塞。关系图按
+        <code>docs/team-assignment.md</code> 的模块分工绘制。
       </footer>
     </main>
   </body>

@@ -12,6 +12,43 @@ export const MEMBERS = [
   { id: "M5", name: "Member 5", login: "HyZ7777", role: "失物招领与管理后台" },
 ];
 
+/**
+ * What each module hands to the others (docs/team-assignment.md,
+ * docs/frontend-architecture.md §9). Deliberately coarse: it shows how one
+ * member's work reaches the rest of the project, not every import.
+ */
+export const DEPENDENCIES = [
+  { from: "M1", to: "M2", label: "设计系统与页面框架" },
+  { from: "M1", to: "M3", label: "设计系统与页面框架" },
+  { from: "M1", to: "M4", label: "设计系统、首页与 PWA" },
+  { from: "M1", to: "M5", label: "设计系统与页面框架" },
+  { from: "M2", to: "M3", label: "登录、数据库与 Office Hour 预约" },
+  { from: "M2", to: "M4", label: "登录与 Office Hour 日程" },
+  { from: "M2", to: "M5", label: "登录与管理员权限" },
+  { from: "M3", to: "M4", label: "座位预约日程" },
+];
+
+/** Modules that build on `id`, directly or through another module, in member order. */
+export function downstreamOf(id, deps = DEPENDENCIES) {
+  const found = new Set();
+  const queue = [id];
+  while (queue.length) {
+    const current = queue.shift();
+    for (const dep of deps) {
+      if (dep.from === current && dep.to !== id && !found.has(dep.to)) {
+        found.add(dep.to);
+        queue.push(dep.to);
+      }
+    }
+  }
+  return MEMBERS.map((m) => m.id).filter((m) => found.has(m));
+}
+
+/** Modules `id` builds on directly. */
+export function upstreamOf(id, deps = DEPENDENCIES) {
+  return deps.filter((d) => d.to === id).map((d) => d.from);
+}
+
 export const COLUMNS = [
   { id: "todo", title: "待开始" },
   { id: "doing", title: "进行中" },
@@ -123,17 +160,48 @@ export function buildBoard(issues, openPulls) {
   });
 
   const p0 = tasks.filter((t) => t.priority === "P0");
+  const byColumn = Object.fromEntries(
+    COLUMNS.map((c) => [c.id, tasks.filter((t) => t.column === c.id).length]),
+  );
   return {
     tasks,
     members,
     summary: {
       total: tasks.length,
       done: tasks.filter((t) => t.column === "done").length,
+      byColumn,
       p0Total: p0.length,
       p0Done: p0.filter((t) => t.column === "done").length,
       blocked: tasks.filter((t) => t.blocked && t.column !== "done").length,
       openPulls: openPulls.length,
     },
+  };
+}
+
+/**
+ * How one member's work shows up in the whole project:
+ * - `points`: percentage points of overall progress their finished tasks add
+ *   (all members' points sum to the overall completion percentage);
+ * - `supports` / `waiting`: modules that build on theirs and those modules'
+ *   unfinished tasks.
+ */
+export function impactOf(board, id) {
+  const member = board.members.find((m) => m.id === id);
+  if (!member) return null;
+  const supports = downstreamOf(id);
+  const open = board.tasks.filter((t) => t.owner === id && t.column !== "done");
+  return {
+    member,
+    points: board.summary.total === 0 ? 0 : (member.done / board.summary.total) * 100,
+    shareOfDone: board.summary.done === 0 ? 0 : (member.done / board.summary.done) * 100,
+    supports: supports.map((to) => ({
+      id: to,
+      label: DEPENDENCIES.find((d) => d.from === id && d.to === to)?.label ?? null,
+    })),
+    uses: upstreamOf(id),
+    waiting: board.tasks.filter((t) => supports.includes(t.owner) && t.column !== "done").length,
+    open: open.length,
+    openP0: open.filter((t) => t.priority === "P0").length,
   };
 }
 

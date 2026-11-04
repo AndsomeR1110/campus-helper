@@ -4,10 +4,13 @@ import {
   cleanTitle,
   closedIssueNumbers,
   columnOf,
+  downstreamOf,
   formField,
+  impactOf,
   linkPullRequests,
   ownerOf,
   timeAgo,
+  upstreamOf,
 } from "./site/lib.js";
 
 const issue = (overrides = {}) => ({
@@ -89,7 +92,57 @@ describe("buildBoard", () => {
     );
     expect(board.tasks).toHaveLength(3);
     expect(board.summary).toMatchObject({ total: 3, done: 1, p0Total: 2, p0Done: 1, blocked: 1 });
+    expect(board.summary.byColumn).toEqual({ todo: 2, doing: 0, review: 0, done: 1 });
     expect(board.members.find((m) => m.id === "M2")).toMatchObject({ total: 2, done: 1 });
+  });
+});
+
+describe("module relationships", () => {
+  it("follows dependencies through other modules", () => {
+    expect(downstreamOf("M1")).toEqual(["M2", "M3", "M4", "M5"]);
+    expect(downstreamOf("M2")).toEqual(["M3", "M4", "M5"]);
+    expect(downstreamOf("M3")).toEqual(["M4"]);
+    expect(downstreamOf("M5")).toEqual([]);
+  });
+  it("lists direct upstream modules", () => {
+    expect(upstreamOf("M4")).toEqual(["M1", "M2", "M3"]);
+  });
+  it("does not loop on cycles", () => {
+    const deps = [
+      { from: "M1", to: "M2" },
+      { from: "M2", to: "M1" },
+    ];
+    expect(downstreamOf("M1", deps)).toEqual(["M2"]);
+  });
+});
+
+describe("impactOf", () => {
+  const board = buildBoard(
+    [
+      issue({ number: 1, state: "closed", labels: [{ name: "owner:M2" }] }),
+      issue({ number: 2, labels: [{ name: "owner:M2" }, { name: "P0" }] }),
+      issue({ number: 3, labels: [{ name: "owner:M3" }] }),
+      issue({ number: 4, state: "closed", labels: [{ name: "owner:M3" }] }),
+    ],
+    [],
+  );
+  it("counts progress points and the tasks that build on a member's module", () => {
+    expect(impactOf(board, "M2")).toMatchObject({
+      points: 25,
+      shareOfDone: 50,
+      waiting: 1,
+      open: 1,
+      openP0: 1,
+      uses: ["M1"],
+    });
+    expect(impactOf(board, "M2").supports.map((s) => s.id)).toEqual(["M3", "M4", "M5"]);
+  });
+  it("adds up to the overall progress", () => {
+    const sum = board.members.reduce((acc, m) => acc + impactOf(board, m.id).points, 0);
+    expect(sum).toBe((board.summary.done / board.summary.total) * 100);
+  });
+  it("returns null for unknown members", () => {
+    expect(impactOf(board, "M9")).toBeNull();
   });
 });
 
