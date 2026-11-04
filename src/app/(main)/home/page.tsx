@@ -5,28 +5,26 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { PageContainer, SERVICES } from "@/components/layout";
 import { Card, EmptyState, ListItem, OfflineBanner, Skeleton, buttonStyles } from "@/components/ui";
-import { getCurrentUser } from "@/features/courses/server";
 import { listForUser } from "@/features/notifications/server";
 import { loadNextClass } from "@/features/schedule/server";
+import { getCurrentUser } from "@/lib/auth";
 import { formatDate, formatGreeting, formatRelativeTime, formatTimeRange } from "@/lib/time";
 import { HomeSection } from "../_components/home-section";
 import { ServiceTile } from "../_components/service-tile";
 
 export const metadata: Metadata = { title: "Home" };
 
-// Reads the session and the database on every request (task #29).
-export const instant = false;
-
-/** Depends on the current time, so it renders per request inside <Suspense>. */
+/** Depends on the current time and the session, so it renders per request inside <Suspense>. */
 async function Greeting() {
   await connection();
   const now = new Date();
   const user = await getCurrentUser();
-
+  const firstName = user?.name.trim().split(/\s+/)[0];
   return (
     <div className="flex flex-col gap-1">
       <h1 className="text-display">
-        {formatGreeting(now)}, {user.name.split(" ")[0]}
+        {formatGreeting(now)}
+        {firstName ? `, ${firstName}` : ""}
       </h1>
       <p className="text-text-muted">{formatDate(now)}</p>
     </div>
@@ -46,6 +44,7 @@ function GreetingSkeleton() {
 async function NextClass() {
   await connection();
   const user = await getCurrentUser();
+  if (!user) return null;
   const next = await loadNextClass(user.id, new Date());
 
   if (!next) {
@@ -90,6 +89,7 @@ async function NextClass() {
 async function RecentNotifications() {
   await connection();
   const user = await getCurrentUser();
+  if (!user) return null;
   const { items, unread } = await listForUser(user.id);
   const recent = items.slice(0, 3);
 
@@ -128,6 +128,7 @@ async function RecentNotifications() {
 async function UnreadBadge() {
   await connection();
   const user = await getCurrentUser();
+  if (!user) return null;
   const { unread } = await listForUser(user.id);
 
   if (unread === 0) {
