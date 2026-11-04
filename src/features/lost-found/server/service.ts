@@ -20,7 +20,9 @@ import type {
   PostListItem,
   Viewer,
 } from "../types";
+import { validateImageUpload } from "../image";
 import type { LostFoundRepository } from "./repository";
+import type { ImageStorage } from "./storage";
 
 export interface LostFoundServiceDeps {
   repository: LostFoundRepository;
@@ -28,6 +30,8 @@ export interface LostFoundServiceDeps {
   currentViewer: () => Promise<Viewer | null>;
   now: () => Date;
   nextId: () => string;
+  /** Omitted by the storage-agnostic rule tests; `attachImage` needs it. */
+  storage?: ImageStorage;
 }
 
 /**
@@ -43,6 +47,7 @@ export function createLostFoundService({
   currentViewer,
   now,
   nextId,
+  storage,
 }: LostFoundServiceDeps) {
   function isListed(post: LostFoundPost): boolean {
     // Hidden posts disappear from browse and from "My posts". The author keeps
@@ -211,6 +216,40 @@ export function createLostFoundService({
         throw new LostFoundError("FORBIDDEN", "Only the author can change this post.");
       }
       return repository.updatePost(postId, { status: next, updatedAt: now().toISOString() });
+    },
+
+    /**
+     * Optional photo (LF-AC-02, LF-AC-03). The bytes are sniffed, stored outside
+     * `public/` and only their URL is kept in the post row; replacing a photo
+     * removes the previous file so the demo folder does not grow forever.
+     */
+    async attachImage(
+      postId: string,
+      upload: { name: string; declaredType: string; bytes: Uint8Array },
+    ): Promise<LostFoundPost> {
+      const viewer = requireViewer(await currentViewer());
+      const post = await repository.getPost(postId);
+      if (!post || !canViewPost(post, viewer)) {
+        throw new LostFoundError("NOT_FOUND", "This post is not available.");
+      }
+      if (post.authorId !== viewer.id) {
+        throw new LostFoundError("FORBIDDEN", "Only the author can add a photo.");
+      }
+      if (!storage) throw new Error("No image storage configured.");
+
+      const type = validateImageUpload({
+        declaredType: upload.declaredType,
+        size: upload.bytes.byteLength,
+        bytes: upload.bytes,
+      });
+      const key = nextId();
+      const url = await storage.put(key, upload.bytes, type);
+      const image = { name: upload.name.slice(0, 120), type, size: upload.bytes.byteLength, url };
+
+      const previous = post.image?.url?.split("/").pop();
+      if (previous) await storage.remove(previous);
+
+      return repository.updatePost(postId, { image, updatedAt: now().toISOString() });
     },
   };
 }

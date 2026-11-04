@@ -1,3 +1,9 @@
+export { ClaimPanel } from "./components/claim-panel";
+export { PostCard } from "./components/post-card";
+export { PostFilterBar } from "./components/post-filter-bar";
+export { PostForm } from "./components/post-form";
+export { PostOwnerActions } from "./components/post-owner-actions";
+
 export type {
   ClaimStatus,
   ImageMeta,
