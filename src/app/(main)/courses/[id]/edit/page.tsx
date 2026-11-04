@@ -10,7 +10,7 @@ import { getCourse, getCurrentUser } from "@/features/courses/server";
 
 export const metadata: Metadata = { title: "Edit course" };
 
-// Reads the session, params and database, so it must render per request.
+/** Reads the session, the params and the database per request. */
 export const instant = false;
 
 async function CourseEditor({ id }: { id: string }) {
