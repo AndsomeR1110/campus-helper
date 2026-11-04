@@ -3,6 +3,7 @@ import "server-only";
 import { TERM_START_DATE, getOccurrencesInWeek, type Course } from "@/features/courses";
 import { currentTeachingWeek } from "@/features/schedule/server";
 import { buildReminderNotification, isReminderDue } from "../reminder";
+import { dispatchPush } from "./push";
 import type { Notification } from "../types";
 import {
   countUnread,
@@ -105,6 +106,13 @@ export async function runReminderScan(now: Date): Promise<ReminderScanResult> {
   }
 
   const created = await insertReminders(candidates);
+
+  // Wake the devices of everyone who just got a reminder (task #30). The push
+  // carries no body; the service worker fetches /api/notifications itself.
+  await dispatchPush(
+    candidates.map((candidate) => candidate.userId),
+    now,
+  );
 
   return { scanned: candidates.length, created };
 }
