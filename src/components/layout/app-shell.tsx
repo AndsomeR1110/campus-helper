@@ -9,7 +9,10 @@ export interface AppShellProps {
   children: ReactNode;
   /** Unread notification count for the Home tab badge (wired up by Member 4). */
   unreadCount?: number;
-  /** Extra links for teachers / admins, shown at the bottom of the desktop SideNav. */
+  /**
+   * Teacher / admin links at the bottom of the desktop SideNav, usually
+   * `<SideNavRoleTools role=… />`. Render nothing for students.
+   */
   roleLinks?: ReactNode;
 }
 
@@ -42,12 +45,7 @@ export function AppShell({ children, unreadCount, roleLinks }: AppShellProps) {
             <SideNavItems unreadCount={unreadCount} />
           </Suspense>
         </nav>
-        {roleLinks && (
-          <div className="mt-auto border-t border-border pt-4">
-            <p className="px-3 pb-2 text-caption text-text-muted uppercase">Role tools</p>
-            {roleLinks}
-          </div>
-        )}
+        <div className="mt-auto">{roleLinks}</div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-side-nav">

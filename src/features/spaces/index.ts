@@ -10,3 +10,5 @@ export type {
 export { DEMO_SPACES } from "./demo-data";
 export { parseSpaceFilters } from "./filters";
 export { SpacePicker, SpaceSelectionView } from "./components/space-picker";
+export { SpaceList } from "./components/space-list";
+export { SpaceDetail } from "./components/space-detail";

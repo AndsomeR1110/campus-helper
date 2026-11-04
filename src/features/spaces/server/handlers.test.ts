@@ -3,7 +3,13 @@ import { createSpaceHandlers } from "./handlers";
 import { SpaceError } from "./rules";
 import type { createSpaceService } from "./service";
 function fixture() {
-  const service = { book: vi.fn(), cancel: vi.fn(), listMine: vi.fn(), search: vi.fn() };
+  const service = {
+    book: vi.fn(),
+    cancel: vi.fn(),
+    listMine: vi.fn(),
+    search: vi.fn(),
+    catalog: vi.fn(),
+  };
   return {
     service,
     handlers: createSpaceHandlers(service as ReturnType<typeof createSpaceService>),
