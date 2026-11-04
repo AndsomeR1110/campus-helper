@@ -38,6 +38,10 @@ Each member implements the frontend, API, database logic and tests for their own
 7. Shared UI components and the global layout are maintained by Member 1.
 8. A feature is done only when it passes the corresponding PRD acceptance criteria.
 
+## Project board
+
+Tasks and PR status: **<https://andsomer1110.github.io/campus-helper/>** (add `#M3` etc. to filter by member). New tasks are GitHub issues created with the **任务** template — see [board/README.md](board/README.md).
+
 ## Documentation
 
 | Document                                                       | Contents                                                                                         |
