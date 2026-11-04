@@ -11,3 +11,5 @@ export * from "./constants";
 export * from "./rules";
 export * from "./occurrences";
 export * from "./ics";
+
+export { CourseForm, type CourseFormProps } from "./components/course-form";

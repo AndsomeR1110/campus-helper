@@ -1,4 +1,12 @@
-import { CalendarDays, House, LayoutGrid, UserRound, type LucideIcon } from "lucide-react";
+import {
+  CalendarDays,
+  House,
+  LayoutGrid,
+  ShieldCheck,
+  UserRound,
+  UserRoundCog,
+  type LucideIcon,
+} from "lucide-react";
 import type { TagType } from "@/components/ui";
 
 export type TabId = "home" | "services" | "schedule" | "profile";
@@ -97,3 +105,33 @@ export const SERVICES: readonly ServiceEntry[] = [
     type: "lost",
   },
 ];
+
+export type UserRole = "STUDENT" | "TEACHER" | "ADMIN";
+
+export interface RoleTool {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+}
+
+/**
+ * Role-only entry points (PRD §4.1: teacher and admin tools stay out of the
+ * student tab bar). Hiding a link is not authorization — those pages and their
+ * APIs must still check the role on the server (AUTH-AC-04).
+ */
+export function roleToolsFor(role: UserRole | null | undefined): RoleTool[] {
+  const tools: RoleTool[] = [];
+  if (role === "TEACHER" || role === "ADMIN") {
+    tools.push({ label: "Teacher dashboard", href: "/teacher/office-hours", icon: UserRoundCog });
+  }
+  if (role === "ADMIN") {
+    tools.push({ label: "Admin dashboard", href: "/admin", icon: ShieldCheck });
+  }
+  return tools;
+}
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  STUDENT: "Student",
+  TEACHER: "Teacher",
+  ADMIN: "Administrator",
+};
