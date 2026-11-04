@@ -1,7 +1,24 @@
-import { AppShell } from "@/components/layout";
+import { Suspense } from "react";
+import { AppShell, SideNavRoleTools } from "@/components/layout";
+import { getCurrentUser } from "@/lib/auth";
 
-// TODO(Member 2 / Member 4): pass the signed-in user's role links and unread
-// notification count once auth and notifications are available.
+/** Reads the session, so it streams in at request time without blocking the shell. */
+async function RoleTools() {
+  const user = await getCurrentUser();
+  return <SideNavRoleTools role={user?.role} />;
+}
+
+// TODO(Member 4): pass the unread notification count (#29).
 export default function MainLayout({ children }: LayoutProps<"/">) {
-  return <AppShell>{children}</AppShell>;
+  return (
+    <AppShell
+      roleLinks={
+        <Suspense fallback={null}>
+          <RoleTools />
+        </Suspense>
+      }
+    >
+      {children}
+    </AppShell>
+  );
 }
