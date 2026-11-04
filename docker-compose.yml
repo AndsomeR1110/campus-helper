@@ -1,0 +1,34 @@
+# Local development database only — not a production setup.
+#
+#   npm run db:up      start PostgreSQL in the background (waits until it is ready)
+#   npm run db:down    stop it (data is kept in the `campus-helper-pg` volume)
+#
+# The credentials match DATABASE_URL in .env.example. They are for a database
+# on your own machine only; never reuse them anywhere else.
+# The official image includes the btree_gist extension needed by the
+# study-space booking migration.
+#
+# Port 5432 already taken (e.g. by a locally installed PostgreSQL)? Run
+# `POSTGRES_PORT=5433 npm run db:up` and change the port in DATABASE_URL.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: campus
+      POSTGRES_PASSWORD: campus
+      POSTGRES_DB: campus_helper
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - campus-helper-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campus -d campus_helper"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  campus-helper-pg:
