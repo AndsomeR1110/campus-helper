@@ -31,13 +31,13 @@ closed by default rather than open by accident.
 
 The service keeps the distinction the API needs:
 
-| Caller | Response |
-| --- | --- |
-| no session | `401 UNAUTHENTICATED` |
-| signed in, not an admin | `403 FORBIDDEN` |
-| `ADMIN` | the queue |
+| Caller                  | Response              |
+| ----------------------- | --------------------- |
+| no session              | `401 UNAUTHENTICATED` |
+| signed in, not an admin | `403 FORBIDDEN`       |
+| `ADMIN`                 | the queue             |
 
-The moderation seam therefore takes the *actor*, not a pre-filtered admin: the role
+The moderation seam therefore takes the _actor_, not a pre-filtered admin: the role
 check happens in `rules.requireModerator`, which is where `requireRole("ADMIN")` will
 plug in.
 

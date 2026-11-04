@@ -27,11 +27,11 @@ or a filesystem.
 
 ## Environment
 
-| Variable | Effect |
-| --- | --- |
-| `DATABASE_URL` | Unset → the demo runs on an in-memory repository seeded from `demo-data.ts`. Set → `createPrismaLostFoundRepository(prisma)`. |
-| `LOST_FOUND_DEMO` | `0` makes `getCurrentViewer()` return `null`, i.e. behave like a signed-out visitor. |
-| `LOST_FOUND_UPLOAD_DIR` | Where uploaded photos are written. Defaults to `.data/lost-found` (git-ignored). |
+| Variable                | Effect                                                                                                                        |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`          | Unset → the demo runs on an in-memory repository seeded from `demo-data.ts`. Set → `createPrismaLostFoundRepository(prisma)`. |
+| `LOST_FOUND_DEMO`       | `0` makes `getCurrentViewer()` return `null`, i.e. behave like a signed-out visitor.                                          |
+| `LOST_FOUND_UPLOAD_DIR` | Where uploaded photos are written. Defaults to `.data/lost-found` (git-ignored).                                              |
 
 ## Images
 
@@ -56,16 +56,16 @@ The service checks the same rules first so callers get `CONFLICT` instead of a r
 
 ## Acceptance coverage
 
-| AC | Where |
-| --- | --- |
-| LF-AC-01 publish appears in the list | `__tests__/service.test.ts`, `__tests__/handlers.test.ts` |
-| LF-AC-02 missing required fields are rejected | `__tests__/schemas.test.ts`, `__tests__/handlers.test.ts` |
-| LF-AC-03 unsupported type / oversized file rejected | `__tests__/image.test.ts`, `__tests__/handlers.test.ts` |
-| LF-AC-04 filters match | `__tests__/filters.test.ts`, `__tests__/handlers.test.ts` |
-| LF-AC-05 non-author can claim an open post | `__tests__/service.test.ts` |
-| LF-AC-06 private claims stay private | `__tests__/service.test.ts`, `repository.postgres.test.ts` |
-| LF-AC-07 no new claims after the post is settled | `__tests__/rules.test.ts`, `__tests__/service.test.ts` |
-| LF-AC-08 non-author cannot edit or delete | `__tests__/rules.test.ts` |
+| AC                                                  | Where                                                      |
+| --------------------------------------------------- | ---------------------------------------------------------- |
+| LF-AC-01 publish appears in the list                | `__tests__/service.test.ts`, `__tests__/handlers.test.ts`  |
+| LF-AC-02 missing required fields are rejected       | `__tests__/schemas.test.ts`, `__tests__/handlers.test.ts`  |
+| LF-AC-03 unsupported type / oversized file rejected | `__tests__/image.test.ts`, `__tests__/handlers.test.ts`    |
+| LF-AC-04 filters match                              | `__tests__/filters.test.ts`, `__tests__/handlers.test.ts`  |
+| LF-AC-05 non-author can claim an open post          | `__tests__/service.test.ts`                                |
+| LF-AC-06 private claims stay private                | `__tests__/service.test.ts`, `repository.postgres.test.ts` |
+| LF-AC-07 no new claims after the post is settled    | `__tests__/rules.test.ts`, `__tests__/service.test.ts`     |
+| LF-AC-08 non-author cannot edit or delete           | `__tests__/rules.test.ts`                                  |
 
 ## Known limits
 

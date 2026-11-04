@@ -13,7 +13,7 @@ import {
   toast,
 } from "@/components/ui";
 
-import { CLAIM_MAX_LENGTH, CLAIM_MIN_LENGTH } from "../constants";
+import { CLAIM_MAX_LENGTH, CLAIM_MIN_LENGTH, formatDisplayName } from "../constants";
 import type { LostFoundClaim, LostFoundPost } from "../types";
 
 interface Props {
@@ -88,7 +88,7 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
             {claims.map((claim) => (
               <li key={claim.id} className="rounded-md border border-border bg-surface p-3">
                 <ListItem
-                  title={claim.claimantName}
+                  title={formatDisplayName(claim.claimantName)}
                   trailing={<StatusBadge kind="claim" status={claim.status} />}
                 />
                 <p className="mt-2 text-body-sm text-text-muted">{claim.message}</p>
