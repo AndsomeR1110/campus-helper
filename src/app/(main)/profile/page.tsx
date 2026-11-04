@@ -1,10 +1,12 @@
 import { Bell, ChevronRight, ClipboardList, LogIn, Megaphone, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { PageContainer, TopBar } from "@/components/layout";
+import { Suspense, type ReactNode } from "react";
+import { PageContainer, ROLE_LABELS, TopBar, roleToolsFor } from "@/components/layout";
 import { InstallAppCard } from "@/components/pwa";
-import { DemoDataNotice, buttonStyles } from "@/components/ui";
+import { DemoDataNotice, Skeleton, buttonStyles } from "@/components/ui";
+import { getCurrentUser } from "@/lib/auth";
+import { LogoutButton } from "./logout-button";
 
 export const metadata: Metadata = { title: "Profile" };
 
@@ -42,29 +44,101 @@ function MenuGroup({ label, children }: { label: string; children: ReactNode }) 
   );
 }
 
-// PG-18. Account details, role tools (teacher / admin) and Log out need auth
-// (Member 2, feat/auth-and-roles); until then the page shows the signed-out state.
+const cardClasses =
+  "flex items-center gap-4 rounded-md border border-border bg-surface p-4 shadow-card";
+
+function AccountSkeleton() {
+  return (
+    <div className={cardClasses} aria-hidden>
+      <Skeleton className="size-14 rounded-full" />
+      <div className="flex flex-1 flex-col gap-2">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-4 w-48" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Account card, role tools and log out. Reads the session, so it renders per
+ * request inside <Suspense>. The proxy already sends signed-out visitors to
+ * /login; the signed-out card covers an invalid session reaching the page.
+ */
+async function Account() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return (
+      <section className={cardClasses}>
+        <span
+          aria-hidden
+          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-title text-primary"
+        >
+          ?
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <p className="text-subtitle">You’re not signed in</p>
+          <p className="text-body-sm text-text-muted">Sign in to see your bookings and posts.</p>
+        </div>
+        <Link href="/login?next=/profile" className={buttonStyles({ size: "sm" })}>
+          <LogIn />
+          Log in
+        </Link>
+      </section>
+    );
+  }
+
+  const tools = roleToolsFor(user.role);
+  return (
+    <>
+      <section className={cardClasses} aria-label="Your account">
+        <span
+          aria-hidden
+          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-title text-primary"
+        >
+          {user.name.trim().charAt(0).toUpperCase() || "?"}
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <p className="truncate text-subtitle">{user.name}</p>
+          <p className="truncate text-body-sm text-text-muted">{user.email}</p>
+        </div>
+        <span className="inline-flex h-6 shrink-0 items-center rounded-full bg-primary-subtle px-2.5 text-caption text-primary">
+          {ROLE_LABELS[user.role]}
+        </span>
+      </section>
+
+      {tools.length > 0 && (
+        <MenuGroup label="Role tools">
+          {tools.map((tool) => (
+            <MenuLink key={tool.href} href={tool.href} icon={tool.icon}>
+              {tool.label}
+            </MenuLink>
+          ))}
+        </MenuGroup>
+      )}
+    </>
+  );
+}
+
+async function AccountActions() {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      <LogoutButton />
+    </div>
+  );
+}
+
+// PG-18
 export default function ProfilePage() {
   return (
     <>
       <TopBar title="Profile" variant="large" />
       <PageContainer width="content">
-        <section className="flex items-center gap-4 rounded-md border border-border bg-surface p-4 shadow-card">
-          <span
-            aria-hidden
-            className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-title text-primary"
-          >
-            ?
-          </span>
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <p className="text-subtitle">You’re not signed in</p>
-            <p className="text-body-sm text-text-muted">Sign in to see your bookings and posts.</p>
-          </div>
-          <Link href="/login" className={buttonStyles({ size: "sm" })}>
-            <LogIn />
-            Log in
-          </Link>
-        </section>
+        <Suspense fallback={<AccountSkeleton />}>
+          <Account />
+        </Suspense>
 
         <MenuGroup label="My activity">
           <MenuLink href="/bookings" icon={ClipboardList}>
@@ -79,6 +153,10 @@ export default function ProfilePage() {
         </MenuGroup>
 
         <InstallAppCard />
+
+        <Suspense fallback={null}>
+          <AccountActions />
+        </Suspense>
 
         <DemoDataNotice variant="footer" className="mt-4" />
       </PageContainer>
