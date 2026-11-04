@@ -262,7 +262,77 @@ createNotification({
 
 ### 7.3 会话与权限（提供方：Member 2）
 
-页面和接口统一使用 `src/lib/auth/` 提供的函数，例如 `getCurrentUser()`、`requireUser()`、`requireRole("ADMIN")`。具体命名以 `feat/auth-and-roles` 为准。
+**已定稿**（`feat/auth-and-roles`）。页面和接口一律从 `@/lib/auth` 引入，不要自己读 cookie、不要自己解析 JWT。
+
+```ts
+import {
+  getCurrentUser,
+  requireUser,
+  requireRole,
+  requireTeacher,
+  requireAdmin,
+  type CurrentUser,
+} from "@/lib/auth";
+```
+
+| 函数                                  | 返回                           | 语义                                                                                       |
+| ------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------ |
+| `getCurrentUser()`                    | `Promise<CurrentUser \| null>` | 只读取，**永不抛错**。适合"有就显示、没有当游客"的地方（如首页问候语）                     |
+| `requireUser()`                       | `Promise<CurrentUser>`         | 未登录抛 `ApiError("UNAUTHENTICATED")` → 401；账号被停用（`isActive=false`）同样视为未登录 |
+| `requireRole(...roles)`               | `Promise<CurrentUser>`         | 未登录 401；已登录但角色不符抛 `ApiError("FORBIDDEN")` → 403                               |
+| `requireTeacher()` / `requireAdmin()` | `Promise<CurrentUser>`         | `requireRole("TEACHER","ADMIN")` / `requireRole("ADMIN")` 的简写                           |
+
+```ts
+// CurrentUser：会话里只有这几项，需要更多资料请按 user.id 自己查库
+type CurrentUser = { id: string; email: string; name: string; role: Role };
+// Role = "STUDENT" | "TEACHER" | "ADMIN"
+```
+
+**用法（Route Handler）**
+
+```ts
+import { requireTeacher } from "@/lib/auth";
+import { ok, toErrorResponse } from "@/lib/api";
+
+export async function POST() {
+  try {
+    const user = await requireTeacher(); // 学生访问 → 403
+    return ok({ id: user.id });
+  } catch (error) {
+    return toErrorResponse(error); // 统一映射 401 / 403 / 409 …
+  }
+}
+```
+
+**用法（Server Component 页面）** —— 页面没有 HTTP 状态码，权限不符时自行决定跳转或渲染提示：
+
+```ts
+const user = await requireUser(); // 未登录抛错，交给最近的 error.tsx
+// 或者：
+const user = await getCurrentUser();
+if (!user) redirect("/login?next=/home");
+```
+
+**三条硬规则**
+
+1. **身份只从会话取**：用户 id 绝不从请求体或查询参数接受，`{ userId }` 一律忽略。
+2. **前端隐藏按钮不算权限**：每个接口、每个页面查询都要在服务端再检查一次。
+3. **`src/proxy.ts` 只做跳转**：未登录访问受保护页面 → `/login?next=…`；已登录访问 `/login`、`/register` → `/home`。它**不承担权限判断** —— cookie 可能伪造或过期，且 Server Component 渲染路径不保证经过它。
+
+**相关文件**
+
+| 文件                                      | 作用                                                                    |
+| ----------------------------------------- | ----------------------------------------------------------------------- |
+| `src/lib/auth/session.ts`                 | JWT 签发/校验（`jose`），httpOnly Cookie `ch_session`，有效期 7 天      |
+| `src/lib/auth/password.ts`                | `bcryptjs` 哈希/校验（cost 10）                                         |
+| `src/lib/auth/guards.ts`                  | 上表的函数；**每次请求都重新查库**校验 `isActive`                       |
+| `src/lib/auth/schemas.ts`                 | 登录/注册的 zod schema（前后端共用；认证不是 feature 模块，所以放这里） |
+| `src/app/api/auth/*`                      | `register` / `login` / `logout` 三个 Route Handler                      |
+| `src/app/(auth)/login`、`(auth)/register` | PG-01 页面，登录后回到 `?next=` 指定的原路径                            |
+
+> 需要"当前用户"的模块（座位预约、失物招领、首页数据）直接
+> `import { requireUser } from "@/lib/auth"` 即可。需要新的会话字段时找 Member 2 扩展
+> `CurrentUser`，不要各自读 cookie。
 
 ---
 
