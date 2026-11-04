@@ -63,6 +63,7 @@ model User {
   teacherProfile TeacherProfile?
   officeBookings OfficeBooking[]
   spaceBookings  SpaceBooking[]
+  courses        Course[]
 
   @@index([role])
 }
@@ -137,6 +138,75 @@ model OfficeBooking {
   /// more than once (book → cancel → rebook → cancel).
   @@index([studentId, status])
   @@index([slotId, status])
+}
+
+// ---------------------------------------------------------------- courses (M4)
+
+/// Teaching weekday. Stored as an enum so a typo cannot reach the timetable.
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+/// ALL = every teaching week, ODD / EVEN = alternate weeks (FR-CR-01).
+enum WeekParity {
+  ALL
+  ODD
+  EVEN
+}
+
+/// A recurring class the student enters once (PG-12). Occurrences are computed
+/// from `weekday` + `startTime` + the teaching-week range instead of being
+/// stored, so editing a course never leaves stale rows behind (see issue #7).
+model Course {
+  id      String @id @default(cuid())
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  code    String
+  name    String
+  /// Free text; optional because not every module lists a teacher.
+  teacher String?
+  /// "HH:mm" wall-clock time in Asia/Shanghai, not a timestamp.
+  startTime String
+  endTime   String
+  location  String?
+
+  weekday   Weekday
+  firstWeek Int
+  lastWeek  Int
+
+  weekParity WeekParity @default(ALL)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  reminderRule ReminderRule?
+
+  /// One student cannot have two identical slots; a different course code at the
+  /// same time is allowed (two modules can overlap).
+  @@unique([ownerId, code, weekday, startTime])
+  @@index([ownerId])
+}
+
+/// Reminder offset for one course (FR-CR-04). A missing row means "off", which
+/// is why deletion is used instead of a boolean.
+model ReminderRule {
+  id       String @id @default(cuid())
+  courseId String @unique
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  /// 10 / 15 / 30 / 60 minutes before the class starts.
+  offsetMinutes Int
+  enabled       Boolean @default(true)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
 }
 
 // ---------------------------------------------------------------- other modules
