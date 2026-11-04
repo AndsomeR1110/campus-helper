@@ -10,6 +10,9 @@ import { getCurrentUser, listCourses } from "@/features/courses/server";
 
 export const metadata: Metadata = { title: "My courses" };
 
+// Reads the session and the database, so it must render per request.
+export const instant = false;
+
 /** PG-12 course list — the timetable is edited from here. */
 async function CourseList() {
   await connection();

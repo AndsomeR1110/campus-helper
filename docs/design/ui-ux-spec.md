@@ -35,21 +35,24 @@
 
 #### 品牌色与中性色
 
-| Token            | 色值      | Tailwind 类示例             | 用途                               |
-| ---------------- | --------- | --------------------------- | ---------------------------------- |
-| `primary`        | `#4F46E5` | `bg-primary` `text-primary` | 主按钮、选中状态、链接             |
-| `primary-hover`  | `#4338CA` | `hover:bg-primary-hover`    | 主按钮悬停 / 按下                  |
-| `primary-subtle` | `#EEF2FF` | `bg-primary-subtle`         | 选中项背景、轻量强调               |
-| `on-primary`     | `#FFFFFF` | `text-on-primary`           | 主色背景上的文字                   |
-| `background`     | `#F8FAFC` | `bg-background`             | 页面背景                           |
-| `surface`        | `#FFFFFF` | `bg-surface`                | 卡片、弹窗、导航栏                 |
-| `surface-muted`  | `#F1F5F9` | `bg-surface-muted`          | 输入框禁用、分组背景、骨架屏       |
-| `border`         | `#E2E8F0` | `border-border`             | 卡片边框、分隔线                   |
-| `border-strong`  | `#CBD5E1` | `border-border-strong`      | 输入框边框                         |
-| `text`           | `#0F172A` | `text-text`                 | 正文、标题                         |
-| `text-muted`     | `#64748B` | `text-text-muted`           | 次要信息、说明文字                 |
-| `text-disabled`  | `#94A3B8` | `text-text-disabled`        | 禁用文字（不得用于需要阅读的信息） |
-| `focus-ring`     | `#6366F1` | `ring-focus-ring`           | 键盘焦点环                         |
+| Token            | 色值      | Tailwind 类示例                  | 用途                                                 |
+| ---------------- | --------- | -------------------------------- | ---------------------------------------------------- |
+| `primary`        | `#1F5C4A` | `bg-primary` `text-primary`      | 主按钮、选中状态、链接（松绿）                       |
+| `primary-hover`  | `#174A3B` | `hover:bg-primary-hover`         | 主按钮悬停 / 按下                                    |
+| `primary-subtle` | `#E8F0EB` | `bg-primary-subtle`              | 选中项背景、轻量强调                                 |
+| `on-primary`     | `#FFFFFF` | `text-on-primary`                | 主色背景上的文字                                     |
+| `background`     | `#F6F4EF` | `bg-background`                  | 页面背景（暖纸色）                                   |
+| `surface`        | `#FFFDF9` | `bg-surface`                     | 卡片、弹窗、导航栏                                   |
+| `surface-muted`  | `#EFECE5` | `bg-surface-muted`               | 输入框禁用、分组背景、骨架屏                         |
+| `border`         | `#E3DFD6` | `border-border`                  | 卡片边框、分隔线                                     |
+| `border-strong`  | `#CFC9BD` | `border-border-strong`           | 输入框边框                                           |
+| `text`           | `#1F1D1A` | `text-text`                      | 正文、标题                                           |
+| `text-muted`     | `#6B665C` | `text-text-muted`                | 次要信息、说明文字                                   |
+| `text-disabled`  | `#A39E92` | `text-text-disabled`             | 禁用文字（不得用于需要阅读的信息）                   |
+| `focus-ring`     | `#2E7D64` | `ring-focus-ring`                | 键盘焦点环                                           |
+| `accent`         | `#A84A22` | `text-accent` `bg-accent-subtle` | 陶土橙点缀：少量强调（如亮点数字），不用于按钮和状态 |
+
+**配色方向：** 松绿主色 + 暖纸色中性色 + 陶土橙点缀，避免常见的蓝紫色科技感。中性色统一偏暖（不用冷灰蓝），`success` 用偏黄的橄榄绿，与松绿主色区分开。
 
 #### 语义色
 
@@ -57,11 +60,11 @@
 
 | 语义      | `<name>` 文字色 | `<name>-subtle` 背景 | `<name>-solid` | 用途                           |
 | --------- | --------------- | -------------------- | -------------- | ------------------------------ |
-| `success` | `#15803D`       | `#F0FDF4`            | `#15803D`      | 预约成功、Approved、Resolved   |
-| `warning` | `#B45309`       | `#FFFBEB`            | `#B45309`      | 待处理、即将开始、Pending      |
-| `danger`  | `#B91C1C`       | `#FEF2F2`            | `#DC2626`      | 错误、删除、取消预约、Rejected |
-| `info`    | `#2563EB`       | `#EFF6FF`            | `#2563EB`      | 提示信息、Open 状态            |
-| `neutral` | `#475569`       | `#F1F5F9`            | —              | 已完成、已取消等非活跃状态     |
+| `success` | `#3A6B1F`       | `#EEF4E6`            | `#3A6B1F`      | 预约成功、Approved、Resolved   |
+| `warning` | `#9A5508`       | `#FAF1E1`            | `#9A5508`      | 待处理、即将开始、Pending      |
+| `danger`  | `#B3261E`       | `#FBECE9`            | `#B3261E`      | 错误、删除、取消预约、Rejected |
+| `info`    | `#2C5E8A`       | `#EAF0F6`            | `#2C5E8A`      | 提示信息、Open 状态            |
+| `neutral` | `#5E594F`       | `#EFECE5`            | —              | 已完成、已取消等非活跃状态     |
 
 #### 日程事件类型色
 
@@ -69,16 +72,16 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 
 | 事件类型             | Token          | 文字色    | 浅色背景  | 图标（lucide） |
 | -------------------- | -------------- | --------- | --------- | -------------- |
-| Class 课程           | `event-class`  | `#2563EB` | `#EFF6FF` | `BookOpen`     |
-| Office Hour 教师预约 | `event-office` | `#7C3AED` | `#F5F3FF` | `UserRound`    |
-| Study Space 学习空间 | `event-space`  | `#0F766E` | `#F0FDFA` | `Armchair`     |
+| Class 课程           | `event-class`  | `#2C5E8A` | `#EAF0F6` | `BookOpen`     |
+| Office Hour 教师预约 | `event-office` | `#86406A` | `#F6EAF0` | `UserRound`    |
+| Study Space 学习空间 | `event-space`  | `#1F6766` | `#E5F1F0` | `Armchair`     |
 
 #### Lost & Found 帖子类型色
 
 | 类型       | Token   | 文字色    | 浅色背景  | 图标           |
 | ---------- | ------- | --------- | --------- | -------------- |
-| Lost 遗失  | `lost`  | `#C2410C` | `#FFF7ED` | `SearchX`      |
-| Found 拾获 | `found` | `#047857` | `#ECFDF5` | `PackageCheck` |
+| Lost 遗失  | `lost`  | `#A84A22` | `#F8ECE5` | `SearchX`      |
+| Found 拾获 | `found` | `#2F6A3A` | `#EAF3EB` | `PackageCheck` |
 
 > 上述文字色在白色和对应浅色背景上、`-solid` 色与白色文字搭配时，对比度均 ≥ 4.5:1（WCAG AA）。新增颜色时须先检查对比度。
 
@@ -588,6 +591,7 @@ Member 1 在合并前按此清单检查 UI：
 
 ## 12. 变更记录
 
-| 版本       | 日期       | 修改内容                                          | 作者     |
-| ---------- | ---------- | ------------------------------------------------- | -------- |
-| V1.0 Draft | 2026-10-28 | 初稿：Token、布局、组件、状态、文案、核心页面框架 | Member 1 |
+| 版本       | 日期       | 修改内容                                                | 作者     |
+| ---------- | ---------- | ------------------------------------------------------- | -------- |
+| V1.0 Draft | 2026-10-28 | 初稿：Token、布局、组件、状态、文案、核心页面框架       | Member 1 |
+| V1.1       | 2026-11-04 | 配色改为松绿 + 暖纸色中性色 + 陶土橙点缀，新增 `accent` | Member 1 |
