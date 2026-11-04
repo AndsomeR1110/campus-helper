@@ -36,12 +36,13 @@ export default function SpaceDetailPage() {
 }
 ```
 
-| Component          | Use for                                                                                                                                      |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TopBar`           | First element of every page. `backHref` adds a back button (history first, href as fallback). `variant="large"` only for the four tab pages. |
-| `PageContainer`    | Page body with standard gutters. `width="content"` (640px) for details and forms, default `"list"` (960px).                                  |
-| `StickyActionBar`  | Primary action on detail / form pages. Fixed on phones/tablets, inline on desktop.                                                           |
-| `SERVICES`, `TABS` | Navigation data shared by Home, Services and the nav bars.                                                                                   |
+| Component                            | Use for                                                                                                                                                                                                                                  |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TopBar`                             | First element of every page. `backHref` adds a back button (history first, href as fallback). `variant="large"` only for the four tab pages.                                                                                             |
+| `PageContainer`                      | Page body with standard gutters. `width="content"` (640px) for details and forms, default `"list"` (960px).                                                                                                                              |
+| `StickyActionBar`                    | Primary action on detail / form pages. Fixed on phones/tablets, inline on desktop.                                                                                                                                                       |
+| `SideNavRoleTools`, `roleToolsFor()` | Teacher / admin entry points. Already wired in `(main)/layout.tsx` and Profile from the session; renders nothing for students. Hiding a link is not authorization: the pages themselves must call `requireTeacher()` / `requireAdmin()`. |
+| `SERVICES`, `TABS`                   | Navigation data shared by Home, Services and the nav bars.                                                                                                                                                                               |
 
 **Adding a detail or form route?** Add its pattern to `FOCUSED_ROUTES` in `nav-config.ts` so the bottom nav is hidden there, and add a test case in `nav-config.test.ts`. Mention Member 1 in the PR.
 
