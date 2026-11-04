@@ -9,5 +9,6 @@
   - 「每个人推进了多少」：总进度条按成员分段，每段 = 该成员已完成任务数 ÷ 全部任务数，所有段加起来就是总进度。
   - 「项目关系图」：按 `docs/team-assignment.md` 的模块分工画出谁的成果被谁用到（M1 是地基 → M2 登录与数据 → M3、M5 → M4 汇总 → 上线）。点一位成员，会高亮受 TA 影响的下游模块，并显示 TA 的进度贡献、支撑的模块和下游未完成任务数。
   - 模块关系写在 `site/lib.js` 的 `DEPENDENCIES` 里，分工变了改这里即可。
-- 页面在浏览器里直接读 GitHub API（未登录每小时 60 次，页面会缓存 1 分钟），Issue 和 PR 一变化，刷新就能看到；只有改了 `board/site/` 的代码才需要重新发布（`.github/workflows/board.yml`，合并到 main 自动发布）。
-- 本地预览：`npx serve board/site`，或任意静态服务器。逻辑在 `site/lib.js`，测试在 `lib.test.js`。
+- 数据：GitHub Actions（`.github/workflows/board.yml`）用仓库自己的令牌读取 Issue 和 PR，生成 `data.json` 和页面一起发布到 GitHub Pages。Issue / PR 一有变化就会重新生成（约 1 分钟），另外每 15 分钟兜底刷新一次。访问者只读 `data.json`，不直接调用 GitHub API——匿名调用每个 IP 每小时只有 60 次，同一校园网的同学共用一个 IP，很快就会用完。
+- 生成快照的字段筛选在 `snapshot.jq`。
+- 本地预览：`npx serve board/site`，或任意静态服务器。本地没有 `data.json` 时页面会直接读 GitHub API（受 60 次 / 小时限制）。逻辑在 `site/lib.js`，测试在 `lib.test.js`。
