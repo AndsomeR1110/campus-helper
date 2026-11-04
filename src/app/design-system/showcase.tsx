@@ -39,6 +39,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 const COLOR_TOKENS = [
   ["primary", "bg-primary"],
   ["primary-subtle", "bg-primary-subtle"],
+  ["accent", "bg-accent"],
   ["success", "bg-success-solid"],
   ["warning", "bg-warning-solid"],
   ["danger", "bg-danger-solid"],

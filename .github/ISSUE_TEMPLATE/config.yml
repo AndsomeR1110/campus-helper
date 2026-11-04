@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 项目看板
+    url: https://andsomer1110.github.io/campus-helper/
+    about: 查看所有任务和 PR 的进度

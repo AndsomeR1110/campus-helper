@@ -1,0 +1,80 @@
+name: Board
+
+# Publishes the project board (board/site) to GitHub Pages together with a
+# data.json snapshot of the task issues and pull requests.
+#
+# Visitors only read that snapshot. They never call the GitHub API themselves:
+# anonymous calls are limited to 60 per hour per IP, and a whole campus network
+# usually shares one IP. Here the API is called once per deploy with the
+# workflow token instead, whenever an issue or PR changes (plus a periodic
+# refresh in case an event is missed).
+on:
+  push:
+    branches: [main]
+    paths: ["board/**", ".github/workflows/board.yml"]
+  issues:
+    types:
+      - opened
+      - edited
+      - deleted
+      - transferred
+      - closed
+      - reopened
+      - assigned
+      - unassigned
+      - labeled
+      - unlabeled
+  # pull_request_target (not pull_request) so PRs from forks can also trigger a
+  # refresh. Safe here: the job checks out main only and never runs PR code.
+  pull_request_target:
+    types: [opened, edited, closed, reopened, ready_for_review, converted_to_draft]
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  pages: write
+  id-token: write
+
+# Only the newest snapshot matters: a burst of label edits deploys once.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Snapshot issues and pull requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          cp -R board/site/. _site/
+          gh api --paginate "repos/$REPO/issues?labels=task&state=all&per_page=100" | jq -s 'add // []' > issues.json
+          gh api "repos/$REPO/pulls?state=open&per_page=50" > open.json
+          gh api "repos/$REPO/pulls?state=closed&sort=updated&direction=desc&per_page=20" > closed.json
+          jq -n \
+            --slurpfile issues issues.json \
+            --slurpfile open open.json \
+            --slurpfile closed closed.json \
+            --argjson at "$(date +%s%3N)" \
+            -f board/snapshot.jq > _site/data.json
+          jq '{issues: (.issues | length), openPulls: (.openPulls | length), closedPulls: (.closedPulls | length)}' _site/data.json
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
