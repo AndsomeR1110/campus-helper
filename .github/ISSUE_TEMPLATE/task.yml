@@ -1,0 +1,49 @@
+name: 任务
+description: 给成员布置一个任务，会显示在项目看板上
+title: "[M?] "
+labels: ["task"]
+body:
+  - type: dropdown
+    id: owner
+    attributes:
+      label: 负责人
+      options:
+        - M1 · 项目负责人 · UI · PWA · 部署
+        - M2 · 登录与 Office Hour
+        - M3 · 学习空间与我的预约
+        - M4 · 课程、日程与通知
+        - M5 · 失物招领与管理后台
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 优先级
+      options:
+        - P0
+        - P1
+    validations:
+      required: true
+  - type: textarea
+    id: todo
+    attributes:
+      label: 要做的
+      description: 写清楚交付什么，一条一行
+      placeholder: "- 页面 /spaces\n- 预约接口"
+    validations:
+      required: true
+  - type: input
+    id: acceptance
+    attributes:
+      label: 验收
+      description: 对应 docs/prd.md 里的 AC 编号
+      placeholder: SP-AC-01 ~ 08
+  - type: input
+    id: depends
+    attributes:
+      label: 依赖
+      placeholder: "#22"
+  - type: markdown
+    attributes:
+      value: |
+        开始做时加上 `status:in-progress` 标签；被卡住时加 `status:blocked`。PR 描述里写 `Closes #编号`，任务会自动进入「审查中」，PR 合并后自动完成。
