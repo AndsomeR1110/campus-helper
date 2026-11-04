@@ -18,6 +18,7 @@ import type {
   PostDetail,
   PostFilters,
   PostListItem,
+  PostSummary,
   Viewer,
 } from "../types";
 import { validateImageUpload } from "../image";
@@ -250,6 +251,27 @@ export function createLostFoundService({
       if (previous) await storage.remove(previous);
 
       return repository.updatePost(postId, { image, updatedAt: now().toISOString() });
+    },
+
+    /** Narrow view for moderation: no claims, no description. */
+    async getPostSummary(postId: string): Promise<PostSummary | null> {
+      const post = await repository.getPost(postId);
+      if (!post || post.status === "HIDDEN") return null;
+      return {
+        id: post.id,
+        title: post.title,
+        kind: post.kind,
+        status: post.status,
+        authorId: post.authorId,
+      };
+    },
+
+    /** Only the admin service calls this, after it has checked the actor. */
+    async hidePostAsModerator(postId: string): Promise<LostFoundPost> {
+      const post = await repository.getPost(postId);
+      if (!post) throw new LostFoundError("NOT_FOUND", "This post does not exist.");
+      if (post.status === "HIDDEN") return post;
+      return repository.updatePost(postId, { status: "HIDDEN", updatedAt: now().toISOString() });
     },
   };
 }

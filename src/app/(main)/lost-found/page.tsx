@@ -43,6 +43,7 @@ async function PostList({ searchParams }: { searchParams: SearchParams }) {
 
       {posts.length === 0 ? (
         <EmptyState
+          icon={undefined}
           title={hasActiveFilters(filters) ? "No posts match these filters" : "Nothing here yet"}
           description={
             hasActiveFilters(filters)

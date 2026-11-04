@@ -1,11 +1,12 @@
-import { MapPin } from "lucide-react";
+import { Lock, MapPin } from "lucide-react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
 import { PageContainer, TopBar } from "@/components/layout";
-import { Skeleton, StatusBadge, TypeTag } from "@/components/ui";
+import { EmptyState, Skeleton, StatusBadge, TypeTag, buttonStyles } from "@/components/ui";
+import { ReportDialog } from "@/features/admin";
 import { ClaimPanel, PostOwnerActions, formatDisplayName } from "@/features/lost-found";
 import { getCurrentViewer, getLostFoundRuntime } from "@/features/lost-found/server";
 import { formatDate, formatTime } from "@/lib/time";
@@ -25,6 +26,25 @@ function DetailSkeleton() {
   );
 }
 
+/**
+ * A hidden post answers the same way a missing one does, so a reporter cannot
+ * learn whether the author really took it down.
+ */
+function Unavailable() {
+  return (
+    <EmptyState
+      icon={Lock}
+      title="This post is not available"
+      description="It may have been removed, hidden after a report, or the link may be wrong."
+      action={
+        <Link href="/lost-found" className={buttonStyles({ size: "sm" })}>
+          Back to Lost & Found
+        </Link>
+      }
+    />
+  );
+}
+
 async function PostDetailBody({ params }: { params: Params }) {
   await connection();
   const { id } = await params;
@@ -35,7 +55,7 @@ async function PostDetailBody({ params }: { params: Params }) {
   try {
     detail = await service.getPost(id);
   } catch {
-    notFound();
+    return <Unavailable />;
   }
 
   const { post, claims } = detail;
@@ -83,7 +103,13 @@ async function PostDetailBody({ params }: { params: Params }) {
         canClaim={!isAuthor && post.status !== "RESOLVED" && post.status !== "CLOSED"}
       />
 
-      {isAuthor ? <PostOwnerActions postId={post.id} status={post.status} /> : null}
+      {isAuthor ? (
+        <PostOwnerActions postId={post.id} status={post.status} />
+      ) : (
+        <div className="flex justify-end">
+          <ReportDialog postId={post.id} />
+        </div>
+      )}
     </article>
   );
 }

@@ -97,3 +97,12 @@ export interface PostDetail {
   claimCount: number;
   claims: LostFoundClaim[] | null;
 }
+
+/** What moderation needs about a post, without touching its claims. */
+export interface PostSummary {
+  id: string;
+  title: string;
+  kind: PostKind;
+  status: PostStatus;
+  authorId: string;
+}
