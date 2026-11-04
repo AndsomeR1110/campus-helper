@@ -67,6 +67,12 @@ model User {
   notifications  Notification[]
   pushSubscriptions PushSubscription[]
 
+  lostFoundPosts   LostFoundPost[]  @relation("LostFoundAuthor")
+  lostFoundClaims  LostFoundClaim[] @relation("LostFoundClaimant")
+  reportsFiled     Report[]         @relation("ReportReporter")
+  reportsHandled   Report[]         @relation("ReportHandler")
+  moderationAudits AuditLog[]       @relation("AuditActor")
+
   @@index([role])
 }
 
@@ -303,4 +309,145 @@ model SpaceBooking {
   // Partial GiST exclusion constraints live in the migration (seat AND student).
   @@index([userId, status])
   @@index([spaceId, startsAt, endsAt])
+}
+
+// ------------------------------------------------------- lost & found (M5)
+// Reviewed by Member 2 before merge (issue #31, part 2).
+// `claim.message` is private: only the post author and administrators read it,
+// which the service enforces and the queries never widen.
+
+/// LOST = "I lost this", FOUND = "I picked this up".
+enum PostKind {
+  LOST
+  FOUND
+}
+
+/// Matches STATUS_MAP.post in src/components/ui/status-badge.tsx.
+enum PostStatus {
+  OPEN
+  CLAIM_PENDING
+  RESOLVED
+  CLOSED
+  HIDDEN
+}
+
+enum PostCategory {
+  ELECTRONICS
+  CAMPUS_CARD
+  KEYS
+  BOOKS
+  CLOTHING
+  OTHER
+}
+
+/// Matches STATUS_MAP.claim.
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Matches STATUS_MAP.report.
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+model LostFoundPost {
+  id       String @id @default(cuid())
+  authorId String
+  author   User   @relation("LostFoundAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  kind        PostKind
+  category    PostCategory
+  title       String
+  /// Public text: the form warns against ID numbers and phone numbers.
+  description String
+  location    String
+  /// When the item was lost or found (never in the future; checked by the service).
+  occurredAt  DateTime     @db.Timestamptz(3)
+
+  status PostStatus @default(OPEN)
+
+  /// Uploaded photo metadata. `imageUrl` stays null until storage lands; the
+  /// column exists so adding it does not need a second migration.
+  imageName String?
+  imageType String?
+  imageSize Int?
+  imageUrl  String?
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  claims  LostFoundClaim[]
+  reports Report[]
+
+  /// Browse: newest first, filtered by status.
+  @@index([status, createdAt])
+  @@index([authorId, createdAt])
+  @@index([kind, category, status])
+  @@index([occurredAt])
+}
+
+model LostFoundClaim {
+  id     String        @id @default(cuid())
+  postId String
+  post   LostFoundPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  claimantId String
+  claimant   User   @relation("LostFoundClaimant", fields: [claimantId], references: [id], onDelete: Cascade)
+
+  /// Private proof of ownership; never selected outside the author/admin path.
+  message String
+
+  status    ClaimStatus @default(PENDING)
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  decidedAt DateTime?   @db.Timestamptz(3)
+
+  /// "One PENDING claim per (post, claimant)" and "at most one APPROVED claim per
+  /// post" are partial unique indexes in the migration — Prisma cannot express them.
+  @@index([postId, status])
+  @@index([claimantId, status])
+}
+
+model Report {
+  id     String        @id @default(cuid())
+  postId String
+  post   LostFoundPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  reporterId String
+  reporter   User   @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  reason String
+
+  status     ReportStatus @default(PENDING)
+  createdAt  DateTime     @default(now()) @db.Timestamptz(3)
+  resolvedAt DateTime?    @db.Timestamptz(3)
+
+  handledById String?
+  handledBy   User?   @relation("ReportHandler", fields: [handledById], references: [id], onDelete: SetNull)
+
+  /// "One PENDING report per (post, reporter)": partial unique index in the migration.
+  @@index([status, createdAt])
+  @@index([postId])
+}
+
+/// Administrator actions on lost & found content (PRD 7.6 audit trail).
+model AuditLog {
+  id String @id @default(cuid())
+
+  actorId String
+  actor   User   @relation("AuditActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  /// REPORT_RESOLVED_POST_HIDDEN / REPORT_DISMISSED / POST_RESTORED …
+  action     String
+  targetType String
+  targetId   String
+  note       String?
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@index([targetType, targetId])
 }

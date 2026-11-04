@@ -73,7 +73,7 @@ describe("post creation (LF-AC-01, LF-AC-02)", () => {
     expect(post).toMatchObject({
       id: "id-1",
       authorId: wei.id,
-      authorName: "Wei C.",
+      authorName: "Wei Chen",
       status: "OPEN",
       createdAt: NOW.toISOString(),
     });
@@ -103,7 +103,11 @@ describe("claims (LF-AC-05, LF-AC-06, LF-AC-07)", () => {
       message: "The bottle has a scratch on the base and a blue lid.",
     });
 
-    expect(claim).toMatchObject({ status: "PENDING", claimantId: wei.id, claimantName: "Wei C." });
+    expect(claim).toMatchObject({
+      status: "PENDING",
+      claimantId: wei.id,
+      claimantName: "Wei Chen",
+    });
 
     harness.as(mei);
     const detail = await harness.service.getPost("post-01");
