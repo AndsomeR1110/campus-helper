@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+﻿import { Bell } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { PageContainer, TopBar } from "@/components/layout";
 import { Card, EmptyState, ListItem, Skeleton, buttonStyles } from "@/components/ui";
 import { getCurrentUser } from "@/features/courses/server";
-import { MarkAllReadButton } from "@/features/notifications";
+import { EnablePushButton, MarkAllReadButton } from "@/features/notifications";
 import { listForUser } from "@/features/notifications/server";
 import { formatRelativeTime } from "@/lib/time";
 
@@ -59,7 +59,7 @@ async function NotificationList() {
                   />
                 }
                 title={item.title}
-                description={`${item.body} · ${formatRelativeTime(item.createdAt)}`}
+                description={`${item.body} 路 ${formatRelativeTime(item.createdAt)}`}
               />
             </Card>
           </Link>
@@ -97,6 +97,16 @@ async function HeaderActions() {
   );
 }
 
+/** Push opt-in (task #30, FR-PWA-03): permission is only asked on press. */
+function PushSection() {
+  return (
+    <section className="flex flex-col gap-2">
+      <h2 className="text-caption tracking-wide text-text-muted uppercase">Browser notifications</h2>
+      <EnablePushButton />
+    </section>
+  );
+}
+
 export default function NotificationsPage() {
   return (
     <>
@@ -113,7 +123,9 @@ export default function NotificationsPage() {
         <Suspense fallback={<NotificationSkeleton />}>
           <NotificationList />
         </Suspense>
+        <PushSection />
       </PageContainer>
     </>
   );
 }
+

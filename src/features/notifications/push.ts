@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Web Push delivery (task #30).
  *
  * Deliberately dependency-free: VAPID is a plain ES256 JWT and we send a
@@ -29,7 +29,7 @@ export interface PushTarget {
 
 /** Reads the keys from the environment; returns null when push is not configured. */
 export function readVapidKeys(env: NodeJS.ProcessEnv = process.env): VapidKeys | null {
-  const publicKey = env.VAPID_PUBLIC_KEY;
+  const publicKey = env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? env.VAPID_PUBLIC_KEY;
   const privateKey = env.VAPID_PRIVATE_KEY;
 
   if (!publicKey || !privateKey) {
@@ -112,3 +112,4 @@ export async function sendPush(target: PushTarget, keys: VapidKeys, now: Date): 
 export function isExpiredSubscription(result: PushResult): boolean {
   return result.status === 404 || result.status === 410 || result.status === 403;
 }
+
