@@ -73,30 +73,6 @@ model User {
   reportsHandled   Report[]         @relation("ReportHandler")
   moderationAudits AuditLog[]       @relation("AuditActor")
 
-  lostFoundPosts   LostFoundPost[]  @relation("LostFoundAuthor")
-  lostFoundClaims  LostFoundClaim[] @relation("LostFoundClaimant")
-  reportsFiled     Report[]         @relation("ReportReporter")
-  reportsHandled   Report[]         @relation("ReportHandler")
-  moderationAudits AuditLog[]       @relation("AuditActor")
-
-  lostFoundPosts   LostFoundPost[]  @relation("LostFoundAuthor")
-  lostFoundClaims  LostFoundClaim[] @relation("LostFoundClaimant")
-  reportsFiled     Report[]         @relation("ReportReporter")
-  reportsHandled   Report[]         @relation("ReportHandler")
-  moderationAudits AuditLog[]       @relation("AuditActor")
-
-  lostFoundPosts   LostFoundPost[]  @relation("LostFoundAuthor")
-  lostFoundClaims  LostFoundClaim[] @relation("LostFoundClaimant")
-  reportsFiled     Report[]         @relation("ReportReporter")
-  reportsHandled   Report[]         @relation("ReportHandler")
-  moderationAudits AuditLog[]       @relation("AuditActor")
-
-  lostFoundPosts   LostFoundPost[]  @relation("LostFoundAuthor")
-  lostFoundClaims  LostFoundClaim[] @relation("LostFoundClaimant")
-  reportsFiled     Report[]         @relation("ReportReporter")
-  reportsHandled   Report[]         @relation("ReportHandler")
-  moderationAudits AuditLog[]       @relation("AuditActor")
-
   @@index([role])
 }
 
