@@ -40,9 +40,12 @@ permissions:
   id-token: write
 
 # Only the newest snapshot matters: a burst of label edits deploys once.
+# Never cancel a running deploy: a cancelled run leaves its Pages deployment
+# pending and every later deploy fails until it times out. A running deploy
+# finishes and only the newest queued run follows it.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
