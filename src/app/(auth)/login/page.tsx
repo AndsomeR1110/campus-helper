@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { safeRedirectPath } from "@/lib/auth/redirect";
+
 import { LoginForm } from "./login-form";
 
 /** Cache Components: 本页需要按请求读取会话/参数，允许阻塞渲染（见 Next 16 文档 instant）。 */
@@ -17,11 +19,11 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
-  // 只接受站内路径，防止开放重定向
-  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/office-hours";
+  // 只接受站内路径，防止开放重定向；默认进入 Home（AUTH-AC-01）
+  const safeNext = safeRedirectPath(next);
 
   return (
-    <main className="mx-auto flex w-full max-w-[--container-content] flex-1 flex-col justify-center gap-8 px-5 py-10">
+    <main className="mx-auto flex w-full max-w-content flex-1 flex-col justify-center gap-8 px-4 py-10 md:px-6">
       <header className="flex flex-col gap-2">
         <h1 className="text-display text-text">CAMPUS HELPER</h1>
         <p className="text-body text-text-muted">

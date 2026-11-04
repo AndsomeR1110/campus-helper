@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ok, toErrorResponse } from "@/lib/api";
+import { safeRedirectPath } from "@/lib/auth/redirect";
 import { clearSessionCookie } from "@/lib/auth/session";
 
 /** 退出登录（PG-01 / AUTH-AC-04）。清空 Cookie 即可，JWT 无需服务端撤销。 */
@@ -22,6 +23,5 @@ export async function POST(): Promise<NextResponse> {
 export async function GET(request: Request): Promise<NextResponse> {
   await clearSessionCookie();
   const next = new URL(request.url).searchParams.get("next");
-  const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/login";
-  return NextResponse.redirect(new URL(target, request.url));
+  return NextResponse.redirect(new URL(safeRedirectPath(next, "/login"), request.url));
 }

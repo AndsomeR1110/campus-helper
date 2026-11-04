@@ -1,9 +1,13 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { SignJWT, jwtVerify } from "jose";
-
-import type { Role } from "@prisma/client";
+import {
+  SESSION_COOKIE,
+  SESSION_MAX_AGE_SECONDS,
+  signSession,
+  verifySession,
+  type SessionPayload,
+} from "./token";
 
 /**
  * 会话方案：无状态 JWT 存在 httpOnly Cookie 里。
@@ -22,44 +26,7 @@ import type { Role } from "@prisma/client";
  *   5. 角色校验一律在服务端重新读库或验签，不信任前端
  */
 
-export const SESSION_COOKIE = "ch_session";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 天
-
-export interface SessionPayload {
-  sub: string;
-  role: Role;
-}
-
-function getSecret(): Uint8Array {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret || secret.length < 32) {
-    throw new Error(
-      "AUTH_SECRET is missing or too short (need >= 32 chars). Set it in .env.local — see .env.example.",
-    );
-  }
-  return new TextEncoder().encode(secret);
-}
-
-// ---------------------------------------------------------------- token
-
-export async function signSession(payload: SessionPayload): Promise<string> {
-  return new SignJWT({ role: payload.role })
-    .setProtectedHeader({ alg: "HS256" })
-    .setSubject(payload.sub)
-    .setIssuedAt()
-    .setExpirationTime(`${SESSION_MAX_AGE_SECONDS}s`)
-    .sign(getSecret());
-}
-
-export async function verifySession(token: string): Promise<SessionPayload | null> {
-  try {
-    const { payload } = await jwtVerify(token, getSecret(), { algorithms: ["HS256"] });
-    if (!payload.sub || typeof payload.role !== "string") return null;
-    return { sub: payload.sub, role: payload.role as Role };
-  } catch {
-    return null;
-  }
-}
+export { SESSION_COOKIE, signSession, verifySession, type SessionPayload } from "./token";
 
 // ---------------------------------------------------------------- cookie
 

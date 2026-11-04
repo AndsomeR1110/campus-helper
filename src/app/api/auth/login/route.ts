@@ -2,9 +2,17 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db";
 import { ApiError, ok, toErrorResponse, readJson } from "@/lib/api";
-import { verifyPassword } from "@/lib/auth/password";
+import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { loginSchema } from "@/lib/auth/schemas";
+
+/**
+ * Hash compared against when the email is unknown, so a missing account takes
+ * as long as a wrong password and response time does not reveal which emails
+ * are registered.
+ */
+let dummyHash: Promise<string> | undefined;
+const getDummyHash = () => (dummyHash ??= hashPassword("campus-helper-timing-guard"));
 
 /**
  * 登录（PG-01 / AUTH-AC-02）。
@@ -23,10 +31,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const genericError = new ApiError("INVALID_CREDENTIALS", "Email or password is incorrect.");
 
-    if (!user || !user.isActive) throw genericError;
-
-    const valid = await verifyPassword(input.password, user.passwordHash);
-    if (!valid) throw genericError;
+    const valid = await verifyPassword(
+      input.password,
+      user?.passwordHash ?? (await getDummyHash()),
+    );
+    if (!user || !user.isActive || !valid) throw genericError;
 
     await setSessionCookie({ sub: user.id, role: user.role });
 
