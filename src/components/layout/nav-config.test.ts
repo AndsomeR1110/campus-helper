@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getActiveTab, shouldShowBottomNav } from "./nav-config";
+import { getActiveTab, roleToolsFor, shouldShowBottomNav } from "./nav-config";
 
 describe("getActiveTab", () => {
   it.each([
@@ -42,5 +42,20 @@ describe("shouldShowBottomNav", () => {
     "/lost-found/p1",
   ])("hides on detail and form page %s", (pathname) => {
     expect(shouldShowBottomNav(pathname)).toBe(false);
+  });
+});
+
+describe("roleToolsFor (AUTH-AC-04)", () => {
+  it("gives students no role tools", () => {
+    expect(roleToolsFor("STUDENT")).toEqual([]);
+    expect(roleToolsFor(null)).toEqual([]);
+  });
+
+  it("gives teachers the teacher dashboard only", () => {
+    expect(roleToolsFor("TEACHER").map((t) => t.href)).toEqual(["/teacher/office-hours"]);
+  });
+
+  it("gives admins both dashboards", () => {
+    expect(roleToolsFor("ADMIN").map((t) => t.href)).toEqual(["/teacher/office-hours", "/admin"]);
   });
 });
