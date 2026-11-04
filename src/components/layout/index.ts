@@ -3,12 +3,17 @@
 export { AppShell, type AppShellProps } from "./app-shell";
 export {
   getActiveTab,
+  ROLE_LABELS,
+  roleToolsFor,
   SERVICES,
   shouldShowBottomNav,
   TABS,
   type ServiceEntry,
+  type RoleTool,
   type TabId,
+  type UserRole,
 } from "./nav-config";
 export { PageContainer, type PageContainerProps } from "./page-container";
+export { SideNavRoleTools } from "./side-nav-role-tools";
 export { StickyActionBar, type StickyActionBarProps } from "./sticky-action-bar";
 export { TopBar, type TopBarProps } from "./top-bar";

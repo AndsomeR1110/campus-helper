@@ -5,20 +5,25 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { PageContainer, SERVICES } from "@/components/layout";
 import { Card, EmptyState, OfflineBanner, Skeleton, buttonStyles } from "@/components/ui";
+import { getCurrentUser } from "@/lib/auth";
 import { formatDate, formatGreeting } from "@/lib/time";
 import { HomeSection } from "../_components/home-section";
 import { ServiceTile } from "../_components/service-tile";
 
 export const metadata: Metadata = { title: "Home" };
 
-/** Depends on the current time, so it renders per request inside <Suspense>. */
+/** Depends on the current time and the session, so it renders per request inside <Suspense>. */
 async function Greeting() {
   await connection();
   const now = new Date();
-  // TODO(Member 2): append the signed-in user's first name.
+  const user = await getCurrentUser();
+  const firstName = user?.name.trim().split(/\s+/)[0];
   return (
     <div className="flex flex-col gap-1">
-      <h1 className="text-display">{formatGreeting(now)}</h1>
+      <h1 className="text-display">
+        {formatGreeting(now)}
+        {firstName ? `, ${firstName}` : ""}
+      </h1>
       <p className="text-text-muted">{formatDate(now)}</p>
     </div>
   );
