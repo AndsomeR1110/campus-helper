@@ -1,40 +1,40 @@
-/* Same tokens as the app (src/app/globals.css), plus member colours and dark mode. */
+/* Same tokens as the app (src/app/globals.css): pine green, warm paper neutrals,
+ * terracotta accent. Plus member colours and a warm dark mode. */
 :root {
   color-scheme: light;
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-subtle: #eef2ff;
+  --primary: #1f5c4a;
+  --primary-hover: #174a3b;
+  --primary-subtle: #e8f0eb;
   --on-primary: #ffffff;
-  --background: #f8fafc;
-  --surface: #ffffff;
-  --surface-muted: #f1f5f9;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --focus-ring: #6366f1;
-  --success: #15803d;
-  --success-subtle: #f0fdf4;
-  --warning: #b45309;
-  --warning-subtle: #fffbeb;
-  --danger: #b91c1c;
-  --danger-subtle: #fef2f2;
-  --danger-solid: #dc2626;
-  --info: #2563eb;
-  --info-subtle: #eff6ff;
-  --neutral: #475569;
-  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06);
-  --shadow-md: 0 4px 16px -4px rgb(15 23 42 / 0.12), 0 1px 3px rgb(15 23 42 / 0.06);
-  --hero:
-    radial-gradient(1200px 300px at 0% 0%, #eef2ff 0%, transparent 60%),
-    radial-gradient(900px 300px at 100% 0%, #f0fdfa 0%, transparent 55%);
+  --accent: #a84a22;
+  --accent-subtle: #f8ece5;
+  --background: #f6f4ef;
+  --surface: #fffdf9;
+  --surface-muted: #efece5;
+  --border: #e3dfd6;
+  --border-strong: #cfc9bd;
+  --text: #1f1d1a;
+  --text-muted: #6b665c;
+  --focus-ring: #2e7d64;
+  --success: #3a6b1f;
+  --success-subtle: #eef4e6;
+  --warning: #9a5508;
+  --warning-subtle: #faf1e1;
+  --danger: #b3261e;
+  --danger-subtle: #fbece9;
+  --danger-solid: #b3261e;
+  --info: #2c5e8a;
+  --info-subtle: #eaf0f6;
+  --neutral: #5e594f;
+  --shadow-sm: 0 1px 2px rgb(31 29 26 / 0.05);
+  --shadow-md: 0 6px 18px -8px rgb(31 29 26 / 0.18), 0 1px 3px rgb(31 29 26 / 0.06);
 
-  /* One fixed colour per member (categorical, validated for colour-blind safety). */
-  --m1: #2a78d6;
-  --m2: #eb6834;
-  --m3: #1baf7a;
-  --m4: #eda100;
-  --m5: #e87ba4;
+  /* One fixed colour per member: earthy hues, validated for colour-blind separation. */
+  --m1: #2f6cab;
+  --m2: #c0613a;
+  --m3: #2a9070;
+  --m4: #c9972e;
+  --m5: #a65a86;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -44,38 +44,37 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --primary: #818cf8;
-    --primary-hover: #a5b4fc;
-    --primary-subtle: rgb(99 102 241 / 0.16);
-    --on-primary: #0b1120;
-    --background: #0b1120;
-    --surface: #111827;
-    --surface-muted: #1e293b;
-    --border: #1f2a3c;
-    --border-strong: #334155;
-    --text: #e5e7eb;
-    --text-muted: #94a3b8;
-    --focus-ring: #a5b4fc;
-    --success: #4ade80;
-    --success-subtle: rgb(34 197 94 / 0.14);
-    --warning: #fbbf24;
-    --warning-subtle: rgb(245 158 11 / 0.14);
-    --danger: #f87171;
-    --danger-subtle: rgb(239 68 68 / 0.14);
-    --danger-solid: #dc2626;
-    --info: #60a5fa;
-    --info-subtle: rgb(59 130 246 / 0.14);
-    --neutral: #cbd5e1;
+    --primary: #7fbfa3;
+    --primary-hover: #9ccfb8;
+    --primary-subtle: rgb(127 191 163 / 0.14);
+    --on-primary: #12241d;
+    --accent: #e0915f;
+    --accent-subtle: rgb(224 145 95 / 0.14);
+    --background: #161513;
+    --surface: #1f1d1a;
+    --surface-muted: #2a2824;
+    --border: #312e29;
+    --border-strong: #48443c;
+    --text: #ece8e1;
+    --text-muted: #a8a296;
+    --focus-ring: #9ccfb8;
+    --success: #a3c97f;
+    --success-subtle: rgb(163 201 127 / 0.14);
+    --warning: #e2aa55;
+    --warning-subtle: rgb(226 170 85 / 0.14);
+    --danger: #ef8f82;
+    --danger-subtle: rgb(239 143 130 / 0.14);
+    --danger-solid: #b3261e;
+    --info: #92b7d9;
+    --info-subtle: rgb(146 183 217 / 0.14);
+    --neutral: #cfc9bd;
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow-md: 0 6px 20px -6px rgb(0 0 0 / 0.6);
-    --hero:
-      radial-gradient(1200px 300px at 0% 0%, rgb(99 102 241 / 0.14) 0%, transparent 60%),
-      radial-gradient(900px 300px at 100% 0%, rgb(20 184 166 / 0.1) 0%, transparent 55%);
-    --m1: #3987e5;
-    --m2: #d95926;
-    --m3: #199e70;
-    --m4: #c98500;
-    --m5: #d55181;
+    --m1: #4a86c5;
+    --m2: #d0703f;
+    --m3: #3aa07c;
+    --m4: #b88a2a;
+    --m5: #bf6d9e;
   }
 }
 
@@ -84,8 +83,7 @@
 }
 body {
   margin: 0;
-  background: var(--hero), var(--background);
-  background-repeat: no-repeat;
+  background: var(--background);
   color: var(--text);
   font:
     15px/1.5 Inter,
@@ -186,10 +184,10 @@ code {
   height: 40px;
   flex-shrink: 0;
   border-radius: 12px;
-  box-shadow: 0 4px 12px -2px rgb(79 70 229 / 0.45);
+  box-shadow: var(--shadow-sm);
 }
 .logo rect {
-  fill: #4f46e5;
+  fill: #1f5c4a;
 }
 .logo path {
   fill: none;
@@ -235,7 +233,6 @@ h1 {
 .btn.primary {
   background: var(--primary);
   color: var(--on-primary);
-  box-shadow: 0 2px 8px -2px rgb(79 70 229 / 0.5);
 }
 .btn.primary:hover {
   background: var(--primary-hover);
@@ -867,9 +864,11 @@ button.node:hover {
   text-align: center;
   cursor: default;
   border-left-width: 1px;
-  background:
-    radial-gradient(circle at 50% 30%, var(--primary-subtle), transparent 70%), var(--surface);
+  background: var(--surface);
   border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.goal-title .icon {
+  color: var(--accent);
 }
 .node.goal .ring-label strong {
   font-size: 22px;

@@ -11,9 +11,10 @@ import {
 
 const API = `https://api.github.com/repos/${REPO.owner}/${REPO.name}`;
 const REPO_URL = `https://github.com/${REPO.owner}/${REPO.name}`;
+const SNAPSHOT_URL = "data.json"; // Written by .github/workflows/board.yml on every deploy.
 const CACHE_KEY = "board-cache-v1";
-const CACHE_MS = 60_000; // GitHub allows 60 unauthenticated requests per hour per IP.
-const AUTO_REFRESH_MS = 5 * 60_000;
+const CACHE_MS = 60_000; // Live fallback only: GitHub allows 60 anonymous requests per hour per IP.
+const AUTO_REFRESH_MS = 2 * 60_000;
 const DONE_PREVIEW = 8;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -82,7 +83,24 @@ async function get(path) {
   return response.json();
 }
 
+/**
+ * The published site reads a snapshot that GitHub Actions refreshes whenever an
+ * issue or PR changes, so visitors never call the GitHub API themselves (one
+ * campus network shares a single 60-per-hour anonymous quota). Without a
+ * snapshot (local preview) it falls back to the live API.
+ */
 async function load(force = false) {
+  let response = null;
+  try {
+    response = await fetch(`${SNAPSHOT_URL}?t=${Date.now()}`, { cache: "no-store" });
+  } catch {
+    // Offline or blocked: try the live API below.
+  }
+  if (response?.ok) return { ...(await response.json()), snapshot: true };
+  return loadLive(force);
+}
+
+async function loadLive(force) {
   if (!force) {
     try {
       const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) ?? "null");
@@ -798,8 +816,10 @@ function render() {
   renderFilters();
   renderBoard();
   renderPulls();
-  $("updated").textContent =
-    `数据更新于 ${new Date(data.at).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })} · 每 5 分钟自动刷新`;
+  const at = new Date(data.at).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+  $("updated").textContent = data.snapshot
+    ? `数据同步于 ${at}（${timeAgo(new Date(data.at).toISOString())}）· Issue / PR 变化后约 1 分钟自动同步`
+    : `数据更新于 ${at} · 直接读取 GitHub（本地预览）`;
 }
 
 async function refresh(force = false) {

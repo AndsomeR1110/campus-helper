@@ -10,7 +10,7 @@
  *   - /api/* and everything else: not intercepted, always the network.
  */
 
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC_CACHE = `campus-helper-static-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
