@@ -2,6 +2,8 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
+import { getCurrentUser } from "@/lib/auth";
+
 import type { Viewer } from "../types";
 
 /**
@@ -35,7 +37,20 @@ const DEMO_PEOPLE: Record<string, Viewer> = {
   admin: DEMO_ADMIN,
 };
 
+/**
+ * With a database the viewer is the signed-in user from `@/lib/auth`; the demo
+ * cookie below is only honoured by the in-memory demo (no `DATABASE_URL`), so a
+ * browser can never choose who it acts as against real data.
+ */
+const usesRealSession = () => Boolean(process.env.DATABASE_URL);
+
+async function sessionViewer(): Promise<Viewer | null> {
+  const user = await getCurrentUser();
+  return user ? { id: user.id, role: user.role, name: user.name } : null;
+}
+
 export async function getCurrentViewer(): Promise<Viewer | null> {
+  if (usesRealSession()) return sessionViewer();
   if (process.env.LOST_FOUND_DEMO === "0") return null;
 
   const jar = await cookies();
@@ -45,6 +60,10 @@ export async function getCurrentViewer(): Promise<Viewer | null> {
 }
 
 export async function getCurrentAdmin(): Promise<Viewer | null> {
+  if (usesRealSession()) {
+    const viewer = await sessionViewer();
+    return viewer?.role === "ADMIN" ? viewer : null;
+  }
   if (process.env.LOST_FOUND_DEMO_ADMIN !== "1") return null;
 
   const jar = await cookies();
