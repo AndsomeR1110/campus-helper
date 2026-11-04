@@ -1,4 +1,3 @@
-import { formatDisplayName } from "../constants";
 import { byNewestFirst, matchesFilters } from "../filters";
 import {
   canDecideClaimForPost,
@@ -103,7 +102,7 @@ export function createLostFoundService({
       return repository.createPost({
         id: nextId(),
         authorId: viewer.id,
-        authorName: formatDisplayName(viewer.name),
+        authorName: viewer.name,
         kind: input.kind,
         category: input.category,
         title: input.title,
@@ -141,7 +140,7 @@ export function createLostFoundService({
         id: nextId(),
         postId,
         claimantId: viewer.id,
-        claimantName: formatDisplayName(viewer.name),
+        claimantName: viewer.name,
         message: input.message,
         status: "PENDING",
         createdAt: at,
@@ -179,6 +178,9 @@ export function createLostFoundService({
       return repository.transaction(async (tx) => {
         if (decision === "ACCEPT") {
           const siblings = await tx.listClaimsForPost(post.id);
+          if (siblings.some((sibling) => sibling.id !== claimId && sibling.status === "APPROVED")) {
+            throw new LostFoundError("FORBIDDEN", "This item has already been claimed.");
+          }
           for (const [id, status] of claimStatusesAfterAccept(siblings, claimId)) {
             if (id === claimId) continue;
             await tx.updateClaim(id, { status, decidedAt: at });
