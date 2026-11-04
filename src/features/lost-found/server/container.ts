@@ -18,7 +18,12 @@ interface LostFoundRuntime {
   demo: boolean;
 }
 
-let runtime: LostFoundRuntime | undefined;
+/**
+ * Pinned on `globalThis`: the dev server builds one module graph for pages and
+ * another for route handlers, so a module-level singleton would hand the two
+ * graphs separate memory stores and a write would look lost after a refresh.
+ */
+const globalStore = globalThis as typeof globalThis & { __lostFoundRuntime?: LostFoundRuntime };
 
 /**
  * Composition root used by pages, route handlers and the admin screen.
@@ -28,7 +33,8 @@ let runtime: LostFoundRuntime | undefined;
  * `npm run dev` show a populated module on a laptop with no database.
  */
 export function getLostFoundRuntime(): LostFoundRuntime {
-  if (runtime) return runtime;
+  const existing = globalStore.__lostFoundRuntime;
+  if (existing) return existing;
 
   const demo = !process.env.DATABASE_URL;
   const repository = demo
@@ -44,6 +50,7 @@ export function getLostFoundRuntime(): LostFoundRuntime {
     storage,
   });
 
-  runtime = { service, storage, demo };
+  const runtime: LostFoundRuntime = { service, storage, demo };
+  globalStore.__lostFoundRuntime = runtime;
   return runtime;
 }

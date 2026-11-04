@@ -17,6 +17,7 @@ export type {
   PostKind,
   PostListItem,
   PostStatus,
+  PostSummary,
   Viewer,
   ViewerRole,
 } from "./types";
