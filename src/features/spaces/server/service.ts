@@ -41,6 +41,10 @@ export function createSpaceService(deps: {
 }) {
   const { repository, currentActor, now } = deps;
   return {
+    async catalog() {
+      requireActor(await currentActor());
+      return repository.listSpaces();
+    },
     async search(filters: SpaceFilters, range: TimeRange) {
       requireActor(await currentActor());
       validateRange(range, now());

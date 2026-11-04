@@ -1,20 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { PageContainer, StickyActionBar, TopBar } from "@/components/layout";
 import {
   Button,
   cardStyles,
-  Chip,
-  ChipGroup,
   DemoDataNotice,
   EmptyState,
   ErrorState,
-  FormField,
-  Input,
   Skeleton,
+  useOffline,
 } from "@/components/ui";
 import { formatDate, formatTimeRange } from "@/lib/time";
+import { SpaceFilterForm } from "./space-filter-form";
 import { SEAT_TYPE_LABELS } from "../constants";
 import type { Space, TimeRange } from "../types";
 
@@ -25,6 +23,13 @@ export function bookingFailureMessage(error: unknown) {
       ("code" in error && error.code === "BOOKING_CONFLICT")
     )
       return "This seat or your time is already booked. Your selection has been kept. Refresh availability and choose another seat or time.";
+    if (
+      "status" in error &&
+      [400, 401, 403, 404].includes(Number(error.status)) &&
+      "message" in error &&
+      typeof error.message === "string"
+    )
+      return error.message;
     if (error instanceof TypeError || ("code" in error && error.code === "OFFLINE"))
       return "We couldn’t connect. Check your connection and try again. Your selection has been kept.";
   }
@@ -40,6 +45,8 @@ export function SpacePicker({
   error,
   onRetry,
   onBook,
+  filterAction,
+  children,
 }: {
   spaces: readonly (Space & { available: boolean })[];
   range: TimeRange;
@@ -48,15 +55,16 @@ export function SpacePicker({
   error?: string;
   onRetry: () => void;
   onBook: (spaceId: string, range: TimeRange) => Promise<void>;
+  filterAction?: string;
+  children?: ReactNode;
 }) {
   const [selected, setSelected] = useState<string>();
+  const offline = useOffline();
   const [pending, setPending] = useState(false);
   const [failure, setFailure] = useState<string>();
-  const params = new URLSearchParams(query);
-  const [seatType, setSeatType] = useState(params.get("type") ?? "");
   const seat = spaces.find((s) => s.id === selected && s.available);
   async function book() {
-    if (!seat || pending) return;
+    if (!seat || pending || offline) return;
     setPending(true);
     setFailure(undefined);
     try {
@@ -70,48 +78,11 @@ export function SpacePicker({
   return (
     <>
       <DemoDataNotice />
-      <form action="/spaces" method="get" className="grid min-w-0 gap-4 md:grid-cols-3">
-        <FormField label="Date" required>
-          <Input name="date" type="date" defaultValue={params.get("date") ?? ""} />
-        </FormField>
-        <FormField label="Start time" required>
-          <Input name="start" type="time" step="1800" defaultValue={params.get("start") ?? ""} />
-        </FormField>
-        <FormField label="End time" required>
-          <Input name="end" type="time" step="1800" defaultValue={params.get("end") ?? ""} />
-        </FormField>
-        <FormField label="Building">
-          <Input name="building" defaultValue={params.get("building") ?? ""} />
-        </FormField>
-        <FormField label="Floor">
-          <Input
-            name="floor"
-            type="number"
-            min="1"
-            max="99"
-            defaultValue={params.get("floor") ?? ""}
-          />
-        </FormField>
-        <input type="hidden" name="type" value={seatType} />
-        <ChipGroup label="Seat type">
-          <Chip className="min-h-11" selected={!seatType} onClick={() => setSeatType("")}>
-            All types
-          </Chip>
-          {Object.entries(SEAT_TYPE_LABELS).map(([value, label]) => (
-            <Chip
-              key={value}
-              className="min-h-11"
-              selected={seatType === value}
-              onClick={() => setSeatType(value)}
-            >
-              {label}
-            </Chip>
-          ))}
-        </ChipGroup>
-        <Button type="submit" variant="secondary">
-          Find seats
-        </Button>
-      </form>
+      <SpaceFilterForm
+        query={query}
+        action={filterAction}
+        catalog={filterAction ? undefined : spaces}
+      />
       {loading ? (
         <Skeleton className="h-40" />
       ) : error ? (
@@ -162,9 +133,11 @@ export function SpacePicker({
       <p className="text-body-sm text-text-muted">
         30-minute steps · 30–180 minutes · within the next 7 days. Times shown in Asia/Shanghai.
       </p>
+      {children}
       <StickyActionBar
         summary={`${formatDate(range.startsAt)} · ${formatTimeRange(range.startsAt, range.endsAt)}`}
       >
+        {offline && <p className="text-body-sm text-text-muted">Unavailable offline</p>}
         {failure && (
           <p role="alert" className="text-body-sm text-danger">
             {failure}
@@ -173,7 +146,7 @@ export function SpacePicker({
         <Button
           size="lg"
           fullWidth
-          disabled={!seat || loading || !!error}
+          disabled={!seat || loading || !!error || offline}
           loading={pending}
           onClick={book}
         >
