@@ -23,7 +23,7 @@ export default function OfficeHoursError({
   }, [error]);
 
   return (
-    <main className="mx-auto flex w-full max-w-[--container-list] flex-col px-5 py-8">
+    <main className="mx-auto flex w-full max-w-list flex-col px-5 py-8">
       <ErrorState
         kind="server"
         action={

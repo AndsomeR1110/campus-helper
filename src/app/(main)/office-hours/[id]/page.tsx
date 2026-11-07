@@ -27,7 +27,7 @@ export default async function TeacherDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
 
   return (
-    <main className="mx-auto flex w-full max-w-[--container-list] flex-col gap-6 px-5 py-8">
+    <main className="mx-auto flex w-full max-w-list flex-col gap-6 px-5 py-8">
       <Link
         href="/office-hours"
         className="flex items-center gap-1.5 text-body-sm text-text-muted hover:text-text"

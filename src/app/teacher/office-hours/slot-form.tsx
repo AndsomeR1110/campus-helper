@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-import { Button, FormField, Input, toast } from "@/components/ui";
+import { Button, FormField, Input, toast, useOffline } from "@/components/ui";
 import { fromDateTimeLocalValue } from "@/features/office-hours";
 import { createSlotSchema } from "@/features/office-hours";
 
@@ -13,6 +13,7 @@ import { createSlotSchema } from "@/features/office-hours";
  */
 export function SlotForm() {
   const router = useRouter();
+  const offline = useOffline();
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [location, setLocation] = useState("");
@@ -110,9 +111,12 @@ export function SlotForm() {
         />
       </FormField>
 
-      <Button type="submit" loading={submitting} className="self-start">
-        {submitting ? "Creating…" : "Create slot"}
-      </Button>
+      <div className="flex flex-col gap-1">
+        <Button type="submit" loading={submitting} disabled={offline} className="self-start">
+          {submitting ? "Creating…" : "Create slot"}
+        </Button>
+        {offline && <p className="text-body-sm text-text-muted">Unavailable offline.</p>}
+      </div>
     </form>
   );
 }

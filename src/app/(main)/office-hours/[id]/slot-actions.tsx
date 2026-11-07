@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { Button, ConfirmDialog, Input, toast } from "@/components/ui";
+import { Button, ConfirmDialog, Input, toast, useOffline } from "@/components/ui";
 import { OFFICE_HOURS_MESSAGES } from "@/features/office-hours";
 
 interface SlotActionsProps {
@@ -20,8 +20,17 @@ interface SlotActionsProps {
  * Cancelling goes through ConfirmDialog (AGENTS.md UI rules); the resulting
  * status is decided by the server, never by the client.
  */
-export function SlotActions({ slotId, bookingId, takenByOthers, disabled }: SlotActionsProps) {
+export function SlotActions({
+  slotId,
+  bookingId,
+  takenByOthers,
+  disabled: slotDisabled,
+}: SlotActionsProps) {
   const router = useRouter();
+  // PWA-AC-04: no booking or cancelling while offline (the title says why).
+  const offline = useOffline();
+  const disabled = slotDisabled || offline;
+  const offlineTitle = offline ? "Unavailable offline" : undefined;
   const [pending, setPending] = useState(false);
   const [reason, setReason] = useState("");
   const [showReason, setShowReason] = useState(false);
@@ -80,6 +89,7 @@ export function SlotActions({ slotId, bookingId, takenByOthers, disabled }: Slot
           variant="danger"
           size="sm"
           disabled={disabled}
+          title={offlineTitle}
           onClick={() => setConfirmCancel(true)}
         >
           Cancel booking
@@ -112,7 +122,13 @@ export function SlotActions({ slotId, bookingId, takenByOthers, disabled }: Slot
           className="sm:w-64"
         />
         <div className="flex items-center gap-2">
-          <Button size="sm" loading={pending} disabled={disabled} onClick={book}>
+          <Button
+            size="sm"
+            loading={pending}
+            disabled={disabled}
+            title={offlineTitle}
+            onClick={book}
+          >
             Confirm booking
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setShowReason(false)}>
@@ -124,7 +140,7 @@ export function SlotActions({ slotId, bookingId, takenByOthers, disabled }: Slot
   }
 
   return (
-    <Button size="sm" disabled={disabled} onClick={() => setShowReason(true)}>
+    <Button size="sm" disabled={disabled} title={offlineTitle} onClick={() => setShowReason(true)}>
       Book
     </Button>
   );
