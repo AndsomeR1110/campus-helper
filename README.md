@@ -66,10 +66,25 @@ cp .env.example .env.local   # Windows (PowerShell): Copy-Item .env.example .env
 npm run db:up                # start PostgreSQL in Docker
 npm run db:deploy            # apply all migrations
 npm run db:seed              # fictional demo users, teachers and slots
+npm run db:seed:spaces       # demo study-space seats
 npm run dev
 ```
 
+Before `npm run dev`, set `AUTH_SECRET` in `.env.local`, or login fails. It must be at least 32 characters; generate one with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
 Open <http://localhost:3000>. Every seeded account uses the password `Password123!` (see `prisma/seed.ts` for the emails).
+
+Class reminders are created by a scheduled job. Locally nothing schedules it; trigger one scan by hand while the app is running:
+
+```bash
+curl -X POST http://localhost:3000/api/notifications/scan
+```
+
+Web Push is optional locally. Without the `VAPID_*` keys in `.env.local`, in-app notifications still work.
 
 Later, after pulling new migrations from `main`, run `npm run db:deploy` again. To start over with a clean database, run `npm run db:reset` (it deletes all local data, re-applies the migrations and seeds again).
 
@@ -90,6 +105,7 @@ Later, after pulling new migrations from `main`, run `npm run db:deploy` again. 
 | `npm run db:deploy`                       | Apply all pending migrations                                                  |
 | `npm run db:migrate`                      | Create a new migration after editing `prisma/schema.prisma` (Member 2 review) |
 | `npm run db:seed`                         | Insert the fictional demo data (safe to run again)                            |
+| `npm run db:seed:spaces`                  | Insert the demo study-space seats (safe to run again)                         |
 | `npm run db:reset`                        | Drop the local database, re-apply migrations and seed                         |
 | `npm run db:studio`                       | Browse the database in Prisma Studio                                          |
 

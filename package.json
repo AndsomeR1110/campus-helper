@@ -26,6 +26,7 @@
     "db:deploy": "node --env-file-if-exists=.env.local node_modules/prisma/build/index.js migrate deploy",
     "db:reset": "node --env-file-if-exists=.env.local node_modules/prisma/build/index.js migrate reset",
     "db:seed": "node --env-file-if-exists=.env.local --experimental-strip-types prisma/seed.ts",
+    "db:seed:spaces": "node --env-file-if-exists=.env.local --experimental-strip-types src/features/spaces/seed-demo.mjs",
     "db:studio": "node --env-file-if-exists=.env.local node_modules/prisma/build/index.js studio"
   },
   "dependencies": {
