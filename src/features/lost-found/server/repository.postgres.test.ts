@@ -88,7 +88,8 @@ describe.skipIf(!url)("Lost & Found Prisma storage", () => {
       message: "The cable is white and there is a sticker under the left pad.",
       status,
       createdAt: "2026-11-04T08:10:00.000Z",
-      decidedAt: null,
+      // The table's check constraint requires decidedAt exactly when the claim is decided.
+      decidedAt: status === "PENDING" ? null : "2026-11-04T09:00:00.000Z",
     };
   }
 
