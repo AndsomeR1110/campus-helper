@@ -3,12 +3,7 @@
  * 服务端查询/写操作请用 `@/features/office-hours/server`；认证相关 schema 在 `@/lib/auth/schemas`。
  * @see docs/frontend-architecture.md §4
  */
-export type {
-  TeacherSummary,
-  SlotSummary,
-  BookingSummary,
-  OfficeHourScheduleEvent,
-} from "@/features/office-hours/types";
+export type { TeacherSummary, SlotSummary, BookingSummary } from "@/features/office-hours/types";
 
 export {
   SLOT_CAPACITY,
