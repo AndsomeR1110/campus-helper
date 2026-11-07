@@ -162,12 +162,11 @@ export async function createSlot(input: {
   }
 }
 
-export async function updateSlotStatus(input: {
-  userId: string;
-  slotId: string;
-  status: "OPEN" | "CANCELLED";
-}) {
-  return prisma.$transaction(async (tx) => {
+export async function updateSlotStatus(
+  input: { userId: string; slotId: string; status: "OPEN" | "CANCELLED" },
+  db: PrismaClient = prisma,
+) {
+  return db.$transaction(async (tx) => {
     const slot = await tx.officeSlot.findUnique({
       where: { id: input.slotId },
       select: {

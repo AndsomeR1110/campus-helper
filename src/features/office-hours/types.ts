@@ -48,16 +48,3 @@ export interface BookingSummary {
   teacherName: string;
   department: string;
 }
-
-/** 可转换为统一日程事件（供 Member 4 汇总，见架构规范 §7.1） */
-export interface OfficeHourScheduleEvent {
-  id: string;
-  type: "OFFICE_HOUR";
-  sourceId: string;
-  title: string;
-  startsAt: string;
-  endsAt: string;
-  location: string | null;
-  status: string;
-  href: string;
-}

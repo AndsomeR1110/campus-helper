@@ -1,13 +1,9 @@
 import "server-only";
 
 import { prisma } from "@/lib/db";
+import { createScheduleEvent, type ScheduleEvent } from "@/features/schedule";
 import { matchesKeyword } from "@/features/office-hours/server/rules";
-import type {
-  BookingSummary,
-  OfficeHourScheduleEvent,
-  SlotSummary,
-  TeacherSummary,
-} from "@/features/office-hours/types";
+import type { BookingSummary, SlotSummary, TeacherSummary } from "@/features/office-hours/types";
 
 /**
  * Office Hour 只读查询。
@@ -161,23 +157,27 @@ export async function listMyBookings(userId: string): Promise<BookingSummary[]> 
 
 /**
  * 转换为统一日程事件（架构规范 §7.1）。
- * Member 4 在 feat/unified-calendar 中调用。
+ *
+ * 返回 M4 定义在 `@/features/schedule` 的 `ScheduleEvent`，而不是模块私有的形状：
+ * `id` 由 `createScheduleEvent()` 拼成 `OFFICE_HOUR:<bookingId>`，跨模块稳定且唯一。
+ * href 用 M3「我的预约」的 id 约定 `<kind>-<sourceId>`（office-…），点进去就是预约详情。
  */
-export async function toScheduleEvents(userId: string): Promise<OfficeHourScheduleEvent[]> {
+export async function toScheduleEvents(userId: string): Promise<ScheduleEvent[]> {
   const bookings = await listMyBookings(userId);
   return bookings
     .filter((b) => b.status === "CONFIRMED")
-    .map((b) => ({
-      id: `OFFICE_HOUR:${b.id}`,
-      type: "OFFICE_HOUR" as const,
-      sourceId: b.id,
-      title: `Office Hour · ${b.teacherName}`,
-      startsAt: b.startsAt,
-      endsAt: b.endsAt,
-      location: b.location,
-      status: b.status,
-      href: `/bookings/office-${b.id}`,
-    }));
+    .map((b) =>
+      createScheduleEvent({
+        type: "OFFICE_HOUR",
+        sourceId: b.id,
+        title: `Office Hour · ${b.teacherName}`,
+        startsAt: b.startsAt,
+        endsAt: b.endsAt,
+        location: b.location,
+        status: b.status,
+        href: `/bookings/office-${b.id}`,
+      }),
+    );
 }
 
 /** 教师自己的时段（PG-07 Teacher Dashboard） */
