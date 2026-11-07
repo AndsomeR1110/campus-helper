@@ -14,7 +14,18 @@ import { buildSlotCancelledNotification } from "@/features/office-hours/server/n
  *   1. 数据库部分唯一索引（migration 手写 SQL）→ 硬保证，两个并发请求只有一个能成功
  *   2. 本文件的事务 + 唯一冲突捕获 → 给用户可读的 409，而不是 500
  * 详见 docs/database-foundation.md §3。
+ *
+ * 预约和撤销时段都先 `lockSlot()`（SELECT … FOR UPDATE）锁住时段行，所以同一时段上的
+ * 写操作会排队执行：后到的请求在锁释放后能读到前一个已提交的结果，给出正确的 409；
+ * 撤销时段也一定能看到刚提交的预约并把它一起取消、发通知（OH-AC-03 / OH-AC-07）。
+ * 用默认的 Read Committed 而不是 Serializable：后者在并发冲突时报 P2034（序列化失败），
+ * 失败方拿到的是 500 而不是冲突提示。
  */
+
+/** 锁住时段行直到事务结束；时段不存在时不报错，由调用方随后的查询处理。 */
+async function lockSlot(tx: Prisma.TransactionClient, slotId: string): Promise<void> {
+  await tx.$queryRaw`SELECT id FROM "OfficeSlot" WHERE id = ${slotId} FOR UPDATE`;
+}
 
 // ---------------------------------------------------------------- 预约
 
@@ -23,41 +34,44 @@ export async function createBooking(
   db: PrismaClient = prisma,
 ) {
   try {
-    return await db.$transaction(
-      async (tx) => {
-        const slot = await tx.officeSlot.findUnique({
-          where: { id: input.slotId },
-          select: { id: true, status: true, startsAt: true },
-        });
-        if (!slot) throw new ApiError("NOT_FOUND", "This office hour slot no longer exists.");
+    return await db.$transaction(async (tx) => {
+      await lockSlot(tx, input.slotId);
+      const slot = await tx.officeSlot.findUnique({
+        where: { id: input.slotId },
+        select: { id: true, status: true, startsAt: true },
+      });
+      if (!slot) throw new ApiError("NOT_FOUND", "This office hour slot no longer exists.");
 
-        if (!canBook(slot)) {
-          if (slot.status !== "OPEN") {
-            throw new ApiError("SLOT_NOT_AVAILABLE", "This slot is closed.");
-          }
-          throw new ApiError("SLOT_ALREADY_STARTED", "This slot has already started.");
+      if (!canBook(slot)) {
+        if (slot.status !== "OPEN") {
+          throw new ApiError("SLOT_NOT_AVAILABLE", "This slot is closed.");
         }
+        throw new ApiError("SLOT_ALREADY_STARTED", "This slot has already started.");
+      }
 
-        const existing = await tx.officeBooking.findFirst({
-          where: { slotId: slot.id, studentId: input.studentId, status: "CONFIRMED" },
-          select: { id: true },
-        });
-        if (existing) {
-          throw new ApiError("SLOT_ALREADY_BOOKED", "You have already booked this slot.");
-        }
+      const existing = await tx.officeBooking.findFirst({
+        where: { slotId: slot.id, status: "CONFIRMED" },
+        select: { studentId: true },
+      });
+      if (existing) {
+        throw new ApiError(
+          "SLOT_ALREADY_BOOKED",
+          existing.studentId === input.studentId
+            ? "You have already booked this slot."
+            : "This slot has just been booked by someone else.",
+        );
+      }
 
-        return await tx.officeBooking.create({
-          data: {
-            slotId: slot.id,
-            studentId: input.studentId,
-            reason: input.reason,
-            status: "CONFIRMED",
-          },
-          select: { id: true, status: true, slotId: true, createdAt: true },
-        });
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-    );
+      return await tx.officeBooking.create({
+        data: {
+          slotId: slot.id,
+          studentId: input.studentId,
+          reason: input.reason,
+          status: "CONFIRMED",
+        },
+        select: { id: true, status: true, slotId: true, createdAt: true },
+      });
+    });
   } catch (error) {
     // 部分唯一索引把并发写入挡下来了 → 转成可读的 409
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -167,6 +181,7 @@ export async function updateSlotStatus(
   db: PrismaClient = prisma,
 ) {
   return db.$transaction(async (tx) => {
+    await lockSlot(tx, input.slotId);
     const slot = await tx.officeSlot.findUnique({
       where: { id: input.slotId },
       select: {

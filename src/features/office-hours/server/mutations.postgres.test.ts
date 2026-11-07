@@ -196,4 +196,59 @@ describe.skipIf(!url)("office hour booking against real PostgreSQL", () => {
     // …and the slot is untouched.
     expect((await a.officeSlot.findUniqueOrThrow({ where: { id: slotId } })).status).toBe("OPEN");
   });
+
+  /** A further fresh slot, `hoursAhead` from now, for the multi-round race tests below. */
+  async function freshSlot(hoursAhead: number): Promise<string> {
+    const startsAt = new Date(Date.now() + hoursAhead * 60 * MINUTE);
+    const slot = await a.officeSlot.create({
+      data: { teacherId, startsAt, endsAt: new Date(startsAt.getTime() + 30 * MINUTE) },
+      select: { id: true },
+    });
+    return slot.id;
+  }
+
+  it("gives every losing concurrent booking a conflict, never a 500 (OH-AC-03)", async () => {
+    // Under SERIALIZABLE the losers used to fail with P2034 (serialization failure),
+    // which the API turned into a 500. Several rounds so the race really happens.
+    for (let round = 0; round < 10; round++) {
+      const id = await freshSlot(10 + round);
+      const results = await Promise.allSettled(
+        [a, b, a, b].map((client, i) =>
+          createBooking({ slotId: id, studentId: students[i % 2] }, client),
+        ),
+      );
+      const rejected = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
+
+      expect(results.length - rejected.length).toBe(1);
+      for (const { reason } of rejected) {
+        expect(reason).toBeInstanceOf(ApiError);
+        expect((reason as ApiError).code).toBe("SLOT_ALREADY_BOOKED");
+      }
+    }
+  });
+
+  it("never leaves a confirmed booking on a slot withdrawn at the same moment (OH-AC-07)", async () => {
+    for (let round = 0; round < 10; round++) {
+      const id = await freshSlot(30 + round);
+      await Promise.allSettled([
+        createBooking({ slotId: id, studentId: students[0] }, b),
+        updateSlotStatus({ userId: teacherUserId, slotId: id, status: "CANCELLED" }, a),
+      ]);
+
+      const slot = await a.officeSlot.findUniqueOrThrow({
+        where: { id },
+        select: { status: true, bookings: { select: { id: true, status: true } } },
+      });
+      expect(slot.status).toBe("CANCELLED");
+      // Either the booking lost (none exists) or it won and was then withdrawn with a notice.
+      for (const booking of slot.bookings) {
+        expect(booking.status).toBe("CANCELLED");
+        expect(
+          await a.notification.count({
+            where: { userId: students[0], dedupeKey: `office-slot:${id}:${booking.id}:cancelled` },
+          }),
+        ).toBe(1);
+      }
+    }
+  });
 });
