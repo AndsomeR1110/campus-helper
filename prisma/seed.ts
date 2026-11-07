@@ -9,6 +9,12 @@
 import { PrismaClient, type Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+// Imported with an explicit .ts extension on purpose: this file is executed directly by
+// `node --experimental-strip-types` (see package.json scripts), which is ESM and therefore
+// requires full specifiers. tsconfig has allowImportingTsExtensions for the typecheck.
+// Do not switch this to the "@/…" alias — plain Node cannot resolve tsconfig paths.
+import { DEMO_SPACES } from "../src/features/spaces/demo-data.ts";
+
 const prisma = new PrismaClient();
 
 const DEMO_PASSWORD = "Password123!";
@@ -202,6 +208,14 @@ async function main() {
     studentNo: ADMIN.studentNo,
   });
 
+  console.log("→ seeding 20 demo study-space seats …");
+  // seedSpaces() from src/features/spaces/server/seed.ts cannot be imported here: it pulls in
+  // `server-only` and extensionless relative imports, which plain Node cannot run. Instead we
+  // reuse the same fixture list and do the identical idempotent upsert by primary key.
+  for (const space of DEMO_SPACES) {
+    await prisma.space.upsert({ where: { id: space.id }, create: space, update: space });
+  }
+
   console.log("→ seeding one demo booking (Mia → Smith, first slot) …");
   const firstSlot = await prisma.officeSlot.findFirst({
     where: { teacherId: teacherProfileIds[0], status: "OPEN" },
@@ -226,15 +240,16 @@ async function main() {
     }
   }
 
-  const [users, teachers, slots, bookings] = await Promise.all([
+  const [users, teachers, slots, bookings, spaces] = await Promise.all([
     prisma.user.count(),
     prisma.teacherProfile.count(),
     prisma.officeSlot.count(),
     prisma.officeBooking.count(),
+    prisma.space.count(),
   ]);
 
   console.log(
-    `✓ seed done — users=${users} teachers=${teachers} slots=${slots} bookings=${bookings}`,
+    `✓ seed done — users=${users} teachers=${teachers} slots=${slots} bookings=${bookings} spaces=${spaces}`,
   );
   console.log(`  demo password for every account: ${DEMO_PASSWORD}`);
 }
