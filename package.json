@@ -19,10 +19,15 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "check": "npm run lint && npm run format:check && npm run typecheck && npm run test",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:seed": "node --experimental-strip-types prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:migrate": "node --env-file-if-exists=.env.local node_modules/prisma/build/index.js migrate dev",
+    "db:deploy": "node --env-file-if-exists=.env.local node_modules/prisma/build/index.js migrate deploy",
+    "db:reset": "node --env-file-if-exists=.env.local node_modules/prisma/build/index.js migrate reset",
+    "db:seed": "node --env-file-if-exists=.env.local --experimental-strip-types prisma/seed.ts",
+    "db:seed:spaces": "node --env-file-if-exists=.env.local --experimental-strip-types src/features/spaces/seed-demo.mjs",
+    "db:studio": "node --env-file-if-exists=.env.local node_modules/prisma/build/index.js studio"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",

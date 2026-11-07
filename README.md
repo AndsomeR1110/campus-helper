@@ -56,31 +56,76 @@ Read these before opening your first PR. Using an AI coding agent? See [docs/age
 
 ## Getting Started
 
-**Requirements:** Node.js 22 (see `.nvmrc`; `nvm use` picks it up) and npm.
+**Requirements:** Node.js 22 (see `.nvmrc`; `nvm use` picks it up), npm, and [Docker Desktop](https://www.docker.com/products/docker-desktop/) for the local database. You can use your own PostgreSQL 14+ instead of Docker. If you do, set `DATABASE_URL` in `.env.local` to it; the database user must be allowed to create the `btree_gist` extension.
 
 ```bash
 git clone https://github.com/AndsomeR1110/campus-helper.git
 cd campus-helper
 npm ci
-cp .env.example .env.local
+cp .env.example .env.local   # Windows (PowerShell): Copy-Item .env.example .env.local
+npm run db:up                # start PostgreSQL in Docker
+npm run db:deploy            # apply all migrations
+npm run db:seed              # fictional demo users, teachers and slots
+npm run db:seed:spaces       # demo study-space seats
 npm run dev
 ```
 
-Open <http://localhost:3000>.
+Before `npm run dev`, set `AUTH_SECRET` in `.env.local`, or login fails. It must be at least 32 characters; generate one with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+Open <http://localhost:3000>. Every seeded account uses the password `Password123!` (see `prisma/seed.ts` for the emails).
+
+Class reminders are created by a scheduled job. Locally nothing schedules it; trigger one scan by hand while the app is running:
+
+```bash
+curl -X POST http://localhost:3000/api/notifications/scan
+```
+
+Web Push is optional locally. Without the `VAPID_*` keys in `.env.local`, in-app notifications still work.
+
+Later, after pulling new migrations from `main`, run `npm run db:deploy` again. To start over with a clean database, run `npm run db:reset` (it deletes all local data, re-applies the migrations and seeds again).
+
+> Prisma reads only `.env`, not `.env.local`. The `db:*` scripts load `.env.local` for it, so use them instead of calling `npx prisma …` directly.
 
 ### Scripts
 
-| Command                                   | What it does                                                    |
-| ----------------------------------------- | --------------------------------------------------------------- |
-| `npm run dev`                             | Start the dev server (Turbopack)                                |
-| `npm run build` / `npm start`             | Production build / serve it                                     |
-| `npm run lint` / `npm run lint:fix`       | ESLint (Next.js rules + module import boundaries)               |
-| `npm run format` / `npm run format:check` | Prettier (also sorts Tailwind classes)                          |
-| `npm run typecheck`                       | Generate route types and run `tsc --noEmit`                     |
-| `npm test` / `npm run test:watch`         | Vitest unit tests (`src/**/*.test.ts(x)`)                       |
-| `npm run check`                           | Lint + format check + typecheck + tests — run before every push |
+| Command                                   | What it does                                                                  |
+| ----------------------------------------- | ----------------------------------------------------------------------------- |
+| `npm run dev`                             | Start the dev server (Turbopack)                                              |
+| `npm run build` / `npm start`             | Production build / serve it                                                   |
+| `npm run lint` / `npm run lint:fix`       | ESLint (Next.js rules + module import boundaries)                             |
+| `npm run format` / `npm run format:check` | Prettier (also sorts Tailwind classes)                                        |
+| `npm run typecheck`                       | Generate route types and run `tsc --noEmit`                                   |
+| `npm test` / `npm run test:watch`         | Vitest unit tests (`src/**/*.test.ts(x)`)                                     |
+| `npm run check`                           | Lint + format check + typecheck + tests — run before every push               |
+| `npm run db:up` / `npm run db:down`       | Start / stop the local PostgreSQL container (data is kept between restarts)   |
+| `npm run db:deploy`                       | Apply all pending migrations                                                  |
+| `npm run db:migrate`                      | Create a new migration after editing `prisma/schema.prisma` (Member 2 review) |
+| `npm run db:seed`                         | Insert the fictional demo data (safe to run again)                            |
+| `npm run db:seed:spaces`                  | Insert the demo study-space seats (safe to run again)                         |
+| `npm run db:reset`                        | Drop the local database, re-apply migrations and seed                         |
+| `npm run db:studio`                       | Browse the database in Prisma Studio                                          |
 
 CI runs the same checks plus `next build` on every pull request.
+
+### Production mode and PWA testing
+
+The service worker is only registered in production mode, so test offline behaviour, installation and push with:
+
+```bash
+npm run build
+npm start
+```
+
+On your computer, <http://localhost:3000> counts as a secure origin, so the service worker and "Install app" work there.
+
+On a phone, browsers only allow service workers, installation and push over **HTTPS**. Opening `http://<your-computer-ip>:3000` on the same Wi-Fi is fine for checking layout, but PWA features will not work. To test them on a phone:
+
+- **Android + USB:** enable USB debugging, open `chrome://inspect/#devices` in desktop Chrome, turn on _Port forwarding_ for `3000 → localhost:3000`, then open `http://localhost:3000` in Chrome on the phone.
+- **Any phone (iOS included):** start a temporary HTTPS tunnel with [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) (`cloudflared tunnel --url http://localhost:3000`) and open the `https://….trycloudflare.com` address it prints. Anyone with that address can reach your local app, so only use seed data and stop the tunnel when you are done.
 
 ### Windows
 
