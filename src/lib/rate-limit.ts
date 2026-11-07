@@ -152,15 +152,17 @@ export function enforceRateLimit(limiter: RateLimiter, key: string): void {
 }
 
 /**
- * 客户端 IP：优先取代理头的第一跳，其次 x-real-ip。
- * 本地开发（`npm run dev`，没有反向代理）拿到的是回环地址，用它即可。
+ * 客户端 IP：取 x-forwarded-for 的**最后一跳**，其次 x-real-ip。
+ * 最后一跳是我们自己的反向代理（Caddy）写进去的真实来源地址；前面的条目客户端可以随便伪造，
+ * 取第一跳的话，每次请求换一个假 IP 就能绕过限流。
+ * 本地开发（`npm run dev`，没有反向代理）没有这个头，落到 "unknown"。
  * 取不到时统一返回 "unknown" —— 这样限流仍然生效（所有匿名请求共用一个桶）。
  */
 export function clientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
-    const first = forwarded.split(",")[0]?.trim();
-    if (first) return first;
+    const last = forwarded.split(",").at(-1)?.trim();
+    if (last) return last;
   }
   const realIp = request.headers.get("x-real-ip")?.trim();
   if (realIp) return realIp;

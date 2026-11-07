@@ -175,8 +175,9 @@ describe("clientIp", () => {
   const request = (headers: Record<string, string>) =>
     new Request("http://localhost/api/auth/login", { headers });
 
-  it("uses the first hop of x-forwarded-for", () => {
-    expect(clientIp(request({ "x-forwarded-for": "203.0.113.7, 70.41.3.18" }))).toBe("203.0.113.7");
+  it("uses the hop our own proxy appended, not one the client can spoof", () => {
+    // The client sent "203.0.113.7"; the reverse proxy appended the real address.
+    expect(clientIp(request({ "x-forwarded-for": "203.0.113.7, 70.41.3.18" }))).toBe("70.41.3.18");
   });
 
   it("falls back to x-real-ip", () => {
