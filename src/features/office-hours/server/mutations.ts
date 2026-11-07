@@ -1,10 +1,11 @@
 import "server-only";
 
-import { Prisma } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 import { ApiError } from "@/lib/api";
 import { canBook, canCancel, validateSlotDuration } from "@/features/office-hours/server/rules";
+import { buildSlotCancelledNotification } from "@/features/office-hours/server/notify";
 
 /**
  * Office Hour 写操作。
@@ -17,9 +18,12 @@ import { canBook, canCancel, validateSlotDuration } from "@/features/office-hour
 
 // ---------------------------------------------------------------- 预约
 
-export async function createBooking(input: { slotId: string; studentId: string; reason?: string }) {
+export async function createBooking(
+  input: { slotId: string; studentId: string; reason?: string },
+  db: PrismaClient = prisma,
+) {
   try {
-    return await prisma.$transaction(
+    return await db.$transaction(
       async (tx) => {
         const slot = await tx.officeSlot.findUnique({
           where: { id: input.slotId },
@@ -65,8 +69,11 @@ export async function createBooking(input: { slotId: string; studentId: string; 
 
 // ---------------------------------------------------------------- 取消
 
-export async function cancelBooking(input: { bookingId: string; studentId: string }) {
-  return prisma.$transaction(async (tx) => {
+export async function cancelBooking(
+  input: { bookingId: string; studentId: string },
+  db: PrismaClient = prisma,
+) {
+  return db.$transaction(async (tx) => {
     const booking = await tx.officeBooking.findUnique({
       where: { id: input.bookingId },
       select: {
@@ -160,19 +167,64 @@ export async function updateSlotStatus(input: {
   slotId: string;
   status: "OPEN" | "CANCELLED";
 }) {
-  const slot = await prisma.officeSlot.findUnique({
-    where: { id: input.slotId },
-    select: { id: true, teacher: { select: { userId: true } } },
-  });
-  if (!slot) throw new ApiError("NOT_FOUND", "Slot not found.");
-  // 教师只能管理自己的时段
-  if (slot.teacher.userId !== input.userId) {
-    throw new ApiError("FORBIDDEN", "You can only manage your own office hours.");
-  }
+  return prisma.$transaction(async (tx) => {
+    const slot = await tx.officeSlot.findUnique({
+      where: { id: input.slotId },
+      select: {
+        id: true,
+        status: true,
+        startsAt: true,
+        teacher: { select: { userId: true, displayName: true } },
+      },
+    });
+    if (!slot) throw new ApiError("NOT_FOUND", "Slot not found.");
+    // 教师只能管理自己的时段
+    if (slot.teacher.userId !== input.userId) {
+      throw new ApiError("FORBIDDEN", "You can only manage your own office hours.");
+    }
 
-  return prisma.officeSlot.update({
-    where: { id: slot.id },
-    data: { status: input.status },
-    select: { id: true, status: true },
+    if (input.status === "OPEN") {
+      const reopened = await tx.officeSlot.update({
+        where: { id: slot.id },
+        data: { status: "OPEN" },
+        select: { id: true, status: true },
+      });
+      return { ...reopened, cancelledBookings: 0 };
+    }
+
+    // ---- 撤销：时段 + 已有预约 + 通知必须在同一个事务里（OH-AC-07）
+    const affected = await tx.officeBooking.findMany({
+      where: { slotId: slot.id, status: "CONFIRMED" },
+      select: { id: true, studentId: true },
+    });
+
+    const withdrawn = await tx.officeSlot.update({
+      where: { id: slot.id },
+      data: { status: "CANCELLED" },
+      select: { id: true, status: true },
+    });
+
+    if (affected.length === 0) return { ...withdrawn, cancelledBookings: 0 };
+
+    const now = new Date();
+    await tx.officeBooking.updateMany({
+      where: { slotId: slot.id, status: "CONFIRMED" },
+      data: { status: "CANCELLED", cancelledAt: now },
+    });
+
+    // 通知由本模块直接写入事务：M4 的 createNotification() 目前不接受事务客户端，
+    // 拆成两次提交会出现"预约已取消但通知丢了"。见 PR 说明，后续交给 M4 收口。
+    await tx.notification.createMany({
+      data: affected.map((booking) => ({
+        userId: booking.studentId,
+        ...buildSlotCancelledNotification(
+          { slotId: slot.id, startsAt: slot.startsAt, teacherName: slot.teacher.displayName },
+          booking.id,
+        ),
+      })),
+      skipDuplicates: true,
+    });
+
+    return { ...withdrawn, cancelledBookings: affected.length };
   });
 }

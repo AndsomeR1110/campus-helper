@@ -221,6 +221,8 @@ model ReminderRule {
 
 enum NotificationType {
   CLASS_REMINDER
+  /// A teacher withdrew an office hour slot the student had booked (OH-AC-07).
+  OFFICE_HOUR_CANCELLED
 }
 
 /// In-app notifications (PG-13). `dedupeKey` is unique so a reminder job that
