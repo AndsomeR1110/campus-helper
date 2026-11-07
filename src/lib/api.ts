@@ -26,6 +26,7 @@ export type ApiErrorCode =
   | "CONFLICT"
   | "BOOKING_CONFLICT"
   | "INVALID_TIME_RANGE"
+  | "TOO_MANY_ATTEMPTS"
   | "INTERNAL_ERROR";
 
 const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
@@ -43,6 +44,7 @@ const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
   CONFLICT: 409,
   BOOKING_CONFLICT: 409,
   INVALID_TIME_RANGE: 400,
+  TOO_MANY_ATTEMPTS: 429,
   INTERNAL_ERROR: 500,
 };
 
@@ -50,12 +52,20 @@ const STATUS_BY_CODE: Record<ApiErrorCode, number> = {
 export class ApiError extends Error {
   readonly code: ApiErrorCode;
   readonly fields?: Record<string, string>;
+  /** 仅 429 使用：写进 `Retry-After` 响应头。 */
+  readonly retryAfterSeconds?: number;
 
-  constructor(code: ApiErrorCode, message: string, fields?: Record<string, string>) {
+  constructor(
+    code: ApiErrorCode,
+    message: string,
+    fields?: Record<string, string>,
+    retryAfterSeconds?: number,
+  ) {
     super(message);
     this.name = "ApiError";
     this.code = code;
     this.fields = fields;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 
   get status(): number {
@@ -71,10 +81,19 @@ export function created<T>(data: T): NextResponse {
   return NextResponse.json({ data }, { status: 201 });
 }
 
-export function fail(code: ApiErrorCode, message: string, fields?: Record<string, string>) {
+export function fail(
+  code: ApiErrorCode,
+  message: string,
+  fields?: Record<string, string>,
+  retryAfterSeconds?: number,
+) {
+  const headers = new Headers();
+  if (retryAfterSeconds && retryAfterSeconds > 0) {
+    headers.set("Retry-After", String(retryAfterSeconds));
+  }
   return NextResponse.json(
     { error: { code, message, ...(fields ? { fields } : {}) } },
-    { status: STATUS_BY_CODE[code] ?? 500 },
+    { status: STATUS_BY_CODE[code] ?? 500, headers },
   );
 }
 
@@ -84,7 +103,7 @@ export function fail(code: ApiErrorCode, message: string, fields?: Record<string
  */
 export function toErrorResponse(error: unknown): NextResponse {
   if (error instanceof ApiError) {
-    return fail(error.code, error.message, error.fields);
+    return fail(error.code, error.message, error.fields, error.retryAfterSeconds);
   }
 
   if (error instanceof ZodError) {
