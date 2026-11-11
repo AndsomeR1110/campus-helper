@@ -72,6 +72,8 @@ export function shouldShowBottomNav(pathname: string) {
 
 export interface ServiceEntry {
   label: string;
+  /** One-word label for the phone quick-access grid when `label` would wrap. */
+  shortLabel?: string;
   description: string;
   href: string;
   /** Drives icon and colour via TypeTag helpers. */
@@ -94,6 +96,7 @@ export const SERVICES: readonly ServiceEntry[] = [
   },
   {
     label: "Class Reminder",
+    shortLabel: "Classes",
     description: "Your timetable and reminders",
     href: "/schedule",
     type: "class",
