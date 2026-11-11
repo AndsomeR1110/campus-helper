@@ -23,6 +23,11 @@
   --color-primary-subtle: #efe8f8;
   --color-on-primary: #ffffff;
 
+  /* Logo colours: fixed in both themes (AppLogo, icon.svg, PWA icons) */
+  --color-brand: #6b3fa0;
+  --color-brand-on: #fdfcff;
+  --color-brand-accent: #f2b33d;
+
   /* Accent: map-pin sunshine, used sparingly for highlights (never for buttons or status) */
   --color-accent: #9a5a00;
   --color-accent-subtle: #fdf1d8;
@@ -163,71 +168,74 @@
 }
 
 :root[data-theme="dark"] {
+  /* Warm graphite night: neutral greys, no blue-violet tint, only faint glows. */
   color-scheme: dark;
   --shadow-tint: 0 0 0;
 
-  --color-primary: #b79af0;
-  --color-primary-hover: #c9b3f5;
-  --color-primary-subtle: #2c2342;
-  --color-on-primary: #1a1030;
+  /* Orchid from the campus-map pins, lightened for dark backgrounds */
+  --color-primary: #d9aee0;
+  --color-primary-hover: #e6c6ea;
+  --color-primary-subtle: #2f2630;
+  --color-on-primary: #241726;
 
-  --color-accent: #f5c566;
-  --color-accent-subtle: #33280f;
+  --color-accent: #f2c063;
+  --color-accent-subtle: #2f2717;
 
-  --color-background: #100e1a;
-  --color-surface: #1b1828;
-  --color-surface-muted: #252136;
-  --color-border: #2f2a42;
-  --color-border-strong: #443d5c;
-  --color-text: #ecebf3;
-  --color-text-muted: #a7a2bb;
-  --color-text-disabled: #6c6782;
-  --color-focus-ring: #c9b3f5;
-  --color-overlay: rgb(5 4 10 / 0.6);
+  --color-background: #131211;
+  --color-surface: #1c1b1a;
+  --color-surface-muted: #262523;
+  --color-border: #2f2d2b;
+  --color-border-strong: #46433f;
+  --color-text: #eeece8;
+  --color-text-muted: #aaa59d;
+  --color-text-disabled: #6f6b64;
+  --color-focus-ring: #e6c6ea;
+  --color-overlay: rgb(0 0 0 / 0.6);
 
-  --color-glass: rgb(27 24 40 / 0.62);
-  --color-glass-strong: rgb(27 24 40 / 0.88);
-  --color-glass-border: rgb(255 255 255 / 0.08);
+  --color-glass: rgb(28 27 26 / 0.68);
+  --color-glass-strong: rgb(28 27 26 / 0.9);
+  --color-glass-border: rgb(255 255 255 / 0.07);
 
-  --color-ambient-1: rgb(110 70 190 / 0.32);
-  --color-ambient-2: rgb(30 110 140 / 0.26);
-  --color-ambient-3: rgb(70 50 140 / 0.22);
+  /* Lamplight, lawn and river — kept very faint at night */
+  --color-ambient-1: rgb(242 179 61 / 0.07);
+  --color-ambient-2: rgb(110 170 120 / 0.06);
+  --color-ambient-3: rgb(140 190 210 / 0.05);
 
-  --color-map-lawn: #23302a;
-  --color-map-lawn-deep: #2f4536;
-  --color-map-river: #1f4a63;
-  --color-map-ring: #3a3354;
-  --color-map-building: #4a3f2c;
-  --color-map-track: #7a3d38;
-  --color-map-pin: #b79af0;
-  --color-map-pin-alt: #f5c566;
+  --color-map-lawn: #1f2620;
+  --color-map-lawn-deep: #2c3a2d;
+  --color-map-river: #22414c;
+  --color-map-ring: #3b3936;
+  --color-map-building: #4a4336;
+  --color-map-track: #7a3f37;
+  --color-map-pin: #d9aee0;
+  --color-map-pin-alt: #f2c063;
 
-  --color-success: #94d27a;
-  --color-success-subtle: #1d2a18;
+  --color-success: #9bd17f;
+  --color-success-subtle: #1e271a;
   --color-success-solid: #3f7a25;
   --color-warning: #f0b45a;
-  --color-warning-subtle: #2e2412;
+  --color-warning-subtle: #2e2514;
   --color-warning-solid: #a35d0a;
   --color-danger: #ff8f85;
-  --color-danger-subtle: #361b1b;
+  --color-danger-subtle: #341d1b;
   --color-danger-solid: #c4372d;
-  --color-info: #8fc0f0;
-  --color-info-subtle: #172636;
+  --color-info: #93c2e8;
+  --color-info-subtle: #1a2530;
   --color-info-solid: #2f6496;
-  --color-neutral: #b3aec4;
-  --color-neutral-subtle: #262236;
+  --color-neutral: #b3aea6;
+  --color-neutral-subtle: #282624;
 
-  --color-event-class: #8fc0f0;
-  --color-event-class-subtle: #172636;
-  --color-event-office: #f29cbc;
-  --color-event-office-subtle: #371a28;
-  --color-event-space: #7fd1cd;
-  --color-event-space-subtle: #12302f;
+  --color-event-class: #93c2e8;
+  --color-event-class-subtle: #1a2530;
+  --color-event-office: #f0a3bf;
+  --color-event-office-subtle: #351e27;
+  --color-event-space: #85cfc9;
+  --color-event-space-subtle: #152c2a;
 
   --color-lost: #f4a37f;
-  --color-lost-subtle: #38221a;
-  --color-found: #8fd49b;
-  --color-found-subtle: #1a2e1e;
+  --color-lost-subtle: #36231b;
+  --color-found: #96d3a0;
+  --color-found-subtle: #1b2b1e;
 }
 
 /*
