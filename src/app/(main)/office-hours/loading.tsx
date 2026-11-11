@@ -3,7 +3,10 @@ import { Skeleton } from "@/components/ui";
 /** Loading shell for `/office-hours` (loading state required by CONTRIBUTING's DoD). */
 export default function OfficeHoursLoading() {
   return (
-    <main className="mx-auto flex w-full max-w-list flex-col gap-6 px-5 py-8" aria-busy>
+    <div
+      className="mx-auto flex w-full max-w-list flex-col gap-6 px-4 py-4 md:px-6 md:py-6"
+      aria-busy
+    >
       <div className="flex flex-col gap-2">
         <Skeleton className="h-7 w-40" />
         <Skeleton className="h-4 w-2/3" />
@@ -19,7 +22,7 @@ export default function OfficeHoursLoading() {
             key={i}
             className="flex items-center gap-3 rounded-md border border-border bg-surface p-4"
           >
-            <Skeleton className="size-10" />
+            <Skeleton className="size-12 rounded-full" />
             <div className="flex flex-1 flex-col gap-2">
               <Skeleton className="h-4 w-1/3" />
               <Skeleton className="h-3 w-1/2" />
@@ -28,6 +31,6 @@ export default function OfficeHoursLoading() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

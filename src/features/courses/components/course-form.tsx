@@ -11,6 +11,7 @@ import {
   FormField,
   Input,
   Select,
+  TimeSelect,
   toast,
   useOffline,
 } from "@/components/ui";
@@ -214,20 +215,24 @@ export function CourseForm({ course }: CourseFormProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Starts" error={errors.startTime} required>
-                <Input
-                  type="time"
+                <TimeSelect
+                  from="07:00"
+                  to="22:45"
+                  step={15}
+                  placeholder="Select"
                   value={draft.startTime}
                   onChange={(event) => update("startTime", event.target.value)}
-                  step={300}
                 />
               </FormField>
 
               <FormField label="Ends" error={errors.endTime} required>
-                <Input
-                  type="time"
+                <TimeSelect
+                  from="07:00"
+                  to="22:45"
+                  step={15}
+                  placeholder="Select"
                   value={draft.endTime}
                   onChange={(event) => update("endTime", event.target.value)}
-                  step={300}
                 />
               </FormField>
             </div>

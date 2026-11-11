@@ -1,19 +1,22 @@
-import { CalendarClock, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
+import { PageContainer, TopBar } from "@/components/layout";
 import {
   Button,
   EmptyState,
   Input,
+  LocationText,
   Select,
   Skeleton,
+  buttonStyles,
   cardStyles,
   DemoDataNotice,
 } from "@/components/ui";
-import { OFFICE_HOURS_MESSAGES } from "@/features/office-hours";
+import { OFFICE_HOURS_MESSAGES, TeacherAvatar } from "@/features/office-hours";
 import { listDepartments, listTeachers } from "@/features/office-hours/server";
 import { ApiError } from "@/lib/api";
 import { requireUser } from "@/lib/auth/guards";
@@ -38,44 +41,60 @@ export default async function OfficeHoursPage({
   const { q, department } = await searchParams;
 
   return (
-    <main className="mx-auto flex w-full max-w-list flex-col gap-6 px-5 py-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-title-lg text-text">Office Hours</h1>
+    <>
+      <TopBar title="Office Hours" backHref="/services" />
+      <PageContainer>
         <p className="text-body-sm text-text-muted">
           Search a teacher, pick a slot, and tell them what you need help with.
         </p>
-      </header>
 
-      <DemoDataNotice />
+        <DemoDataNotice />
 
-      <form method="get" className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="flex-1">
-          <Input
-            type="search"
-            name="q"
-            defaultValue={q ?? ""}
-            placeholder="Search by name, department or course…"
-            aria-label="Search teachers"
-          />
-        </div>
-        <div className="sm:w-56">
-          <Select name="department" defaultValue={department ?? ""} aria-label="Department">
-            <option value="">All departments</option>
-            <Suspense fallback={null}>
-              <DepartmentOptions />
-            </Suspense>
-          </Select>
-        </div>
-        <Button type="submit">
-          <Search />
-          Search
-        </Button>
-      </form>
+        <form
+          method="get"
+          className={cardStyles({
+            variant: "widget",
+            className: "flex flex-col gap-3 md:flex-row md:items-center",
+          })}
+        >
+          <div className="relative flex-1">
+            <Search
+              className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-text-muted"
+              aria-hidden
+            />
+            <Input
+              type="search"
+              name="q"
+              defaultValue={q ?? ""}
+              placeholder="Search by name, department or course…"
+              aria-label="Search teachers"
+              className="rounded-full pl-11"
+            />
+          </div>
+          <div className="md:w-56">
+            <Select
+              name="department"
+              defaultValue={department ?? ""}
+              aria-label="Department"
+              className="rounded-full"
+            >
+              <option value="">All departments</option>
+              <Suspense fallback={null}>
+                <DepartmentOptions />
+              </Suspense>
+            </Select>
+          </div>
+          <Button type="submit">
+            <Search />
+            Search
+          </Button>
+        </form>
 
-      <Suspense fallback={<TeacherListSkeleton />}>
-        <TeacherList q={q} department={department} />
-      </Suspense>
-    </main>
+        <Suspense fallback={<TeacherListSkeleton />}>
+          <TeacherList q={q} department={department} />
+        </Suspense>
+      </PageContainer>
+    </>
   );
 }
 
@@ -102,7 +121,7 @@ async function TeacherList({ q, department }: { q?: string; department?: string 
         title="No teachers found"
         description={OFFICE_HOURS_MESSAGES.emptyTeachers}
         action={
-          <Link href="/office-hours" className={cardStyles({ className: "px-3 py-2" })}>
+          <Link href="/office-hours" className={buttonStyles({ variant: "secondary", size: "sm" })}>
             Clear search
           </Link>
         }
@@ -111,29 +130,35 @@ async function TeacherList({ q, department }: { q?: string; department?: string 
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="grid gap-3 md:grid-cols-2">
       {teachers.map((teacher) => (
         <li key={teacher.id}>
-          <Link href={`/office-hours/${teacher.id}`} className={cardStyles({ interactive: true })}>
+          <Link
+            href={`/office-hours/${teacher.id}`}
+            className={cardStyles({ interactive: true, className: "h-full" })}
+          >
             <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-sm bg-primary-subtle [&_svg]:size-5 [&_svg]:text-primary">
-                <CalendarClock aria-hidden />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <TeacherAvatar name={teacher.displayName} />
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <div className="truncate text-subtitle text-text">{teacher.displayName}</div>
-                <div className="line-clamp-2 text-body-sm text-text-muted">
-                  {teacher.department}
-                  {teacher.office ? ` · Office ${teacher.office}` : ""}
-                </div>
+                <div className="truncate text-body-sm text-text-muted">{teacher.department}</div>
+                {teacher.office ? (
+                  <LocationText
+                    location={`Office ${teacher.office}`}
+                    className="text-body-sm text-text-muted"
+                  />
+                ) : null}
               </div>
               <span
                 className={
                   teacher.openSlotCount > 0
-                    ? "shrink-0 rounded-sm bg-success-subtle px-2 py-1 text-caption text-success"
-                    : "shrink-0 rounded-sm bg-neutral-subtle px-2 py-1 text-caption text-neutral"
+                    ? "shrink-0 rounded-full bg-success-subtle px-2.5 py-1 text-caption text-success"
+                    : "shrink-0 rounded-full bg-neutral-subtle px-2.5 py-1 text-caption text-neutral"
                 }
               >
-                {teacher.openSlotCount > 0 ? `${teacher.openSlotCount} slots` : "No slots"}
+                {teacher.openSlotCount > 0
+                  ? `${teacher.openSlotCount} ${teacher.openSlotCount === 1 ? "slot" : "slots"}`
+                  : "No slots"}
               </span>
             </div>
           </Link>

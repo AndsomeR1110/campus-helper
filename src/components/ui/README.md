@@ -26,6 +26,8 @@ import { Button, FormField, Input, StatusBadge, toast } from "@/components/ui";
 | `EmptyState`, `ErrorState`                    | No data / no results, and failures (`kind`: offline, forbidden, not-found, server).                                                                                    |
 | `OfflineBanner`, `useOffline`                 | The banner is already inside `TopBar`. Use `useOffline()` to disable submit buttons offline and say why (PWA-AC-04).                                                   |
 | `AppLogo`                                     | The CAMPUS HELPER mark (same art as `src/app/icon.svg`). Fixed brand colours.                                                                                          |
+| `DateStrip`, `TimeSelect`                     | Date chips for the next days and a 24h time dropdown — use instead of native date/time inputs.                                                                         |
+| `LocationText`, `BuildingPin`, `DateTile`     | Locations with campus-map building markers; calendar-leaf date tile for booking/event cards.                                                                           |
 | `CampusIllustration`                          | Decorative flat campus-map illustration (Home hero). Theme-aware, `aria-hidden`.                                                                                       |
 | `DemoDataNotice`                              | Required on Office Hour and Study Space pages (SP-AC-07). `variant="footer"` on Login / Profile.                                                                       |
 

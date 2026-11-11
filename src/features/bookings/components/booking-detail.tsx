@@ -1,4 +1,5 @@
 "use client";
+import { Clock, MapPin } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { StickyActionBar } from "@/components/layout";
@@ -6,7 +7,9 @@ import {
   Button,
   Card,
   ConfirmDialog,
+  DateTile,
   DemoDataNotice,
+  LocationText,
   StatusBadge,
   toast,
   TypeTag,
@@ -59,16 +62,38 @@ export function BookingDetail({ booking, now }: { booking: BookingItem; now: str
   return (
     <>
       <DemoDataNotice />
-      <Card>
-        <TypeTag type={BOOKING_TAGS[booking.kind]} />
-        <h2 className="my-2 text-title">{booking.title}</h2>
-        <StatusBadge kind="booking" status={booking.status} />
-        <dl className="mt-4 flex flex-col gap-2">
-          <dt className="text-body-sm text-text-muted">Time (Asia/Shanghai)</dt>
-          <dd>{time}</dd>
-          <dt className="text-body-sm text-text-muted">Location</dt>
-          <dd>{booking.location ?? "Location not specified"}</dd>
+      <Card variant="widget" className="flex flex-col gap-4">
+        <div className="flex items-start gap-3">
+          <DateTile iso={booking.startsAt} type={BOOKING_TAGS[booking.kind]} size="lg" />
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <TypeTag type={BOOKING_TAGS[booking.kind]} />
+            <h2 className="text-title">{booking.title}</h2>
+            <StatusBadge kind="booking" status={booking.status} />
+          </div>
+        </div>
+        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-muted/60 px-4">
+          <div className="flex items-center gap-3 py-3">
+            <dt className="flex items-center gap-2 text-body-sm text-text-muted">
+              <Clock className="size-4" aria-hidden />
+              Time
+            </dt>
+            <dd className="ml-auto text-right text-body-sm tabular-nums">{time}</dd>
+          </div>
+          <div className="flex items-center gap-3 py-3">
+            <dt className="flex items-center gap-2 text-body-sm text-text-muted">
+              <MapPin className="size-4" aria-hidden />
+              Location
+            </dt>
+            <dd className="ml-auto min-w-0 text-right text-body-sm">
+              {booking.location ? (
+                <LocationText location={booking.location} className="justify-end" />
+              ) : (
+                "Location not specified"
+              )}
+            </dd>
+          </div>
         </dl>
+        <p className="text-caption text-text-muted">Times shown in Asia/Shanghai.</p>
       </Card>
       {!canCancel && (
         <p className="text-body-sm text-text-muted">

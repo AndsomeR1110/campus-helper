@@ -164,6 +164,7 @@ export function PostForm() {
           name="photo"
           type="file"
           accept="image/png,image/jpeg,image/webp"
+          className="h-auto cursor-pointer border-dashed py-2 text-body-sm text-text-muted file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-primary-subtle file:px-4 file:py-2 file:text-body-sm file:font-medium file:text-primary"
           onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
         />
       </FormField>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageContainer, SERVICES, TopBar } from "@/components/layout";
 import { DemoDataNotice } from "@/components/ui";
 import { ServiceTile } from "../_components/service-tile";
+import { CampusGuide, ServiceTips } from "./campus-guide";
 
 export const metadata: Metadata = { title: "Services" };
 
@@ -18,6 +19,8 @@ export default function ServicesPage() {
             </li>
           ))}
         </ul>
+        <ServiceTips />
+        <CampusGuide />
         <DemoDataNotice variant="footer" />
       </PageContainer>
     </>

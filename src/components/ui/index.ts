@@ -8,6 +8,7 @@ export {
   type ButtonVariant,
 } from "./button";
 export { AppLogo } from "./app-logo";
+export { BuildingPin, LocationText } from "./building-pin";
 export { CampusIllustration } from "./campus-illustration";
 export { Card, ListItem, cardStyles, type CardVariant, type ListItemProps } from "./card";
 export { Chip, ChipGroup, type ChipProps } from "./chip";
@@ -17,6 +18,8 @@ export {
   DemoDataNotice,
   type DemoDataNoticeProps,
 } from "./demo-data-notice";
+export { DateStrip, type DateStripProps } from "./date-strip";
+export { DateTile } from "./date-tile";
 export { EmptyState, type EmptyStateProps } from "./empty-state";
 export { ErrorState, type ErrorKind, type ErrorStateProps } from "./error-state";
 export { FormField, useFormField, type FormFieldProps } from "./form-field";
@@ -35,6 +38,7 @@ export {
   type StatusOf,
 } from "./status-badge";
 export { Textarea, type TextareaProps } from "./textarea";
+export { TimeSelect, type TimeSelectProps } from "./time-select";
 export { TimeSlotButton, type TimeSlotButtonProps } from "./time-slot-button";
 export { Toaster, toast } from "./toast";
 export { TypeIcon, TypeTag, typeColorClasses, type TagType } from "./type-tag";

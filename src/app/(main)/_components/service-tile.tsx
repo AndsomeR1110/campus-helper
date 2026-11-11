@@ -50,7 +50,11 @@ export function ServiceTile({
   return (
     <Link
       href={service.href}
-      className={cardStyles({ interactive: true, className: "flex h-full flex-col gap-3" })}
+      className={cardStyles({
+        variant: "widget",
+        interactive: true,
+        className: "flex h-full flex-col gap-3",
+      })}
     >
       <span
         className={cn(

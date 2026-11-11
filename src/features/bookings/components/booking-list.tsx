@@ -1,4 +1,5 @@
 "use client";
+import { CalendarCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -7,12 +8,14 @@ import {
   cardStyles,
   Chip,
   ChipGroup,
+  DateTile,
   DemoDataNotice,
   EmptyState,
+  LocationText,
   StatusBadge,
   TypeTag,
 } from "@/components/ui";
-import { formatDateWithYear, formatTimeRange } from "@/lib/time";
+import { formatTimeRange } from "@/lib/time";
 import { BOOKING_LABELS, BOOKING_TAGS } from "../constants";
 import type { BookingKind, BookingListResult } from "../types";
 export function BookingList({
@@ -56,22 +59,34 @@ export function BookingList({
       ))}
       {visible.length === 0 && relevant.length === 0 ? (
         <EmptyState
+          icon={CalendarCheck}
           title="No bookings to show"
           description="Bookings of this type will appear here after you reserve a seat or an Office Hour."
         />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {visible.map((b) => (
-            <Link key={b.id} href={b.href} className={cardStyles({ interactive: true })}>
-              <TypeTag type={BOOKING_TAGS[b.kind]} />
-              <h2 className="mt-2 text-subtitle">{b.title}</h2>
-              <p className="text-body-sm">
-                {formatDateWithYear(b.startsAt)}, {formatTimeRange(b.startsAt, b.endsAt)}
-              </p>
-              <p className="mb-2 text-body-sm text-text-muted">
-                {b.location ?? "Location not specified"}
-              </p>
-              <StatusBadge kind="booking" status={b.status} />
+            <Link
+              key={b.id}
+              href={b.href}
+              className={cardStyles({ interactive: true, className: "flex gap-3" })}
+            >
+              <DateTile iso={b.startsAt} type={BOOKING_TAGS[b.kind]} />
+              <span className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="flex items-center justify-between gap-2">
+                  <TypeTag type={BOOKING_TAGS[b.kind]} />
+                  <StatusBadge kind="booking" status={b.status} />
+                </span>
+                <h2 className="truncate text-subtitle">{b.title}</h2>
+                <span className="text-body-sm tabular-nums">
+                  {formatTimeRange(b.startsAt, b.endsAt)}
+                </span>
+                {b.location ? (
+                  <LocationText location={b.location} className="text-body-sm text-text-muted" />
+                ) : (
+                  <span className="text-body-sm text-text-muted">Location not specified</span>
+                )}
+              </span>
             </Link>
           ))}
         </div>

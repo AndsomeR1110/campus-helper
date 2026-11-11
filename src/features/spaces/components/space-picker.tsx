@@ -12,8 +12,8 @@ import {
   useOffline,
 } from "@/components/ui";
 import { formatDate, formatTimeRange } from "@/lib/time";
+import { SeatSummary } from "./seat-summary";
 import { SpaceFilterForm } from "./space-filter-form";
-import { SEAT_TYPE_LABELS } from "../constants";
 import type { Space, TimeRange } from "../types";
 
 export function bookingFailureMessage(error: unknown) {
@@ -78,11 +78,7 @@ export function SpacePicker({
   return (
     <>
       <DemoDataNotice />
-      <SpaceFilterForm
-        query={query}
-        action={filterAction}
-        catalog={filterAction ? undefined : spaces}
-      />
+      {!filterAction && <SpaceFilterForm query={query} action={filterAction} catalog={spaces} />}
       {loading ? (
         <Skeleton className="h-40" />
       ) : error ? (
@@ -110,29 +106,15 @@ export function SpacePicker({
               }}
               className={cardStyles({
                 interactive: true,
-                className: `text-left focus-visible:outline-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed ${selected === s.id ? "border-primary bg-primary-subtle" : ""}`,
+                className: `w-full text-left focus-visible:outline-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-70 ${selected === s.id ? "border-primary bg-primary-subtle" : ""}`,
               })}
             >
-              <span className="block text-subtitle">Seat {s.seat}</span>
-              <span className="block text-body-sm text-text-muted">
-                {s.campus} · {s.building} · Floor {s.floor}
-              </span>
-              <span className="block text-body-sm">
-                {SEAT_TYPE_LABELS[s.type]} · Capacity {s.capacity} ·{" "}
-                {s.power ? "Power socket" : "No power socket"}
-              </span>
-              <span className="block text-body-sm">
-                {s.discussion ? "Discussion allowed" : "Quiet study"} ·{" "}
-                {s.available ? "Available" : "Booked"}
-                {selected === s.id ? " · Selected" : ""}
-              </span>
+              <SeatSummary space={s} selected={selected === s.id} />
             </button>
           ))}
         </div>
       )}
-      <p className="text-body-sm text-text-muted">
-        30-minute steps · 30–180 minutes · within the next 7 days. Times shown in Asia/Shanghai.
-      </p>
+      {filterAction && <SpaceFilterForm query={query} action={filterAction} />}
       {children}
       <StickyActionBar
         summary={`${formatDate(range.startsAt)} · ${formatTimeRange(range.startsAt, range.endsAt)}`}

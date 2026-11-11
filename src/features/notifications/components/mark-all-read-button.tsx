@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button, toast, useOffline } from "@/components/ui";
+import { CheckCheck } from "lucide-react";
+import { IconButton, Spinner, toast, useOffline } from "@/components/ui";
 
-/** PG-13 bulk action (NT-AC-02). */
+/** PG-13 bulk action (NT-AC-02). Icon button so it fits the TopBar next to the title. */
 export function MarkAllReadButton({ disabled }: { disabled: boolean }) {
   const router = useRouter();
   const offline = useOffline();
@@ -27,14 +28,14 @@ export function MarkAllReadButton({ disabled }: { disabled: boolean }) {
   }
 
   return (
-    <Button
-      variant="secondary"
-      size="sm"
+    <IconButton
+      aria-label="Mark all as read"
+      title="Mark all as read"
       onClick={handleClick}
-      loading={pending}
-      disabled={disabled || offline}
+      disabled={disabled || offline || pending}
+      className="text-primary"
     >
-      Mark all as read
-    </Button>
+      {pending ? <Spinner /> : <CheckCheck />}
+    </IconButton>
   );
 }
