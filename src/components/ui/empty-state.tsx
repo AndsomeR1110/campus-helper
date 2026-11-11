@@ -23,7 +23,12 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className={cn("flex flex-col items-center gap-2 px-4 py-12 text-center", className)}>
-      <Icon className="mb-2 size-12 text-text-disabled" strokeWidth={1.5} aria-hidden />
+      <span
+        aria-hidden
+        className="mb-1 flex size-16 items-center justify-center rounded-full bg-primary-subtle text-primary ring-6 ring-primary-subtle/40"
+      >
+        <Icon className="size-7" strokeWidth={1.5} />
+      </span>
       <h2 className="text-subtitle text-text">{title}</h2>
       {description && <p className="max-w-80 text-body-sm text-text-muted">{description}</p>}
       {action && <div className="mt-4">{action}</div>}

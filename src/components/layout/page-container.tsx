@@ -13,7 +13,7 @@ export function PageContainer({ width = "list", className, children }: PageConta
   return (
     <div
       className={cn(
-        "mx-auto flex w-full flex-col gap-6 px-4 py-4 md:px-6 md:py-6",
+        "mx-auto flex w-full animate-enter flex-col gap-6 px-4 py-4 md:px-6 md:py-6",
         width === "content" ? "max-w-content" : "max-w-list",
         className,
       )}

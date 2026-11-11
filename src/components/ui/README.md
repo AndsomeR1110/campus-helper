@@ -25,7 +25,10 @@ import { Button, FormField, Input, StatusBadge, toast } from "@/components/ui";
 | `Skeleton`, `Spinner`                         | Loading states.                                                                                                      |
 | `EmptyState`, `ErrorState`                    | No data / no results, and failures (`kind`: offline, forbidden, not-found, server).                                  |
 | `OfflineBanner`, `useOffline`                 | The banner is already inside `TopBar`. Use `useOffline()` to disable submit buttons offline and say why (PWA-AC-04). |
+| `CampusIllustration`                          | Decorative flat campus-map illustration (Home hero). Theme-aware, `aria-hidden`.                                     |
 | `DemoDataNotice`                              | Required on Office Hour and Study Space pages (SP-AC-07). `variant="footer"` on Login / Profile.                     |
+
+Theme: `ThemeSwitcher` lives in `@/components/theme`. Use only semantic tokens and dark mode works automatically; floating layers use the `glass` / `glass-strong` utilities.
 
 Dates and times: use the helpers in `@/lib/time` (`formatDate`, `formatTimeRange`, `formatDateTimeRange`, `formatRelativeTime`…). They always output Asia/Shanghai time.
 

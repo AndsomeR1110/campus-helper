@@ -37,20 +37,20 @@
 
 | Token            | 色值      | Tailwind 类示例                  | 用途                                                 |
 | ---------------- | --------- | -------------------------------- | ---------------------------------------------------- |
-| `primary`        | `#1F5C4A` | `bg-primary` `text-primary`      | 主按钮、选中状态、链接（松绿）                       |
-| `primary-hover`  | `#174A3B` | `hover:bg-primary-hover`         | 主按钮悬停 / 按下                                    |
-| `primary-subtle` | `#E8F0EB` | `bg-primary-subtle`              | 选中项背景、轻量强调                                 |
+| `primary`        | `#6B3FA0` | `bg-primary` `text-primary`      | 主按钮、选中状态、链接（校园地图紫）                 |
+| `primary-hover`  | `#5A3389` | `hover:bg-primary-hover`         | 主按钮悬停 / 按下                                    |
+| `primary-subtle` | `#EFE8F8` | `bg-primary-subtle`              | 选中项背景、轻量强调                                 |
 | `on-primary`     | `#FFFFFF` | `text-on-primary`                | 主色背景上的文字                                     |
-| `background`     | `#F6F4EF` | `bg-background`                  | 页面背景（暖纸色）                                   |
-| `surface`        | `#FFFDF9` | `bg-surface`                     | 卡片、弹窗、导航栏                                   |
-| `surface-muted`  | `#EFECE5` | `bg-surface-muted`               | 输入框禁用、分组背景、骨架屏                         |
-| `border`         | `#E3DFD6` | `border-border`                  | 卡片边框、分隔线                                     |
-| `border-strong`  | `#CFC9BD` | `border-border-strong`           | 输入框边框                                           |
-| `text`           | `#1F1D1A` | `text-text`                      | 正文、标题                                           |
-| `text-muted`     | `#6B665C` | `text-text-muted`                | 次要信息、说明文字                                   |
-| `text-disabled`  | `#A39E92` | `text-text-disabled`             | 禁用文字（不得用于需要阅读的信息）                   |
-| `focus-ring`     | `#2E7D64` | `ring-focus-ring`                | 键盘焦点环                                           |
-| `accent`         | `#A84A22` | `text-accent` `bg-accent-subtle` | 陶土橙点缀：少量强调（如亮点数字），不用于按钮和状态 |
+| `background`     | `#F3F1F8` | `bg-background`                  | 页面背景（薰衣草雾白，不用纯白）                     |
+| `surface`        | `#FDFCFF` | `bg-surface`                     | 卡片、弹窗、导航栏                                   |
+| `surface-muted`  | `#F0EDF6` | `bg-surface-muted`               | 输入框禁用、分组背景、骨架屏                         |
+| `border`         | `#E6E1EF` | `border-border`                  | 卡片边框、分隔线                                     |
+| `border-strong`  | `#D2CBE0` | `border-border-strong`           | 输入框边框                                           |
+| `text`           | `#1E1B2E` | `text-text`                      | 正文、标题                                           |
+| `text-muted`     | `#635E78` | `text-text-muted`                | 次要信息、说明文字                                   |
+| `text-disabled`  | `#A49FB5` | `text-text-disabled`             | 禁用文字（不得用于需要阅读的信息）                   |
+| `focus-ring`     | `#8A5CC4` | `ring-focus-ring`                | 键盘焦点环                                           |
+| `accent`         | `#9A5A00` | `text-accent` `bg-accent-subtle` | 陶土橙点缀：少量强调（如亮点数字），不用于按钮和状态 |
 
 **配色方向：** 松绿主色 + 暖纸色中性色 + 陶土橙点缀，避免常见的蓝紫色科技感。中性色统一偏暖（不用冷灰蓝），`success` 用偏黄的橄榄绿，与松绿主色区分开。
 
@@ -73,7 +73,7 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 | 事件类型             | Token          | 文字色    | 浅色背景  | 图标（lucide） |
 | -------------------- | -------------- | --------- | --------- | -------------- |
 | Class 课程           | `event-class`  | `#2C5E8A` | `#EAF0F6` | `BookOpen`     |
-| Office Hour 教师预约 | `event-office` | `#86406A` | `#F6EAF0` | `UserRound`    |
+| Office Hour 教师预约 | `event-office` | `#A3365E` | `#FBE8EF` | `UserRound`    |
 | Study Space 学习空间 | `event-space`  | `#1F6766` | `#E5F1F0` | `Armchair`     |
 
 #### Lost & Found 帖子类型色
@@ -149,19 +149,25 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 
 ### 2.5 圆角
 
-| Token          | 值     | 用途                   |
-| -------------- | ------ | ---------------------- |
-| `rounded-sm`   | 8px    | 按钮、输入框、小标签   |
-| `rounded-md`   | 12px   | 卡片、列表项           |
-| `rounded-lg`   | 16px   | 弹窗、底部抽屉、大图片 |
-| `rounded-full` | 9999px | 徽章、筛选 Chip、头像  |
+| Token          | 值     | 用途                             |
+| -------------- | ------ | -------------------------------- |
+| `rounded-sm`   | 12px   | 输入框、时段按钮、小块           |
+| `rounded-md`   | 20px   | 卡片、列表项                     |
+| `rounded-lg`   | 28px   | 弹窗、底部抽屉、首页 Hero        |
+| `rounded-full` | 9999px | 按钮、徽章、Chip、头像、底部导航 |
+
+整体圆润、避免尖角：按钮统一为胶囊形（`rounded-full`）。
 
 ### 2.6 阴影与层级
 
-| Token            | 用途                                                          |
-| ---------------- | ------------------------------------------------------------- |
-| `shadow-card`    | `0 1px 2px rgb(15 23 42 / 0.06)`：卡片（与 1px 边框配合使用） |
-| `shadow-overlay` | `0 8px 24px rgb(15 23 42 / 0.12)`：弹窗、下拉菜单、Toast      |
+| Token            | 用途                                      |
+| ---------------- | ----------------------------------------- |
+| `shadow-card`    | 柔和双层阴影：卡片（与 1px 边框配合使用） |
+| `shadow-raised`  | 可点击卡片悬停时的抬升阴影                |
+| `shadow-overlay` | 弹窗、下拉菜单、Toast、悬浮底部导航       |
+| `shadow-primary` | 主按钮的主色光晕                          |
+
+阴影颜色由 `--shadow-tint` 控制，深色模式下自动切换。
 
 | 层级（z-index）                | 值  |
 | ------------------------------ | --- |
@@ -169,6 +175,24 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 | 下拉菜单                       | 40  |
 | Modal / BottomSheet 遮罩与内容 | 50  |
 | Toast                          | 60  |
+
+### 2.6.1 毛玻璃（Glass）
+
+浮在内容之上的层使用 `glass`（半透明 + 背景模糊）或 `glass-strong`（更不透明）：TopBar、BottomNav、SideNav、StickyActionBar 用 `glass`；Modal、Toast 用 `glass-strong`。配合 `border` 类使用，边框色自动取 `glass-border`。
+
+- 列表卡片**不**使用毛玻璃（低端手机性能、文字可读性）。
+- 浏览器不支持 `backdrop-filter` 或用户开启"减少透明度"时自动退回 `surface` 实色。
+- 页面底层有来自校园地图配色的柔和光斑（`ambient-1..3`，见 `globals.css` 的 `body::before`），给毛玻璃提供可模糊的内容。
+
+### 2.6.2 深色模式
+
+- `<html data-theme="light|dark">` 由根布局 `<head>` 中的内联脚本在首帧前设置（`@/components/theme` 的 `THEME_SCRIPT`），默认跟随系统；用户可在 Profile → Appearance 用 `ThemeSwitcher` 选择 System / Light / Dark，保存在本机 `localStorage`。
+- 深色色值只在 `globals.css` 的 `:root[data-theme="dark"]` 中覆盖同名 Token，业务代码**无需**写 `dark:`；只用语义 Token 就自动支持深色模式。确有需要时可用 `dark:` 变体。
+- 深色模式不用纯黑，背景为带紫调的 `#100E1A`，层级靠表面变亮区分。
+
+### 2.6.3 校园插画
+
+`<CampusIllustration />`（`@/components/ui`）是按校园地图风格绘制的扁平 SVG（环形教学楼、三支汇流的河、运动场、楼栋标记），颜色全部来自 `map-*` Token，随主题切换。仅作装饰（`aria-hidden`），用于首页 Hero 等位置。
 
 ### 2.7 动效
 

@@ -29,7 +29,7 @@ export function TopBar({ title, backHref, actions, variant = "default" }: TopBar
   const large = variant === "large";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-surface pt-[env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-30 border-b glass pt-[env(safe-area-inset-top)]">
       <div className="relative mx-auto flex h-top-bar max-w-list items-center gap-1 px-2 md:px-4">
         {backHref && !large && (
           <IconButton

@@ -8,63 +8,86 @@
  * `bg-primary`, `text-text-muted`, `rounded-md`, `text-title`), never raw
  * palette classes such as `bg-indigo-600`.
  */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   /* ---- Colors ---------------------------------------------------------- */
+  /* Light values live here; dark overrides are in `:root[data-theme="dark"]` below. */
   --color-*: initial;
   --color-white: #ffffff;
   --color-black: #000000;
 
-  /* Brand */
-  --color-primary: #1f5c4a;
-  --color-primary-hover: #174a3b;
-  --color-primary-subtle: #e8f0eb;
+  /* Brand: campus-map purple */
+  --color-primary: #6b3fa0;
+  --color-primary-hover: #5a3389;
+  --color-primary-subtle: #efe8f8;
   --color-on-primary: #ffffff;
 
-  /* Accent: terracotta, used sparingly for highlights (never for buttons or status) */
-  --color-accent: #a84a22;
-  --color-accent-subtle: #f8ece5;
+  /* Accent: map-pin sunshine, used sparingly for highlights (never for buttons or status) */
+  --color-accent: #9a5a00;
+  --color-accent-subtle: #fdf1d8;
 
-  /* Neutrals */
-  --color-background: #f6f4ef;
-  --color-surface: #fffdf9;
-  --color-surface-muted: #efece5;
-  --color-border: #e3dfd6;
-  --color-border-strong: #cfc9bd;
-  --color-text: #1f1d1a;
-  --color-text-muted: #6b665c;
-  --color-text-disabled: #a39e92;
-  --color-focus-ring: #2e7d64;
-  --color-overlay: rgb(31 29 26 / 0.5);
+  /* Neutrals (lavender-tinted, never pure white) */
+  --color-background: #f3f1f8;
+  --color-surface: #fdfcff;
+  --color-surface-muted: #f0edf6;
+  --color-border: #e6e1ef;
+  --color-border-strong: #d2cbe0;
+  --color-text: #1e1b2e;
+  --color-text-muted: #635e78;
+  --color-text-disabled: #a49fb5;
+  --color-focus-ring: #8a5cc4;
+  --color-overlay: rgb(30 27 46 / 0.45);
+
+  /* Frosted glass for floating layers (bars, nav, sheets, toasts) — use the `glass` utilities */
+  --color-glass: rgb(253 252 255 / 0.66);
+  --color-glass-strong: rgb(253 252 255 / 0.86);
+  --color-glass-border: rgb(255 255 255 / 0.75);
+
+  /* Ambient background glows (campus map: lavender, river, lawn) */
+  --color-ambient-1: rgb(190 160 240 / 0.38);
+  --color-ambient-2: rgb(150 205 235 / 0.34);
+  --color-ambient-3: rgb(190 225 160 / 0.3);
+
+  /* Map illustration (CampusIllustration) */
+  --color-map-lawn: #d9eec4;
+  --color-map-lawn-deep: #a9d38a;
+  --color-map-river: #a7dcf2;
+  --color-map-ring: #ffffff;
+  --color-map-building: #f6ecd9;
+  --color-map-track: #e07a6a;
+  --color-map-pin: #8e3c96;
+  --color-map-pin-alt: #f2b33d;
 
   /* Semantic: <name> = text/icon, -subtle = tinted background, -solid = filled background with white text */
   --color-success: #3a6b1f;
-  --color-success-subtle: #eef4e6;
+  --color-success-subtle: #eaf4e2;
   --color-success-solid: #3a6b1f;
   --color-warning: #9a5508;
-  --color-warning-subtle: #faf1e1;
+  --color-warning-subtle: #fbf0dd;
   --color-warning-solid: #9a5508;
   --color-danger: #b3261e;
-  --color-danger-subtle: #fbece9;
+  --color-danger-subtle: #fbeae8;
   --color-danger-solid: #b3261e;
   --color-info: #2c5e8a;
-  --color-info-subtle: #eaf0f6;
+  --color-info-subtle: #e6f0f8;
   --color-info-solid: #2c5e8a;
-  --color-neutral: #5e594f;
-  --color-neutral-subtle: #efece5;
+  --color-neutral: #5a5570;
+  --color-neutral-subtle: #eeebf4;
 
   /* Schedule event types */
   --color-event-class: #2c5e8a;
-  --color-event-class-subtle: #eaf0f6;
-  --color-event-office: #86406a;
-  --color-event-office-subtle: #f6eaf0;
+  --color-event-class-subtle: #e6f0f8;
+  --color-event-office: #a3365e;
+  --color-event-office-subtle: #fbe8ef;
   --color-event-space: #1f6766;
-  --color-event-space-subtle: #e5f1f0;
+  --color-event-space-subtle: #e2f2f0;
 
   /* Lost & Found post types */
   --color-lost: #a84a22;
-  --color-lost-subtle: #f8ece5;
+  --color-lost-subtle: #f9ebe3;
   --color-found: #2f6a3a;
-  --color-found-subtle: #eaf3eb;
+  --color-found-subtle: #e6f3e8;
 
   /* ---- Typography ------------------------------------------------------ */
   --text-*: initial;
@@ -89,15 +112,21 @@
   --text-caption--font-weight: 500;
 
   /* ---- Radius ---------------------------------------------------------- */
+  /* Soft, rounded everywhere. Buttons, chips and badges use rounded-full. */
   --radius-*: initial;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
 
   /* ---- Shadows --------------------------------------------------------- */
+  /* Tinted by --shadow-tint so they also work in dark mode. */
   --shadow-*: initial;
-  --shadow-card: 0 1px 2px rgb(31 29 26 / 0.06);
-  --shadow-overlay: 0 8px 24px rgb(31 29 26 / 0.12);
+  --shadow-card:
+    0 1px 2px rgb(var(--shadow-tint) / 0.05), 0 6px 20px -8px rgb(var(--shadow-tint) / 0.14);
+  --shadow-raised:
+    0 2px 4px rgb(var(--shadow-tint) / 0.06), 0 14px 32px -12px rgb(var(--shadow-tint) / 0.24);
+  --shadow-overlay: 0 12px 40px -8px rgb(var(--shadow-tint) / 0.28);
+  --shadow-primary: 0 8px 20px -8px var(--color-primary);
 
   /* ---- Layout ---------------------------------------------------------- */
   --container-content: 640px; /* detail & form pages */
@@ -108,6 +137,14 @@
 
   /* ---- Motion ---------------------------------------------------------- */
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --animate-enter: enter 320ms var(--ease-out) both;
+
+  @keyframes enter {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
 }
 
 /* next/font exposes Inter as a CSS variable on <html>; `inline` makes the
@@ -118,6 +155,116 @@
     sans-serif;
 }
 
+/* ---- Dark theme ------------------------------------------------------- */
+/* The inline script in the root layout sets data-theme before first paint. */
+:root {
+  --shadow-tint: 60 30 110;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --shadow-tint: 0 0 0;
+
+  --color-primary: #b79af0;
+  --color-primary-hover: #c9b3f5;
+  --color-primary-subtle: #2c2342;
+  --color-on-primary: #1a1030;
+
+  --color-accent: #f5c566;
+  --color-accent-subtle: #33280f;
+
+  --color-background: #100e1a;
+  --color-surface: #1b1828;
+  --color-surface-muted: #252136;
+  --color-border: #2f2a42;
+  --color-border-strong: #443d5c;
+  --color-text: #ecebf3;
+  --color-text-muted: #a7a2bb;
+  --color-text-disabled: #6c6782;
+  --color-focus-ring: #c9b3f5;
+  --color-overlay: rgb(5 4 10 / 0.6);
+
+  --color-glass: rgb(27 24 40 / 0.62);
+  --color-glass-strong: rgb(27 24 40 / 0.88);
+  --color-glass-border: rgb(255 255 255 / 0.08);
+
+  --color-ambient-1: rgb(110 70 190 / 0.32);
+  --color-ambient-2: rgb(30 110 140 / 0.26);
+  --color-ambient-3: rgb(70 50 140 / 0.22);
+
+  --color-map-lawn: #23302a;
+  --color-map-lawn-deep: #2f4536;
+  --color-map-river: #1f4a63;
+  --color-map-ring: #3a3354;
+  --color-map-building: #4a3f2c;
+  --color-map-track: #7a3d38;
+  --color-map-pin: #b79af0;
+  --color-map-pin-alt: #f5c566;
+
+  --color-success: #94d27a;
+  --color-success-subtle: #1d2a18;
+  --color-success-solid: #3f7a25;
+  --color-warning: #f0b45a;
+  --color-warning-subtle: #2e2412;
+  --color-warning-solid: #a35d0a;
+  --color-danger: #ff8f85;
+  --color-danger-subtle: #361b1b;
+  --color-danger-solid: #c4372d;
+  --color-info: #8fc0f0;
+  --color-info-subtle: #172636;
+  --color-info-solid: #2f6496;
+  --color-neutral: #b3aec4;
+  --color-neutral-subtle: #262236;
+
+  --color-event-class: #8fc0f0;
+  --color-event-class-subtle: #172636;
+  --color-event-office: #f29cbc;
+  --color-event-office-subtle: #371a28;
+  --color-event-space: #7fd1cd;
+  --color-event-space-subtle: #12302f;
+
+  --color-lost: #f4a37f;
+  --color-lost-subtle: #38221a;
+  --color-found: #8fd49b;
+  --color-found-subtle: #1a2e1e;
+}
+
+/*
+ * Frosted glass for layers that float above content: TopBar, BottomNav,
+ * SideNav, StickyActionBar, Modal, Toast. Don't use it on list cards (cost
+ * on low-end phones, and text needs a calm background).
+ */
+@utility glass {
+  background-color: var(--color-glass);
+  border-color: var(--color-glass-border);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+
+@utility glass-strong {
+  background-color: var(--color-glass-strong);
+  border-color: var(--color-glass-border);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-strong {
+    background-color: var(--color-surface);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-strong {
+    background-color: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
@@ -125,6 +272,21 @@
 
   body {
     @apply bg-background font-sans text-body text-text antialiased;
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Soft glows from the campus-map palette behind every page, so glass has something to blur. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(42rem 30rem at 105% -8%, var(--color-ambient-1), transparent 70%),
+      radial-gradient(36rem 28rem at -12% 38%, var(--color-ambient-2), transparent 70%),
+      radial-gradient(40rem 26rem at 60% 112%, var(--color-ambient-3), transparent 70%);
   }
 
   :focus-visible {

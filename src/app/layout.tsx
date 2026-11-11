@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ServiceWorkerRegistrar } from "@/components/pwa";
+import { THEME_SCRIPT } from "@/components/theme";
 import { Toaster } from "@/components/ui";
 import "./globals.css";
 
@@ -34,7 +35,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1f5c4a",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f3f1f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#100e1a" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -42,7 +46,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
+    // The inline script sets data-theme before first paint, so React must accept the DOM value.
+    <html
+      lang="en"
+      data-theme="light"
+      className={`${inter.variable} h-full`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col">
         {children}
         <Toaster />

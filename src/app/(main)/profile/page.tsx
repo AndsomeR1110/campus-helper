@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { PageContainer, ROLE_LABELS, TopBar, roleToolsFor } from "@/components/layout";
 import { InstallAppCard } from "@/components/pwa";
+import { ThemeSwitcher } from "@/components/theme";
 import { DemoDataNotice, Skeleton, buttonStyles } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { LogoutButton } from "./logout-button";
@@ -151,6 +152,21 @@ export default function ProfilePage() {
             Notifications
           </MenuLink>
         </MenuGroup>
+
+        <section className="flex flex-col gap-2" aria-labelledby="appearance-heading">
+          <h2
+            id="appearance-heading"
+            className="px-1 text-caption tracking-wide text-text-muted uppercase"
+          >
+            Appearance
+          </h2>
+          <div className="flex flex-col gap-3 rounded-md border border-border bg-surface p-4 shadow-card">
+            <ThemeSwitcher />
+            <p className="text-body-sm text-text-muted">
+              Dark mode is easier on the eyes at night. Saved on this device.
+            </p>
+          </div>
+        </section>
 
         <InstallAppCard />
 

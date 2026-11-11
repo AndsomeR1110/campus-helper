@@ -13,7 +13,7 @@ export function SideNavRoleTools({ role }: { role: UserRole | null | undefined }
           <li key={href}>
             <Link
               href={href}
-              className="flex h-11 items-center gap-3 rounded-sm px-3 text-body font-medium text-text-muted transition-colors duration-150 hover:bg-surface-muted hover:text-text"
+              className="flex h-11 items-center gap-3 rounded-full px-4 text-body font-medium text-text-muted transition-colors duration-150 hover:bg-surface-muted hover:text-text"
             >
               <Icon className="size-5" strokeWidth={1.75} aria-hidden />
               {label}

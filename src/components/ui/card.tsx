@@ -11,7 +11,8 @@ export function cardStyles({
 }: { interactive?: boolean; className?: string } = {}) {
   return cn(
     "block rounded-md border border-border bg-surface p-4 shadow-card",
-    interactive && "transition-colors duration-150 hover:border-border-strong",
+    interactive &&
+      "transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-border-strong hover:shadow-raised active:translate-y-0",
     className,
   );
 }

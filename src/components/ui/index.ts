@@ -7,6 +7,7 @@ export {
   type ButtonSize,
   type ButtonVariant,
 } from "./button";
+export { CampusIllustration } from "./campus-illustration";
 export { Card, ListItem, cardStyles, type ListItemProps } from "./card";
 export { Chip, ChipGroup, type ChipProps } from "./chip";
 export { ConfirmDialog, type ConfirmDialogProps } from "./confirm-dialog";

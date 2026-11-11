@@ -18,13 +18,13 @@ export function BottomNav({ unreadCount }: { unreadCount?: number }) {
       {/* Reserves space so the fixed bar never covers page content. */}
       <div
         aria-hidden
-        className="h-[calc(var(--spacing-bottom-nav)+env(safe-area-inset-bottom))] lg:hidden"
+        className="h-[calc(var(--spacing-bottom-nav)+24px+env(safe-area-inset-bottom))] lg:hidden"
       />
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden"
       >
-        <div className="mx-auto h-bottom-nav max-w-list">
+        <div className="pointer-events-auto mx-auto h-bottom-nav max-w-[480px] rounded-full border glass px-2 shadow-overlay">
           <NavItems
             orientation="horizontal"
             active={getActiveTab(pathname)}

@@ -30,11 +30,11 @@ export function AppShell({ children, unreadCount, roleLinks }: AppShellProps) {
         Skip to content
       </a>
 
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-side-nav flex-col border-r border-border bg-surface px-3 py-4 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-side-nav flex-col border-r glass px-3 py-4 lg:flex">
         <Link href="/home" className="mb-6 flex items-center gap-2 px-3 py-2">
           <span
             aria-hidden
-            className="flex size-8 items-center justify-center rounded-sm bg-primary text-subtitle text-on-primary"
+            className="flex size-9 items-center justify-center rounded-full bg-primary text-subtitle text-on-primary shadow-primary"
           >
             C
           </span>

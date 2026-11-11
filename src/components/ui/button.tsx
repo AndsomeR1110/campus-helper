@@ -6,8 +6,8 @@ export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-on-primary hover:bg-primary-hover",
-  secondary: "border border-border-strong bg-surface text-text hover:bg-surface-muted",
+  primary: "bg-primary text-on-primary shadow-primary hover:bg-primary-hover",
+  secondary: "border border-border-strong bg-surface/80 text-text hover:bg-surface-muted",
   ghost: "text-primary hover:bg-primary-subtle",
   danger: "bg-danger-solid text-white hover:bg-danger",
 };
@@ -36,7 +36,7 @@ export function buttonStyles({
   className,
 }: ButtonStyleOptions = {}) {
   return cn(
-    "inline-flex shrink-0 items-center justify-center rounded-sm whitespace-nowrap transition-[background-color,transform] duration-150 ease-out select-none",
+    "inline-flex shrink-0 items-center justify-center rounded-full whitespace-nowrap transition-[background-color,transform,box-shadow] duration-150 ease-out select-none",
     "active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50",
     "[&_svg]:size-5 [&_svg]:shrink-0",
     variantClasses[variant],
