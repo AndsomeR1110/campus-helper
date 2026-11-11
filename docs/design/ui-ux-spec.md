@@ -184,6 +184,8 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 - 浏览器不支持 `backdrop-filter` 或用户开启"减少透明度"时自动退回 `surface` 实色。
 - 页面底层有来自校园地图配色的柔和光斑（`ambient-1..3`，见 `globals.css` 的 `body::before`），给毛玻璃提供可模糊的内容。
 
+**液态玻璃（Liquid glass）**：`liquid-glass` 是更通透、更立体的玻璃（渐变半透明填充、左上高光、顶部亮边、柔和深阴影），类似手机桌面小组件。只用于少数主角表面：BottomNav（选中项为白色玻璃胶囊 `bg-liquid-pill`）和首页的信息卡片（`<Card variant="widget">` / `cardStyles({ variant: "widget" })`）。长列表仍用默认实色卡片。
+
 ### 2.6.2 深色模式
 
 - `<html data-theme="light|dark">` 由根布局 `<head>` 中的内联脚本在首帧前设置（`@/components/theme` 的 `THEME_SCRIPT`），默认跟随系统；用户可在 Profile → Appearance 用 `ThemeSwitcher` 选择 System / Light / Dark，保存在本机 `localStorage`。

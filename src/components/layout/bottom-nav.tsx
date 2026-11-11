@@ -24,7 +24,7 @@ export function BottomNav({ unreadCount }: { unreadCount?: number }) {
         aria-label="Main"
         className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden"
       >
-        <div className="pointer-events-auto mx-auto h-bottom-nav max-w-[480px] rounded-full border glass px-2 shadow-overlay">
+        <div className="pointer-events-auto mx-auto h-bottom-nav max-w-[480px] rounded-full border liquid-glass px-1.5">
           <NavItems
             orientation="horizontal"
             active={getActiveTab(pathname)}

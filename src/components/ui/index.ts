@@ -9,7 +9,7 @@ export {
 } from "./button";
 export { AppLogo } from "./app-logo";
 export { CampusIllustration } from "./campus-illustration";
-export { Card, ListItem, cardStyles, type ListItemProps } from "./card";
+export { Card, ListItem, cardStyles, type CardVariant, type ListItemProps } from "./card";
 export { Chip, ChipGroup, type ChipProps } from "./chip";
 export { ConfirmDialog, type ConfirmDialogProps } from "./confirm-dialog";
 export {

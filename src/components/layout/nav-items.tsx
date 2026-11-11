@@ -43,7 +43,9 @@ export function NavItems({ active, unreadCount = 0, orientation }: NavItemsProps
                 className={cn(
                   "relative flex items-center justify-center",
                   !vertical && "h-8 w-14 rounded-full transition-colors duration-200",
-                  !vertical && selected && "bg-primary-subtle",
+                  !vertical &&
+                    selected &&
+                    "bg-liquid-pill shadow-[inset_0_1px_0_var(--color-liquid-highlight),0_2px_8px_-2px_rgb(var(--shadow-tint)/0.25)]",
                 )}
               >
                 <Icon

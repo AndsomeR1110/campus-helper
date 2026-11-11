@@ -7,18 +7,31 @@ import { cn } from "@/lib/utils";
  */
 export function cardStyles({
   interactive = false,
+  variant = "default",
   className,
-}: { interactive?: boolean; className?: string } = {}) {
+}: { interactive?: boolean; variant?: CardVariant; className?: string } = {}) {
   return cn(
-    "block rounded-md border border-border bg-surface p-4 shadow-card",
+    variant === "widget"
+      ? "block rounded-lg border liquid-glass p-4"
+      : "block rounded-md border border-border bg-surface p-4 shadow-card",
     interactive &&
       "transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-border-strong hover:shadow-raised active:translate-y-0",
     className,
   );
 }
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cardStyles({ className })} {...props} />;
+/**
+ * "widget" = liquid glass, like a home-screen widget. Use it only for a few
+ * headline blocks (e.g. Home); long lists stay on the solid default card.
+ */
+export type CardVariant = "default" | "widget";
+
+export function Card({
+  className,
+  variant,
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { variant?: CardVariant }) {
+  return <div className={cardStyles({ variant, className })} {...props} />;
 }
 
 export interface ListItemProps {

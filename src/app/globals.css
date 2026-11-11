@@ -50,9 +50,18 @@
   --color-glass-border: rgb(255 255 255 / 0.75);
 
   /* Ambient background glows (campus map: lavender, river, lawn) */
-  --color-ambient-1: rgb(190 160 240 / 0.38);
-  --color-ambient-2: rgb(150 205 235 / 0.34);
-  --color-ambient-3: rgb(190 225 160 / 0.3);
+  --color-ambient-1: rgb(190 160 240 / 0.48);
+  --color-ambient-2: rgb(150 205 235 / 0.42);
+  --color-ambient-3: rgb(190 225 160 / 0.38);
+  --color-ambient-4: rgb(245 190 215 / 0.3);
+
+  /* Liquid glass (`liquid-glass` utility): Home widgets and the BottomNav */
+  --color-liquid-from: rgb(255 255 255 / 0.62);
+  --color-liquid-to: rgb(255 255 255 / 0.3);
+  --color-liquid-sheen: rgb(255 255 255 / 0.65);
+  --color-liquid-highlight: rgb(255 255 255 / 0.95);
+  --color-liquid-edge: rgb(255 255 255 / 0.8);
+  --color-liquid-pill: rgb(255 255 255 / 0.8);
 
   /* Map illustration (CampusIllustration) */
   --color-map-lawn: #d9eec4;
@@ -200,6 +209,14 @@
   --color-ambient-1: rgb(242 179 61 / 0.07);
   --color-ambient-2: rgb(110 170 120 / 0.06);
   --color-ambient-3: rgb(140 190 210 / 0.05);
+  --color-ambient-4: rgb(217 174 224 / 0.04);
+
+  --color-liquid-from: rgb(255 255 255 / 0.08);
+  --color-liquid-to: rgb(255 255 255 / 0.03);
+  --color-liquid-sheen: rgb(255 255 255 / 0.06);
+  --color-liquid-highlight: rgb(255 255 255 / 0.12);
+  --color-liquid-edge: rgb(255 255 255 / 0.08);
+  --color-liquid-pill: rgb(255 255 255 / 0.1);
 
   --color-map-lawn: #1f2620;
   --color-map-lawn-deep: #2c3a2d;
@@ -257,17 +274,40 @@
   backdrop-filter: blur(24px) saturate(160%);
 }
 
+/*
+ * Liquid glass, like a home-screen widget: translucent gradient fill, a soft
+ * sheen in the top-left, a bright top edge and a deep, soft drop shadow. For
+ * a few hero surfaces only (Home widgets, BottomNav) — pair with `border`.
+ */
+@utility liquid-glass {
+  background-color: transparent;
+  background-image:
+    radial-gradient(120% 90% at 0% 0%, var(--color-liquid-sheen), transparent 55%),
+    linear-gradient(160deg, var(--color-liquid-from), var(--color-liquid-to));
+  border-color: var(--color-liquid-edge);
+  box-shadow:
+    inset 0 1px 0 0 var(--color-liquid-highlight),
+    inset 0 -1px 0 0 rgb(255 255 255 / 0.12),
+    0 1px 2px rgb(var(--shadow-tint) / 0.06),
+    0 16px 36px -14px rgb(var(--shadow-tint) / 0.3);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+}
+
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass,
-  .glass-strong {
+  .glass-strong,
+  .liquid-glass {
     background-color: var(--color-surface);
   }
 }
 
 @media (prefers-reduced-transparency: reduce) {
   .glass,
-  .glass-strong {
+  .glass-strong,
+  .liquid-glass {
     background-color: var(--color-surface);
+    background-image: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
@@ -294,7 +334,8 @@
     background:
       radial-gradient(42rem 30rem at 105% -8%, var(--color-ambient-1), transparent 70%),
       radial-gradient(36rem 28rem at -12% 38%, var(--color-ambient-2), transparent 70%),
-      radial-gradient(40rem 26rem at 60% 112%, var(--color-ambient-3), transparent 70%);
+      radial-gradient(40rem 26rem at 60% 112%, var(--color-ambient-3), transparent 70%),
+      radial-gradient(30rem 22rem at 85% 55%, var(--color-ambient-4), transparent 70%);
   }
 
   :focus-visible {
