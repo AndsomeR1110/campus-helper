@@ -3,15 +3,20 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Check, HandHeart, Lock, MessageSquare, Send, X } from "lucide-react";
 import {
   Button,
+  Card,
   ConfirmDialog,
+  EmptyState,
   FormField,
-  ListItem,
   StatusBadge,
   Textarea,
+  cardStyles,
   toast,
 } from "@/components/ui";
+import { formatRelativeDay, formatTime } from "@/lib/time";
+import { cn } from "@/lib/utils";
 
 import { CLAIM_MAX_LENGTH, CLAIM_MIN_LENGTH, formatDisplayName } from "../constants";
 import type { LostFoundClaim, LostFoundPost } from "../types";
@@ -34,6 +39,8 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState<string | null>(null);
   const [decision, setDecision] = useState<{ id: string; accept: boolean } | null>(null);
+  // Relative day labels for claims; the panel is a client component rendered per request.
+  const [now] = useState(() => new Date());
 
   async function submitClaim() {
     setPending("claim");
@@ -80,45 +87,93 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
   }
 
   if (isAuthor) {
+    const pendingCount = claims?.filter((c) => c.status === "PENDING").length ?? 0;
     return (
-      <section className="flex flex-col gap-3" aria-label="Claims">
-        <h2 className="text-subtitle">Claims</h2>
+      <section className="flex flex-col gap-3" aria-labelledby="claims-heading">
+        <div className="flex items-center gap-2">
+          <h2 id="claims-heading" className="text-caption tracking-wide text-text-muted uppercase">
+            Claims
+          </h2>
+          {pendingCount > 0 && (
+            <span className="rounded-full bg-warning-subtle px-2 py-0.5 text-caption text-warning">
+              {pendingCount} waiting
+            </span>
+          )}
+        </div>
+        <p className="flex items-center gap-1.5 text-caption text-text-muted">
+          <Lock className="size-3.5" aria-hidden />
+          Only you can read these messages.
+        </p>
         {claims && claims.length > 0 ? (
           <ul className="flex flex-col gap-3">
-            {claims.map((claim) => (
-              <li key={claim.id} className="rounded-md border border-border bg-surface p-3">
-                <ListItem
-                  title={formatDisplayName(claim.claimantName)}
-                  trailing={<StatusBadge kind="claim" status={claim.status} />}
-                />
-                <p className="mt-2 text-body-sm text-text-muted">{claim.message}</p>
-                {claim.status === "PENDING" &&
+            {claims.map((claim) => {
+              const open =
+                claim.status === "PENDING" &&
                 post.status !== "RESOLVED" &&
-                post.status !== "CLOSED" ? (
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      loading={pending === claim.id}
-                      onClick={() => setDecision({ id: claim.id, accept: true })}
+                post.status !== "CLOSED";
+              return (
+                <li
+                  key={claim.id}
+                  className={cardStyles({
+                    variant: open ? "widget" : "default",
+                    className: "flex flex-col gap-3",
+                  })}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      aria-hidden
+                      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-subtitle text-primary"
                     >
-                      Accept
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      loading={pending === claim.id}
-                      onClick={() => setDecision({ id: claim.id, accept: false })}
-                    >
-                      Reject
-                    </Button>
+                      {initial(claim.claimantName)}
+                    </span>
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate text-subtitle">
+                        {formatDisplayName(claim.claimantName)}
+                      </span>
+                      <span className="text-caption text-text-muted">
+                        {formatRelativeDay(claim.createdAt, now)} · {formatTime(claim.createdAt)}
+                      </span>
+                    </div>
+                    <StatusBadge kind="claim" status={claim.status} />
                   </div>
-                ) : null}
-              </li>
-            ))}
+                  <blockquote className="rounded-sm border-l-4 border-primary/40 bg-surface-muted/70 px-3 py-2 text-body-sm whitespace-pre-line text-text">
+                    {claim.message}
+                  </blockquote>
+                  {open ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        loading={pending === claim.id}
+                        onClick={() => setDecision({ id: claim.id, accept: false })}
+                      >
+                        <X />
+                        Reject
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        loading={pending === claim.id}
+                        onClick={() => setDecision({ id: claim.id, accept: true })}
+                      >
+                        <Check />
+                        Accept
+                      </Button>
+                    </div>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         ) : (
-          <p className="text-body-sm text-text-muted">No claims yet.</p>
+          <Card className="p-0">
+            <EmptyState
+              icon={MessageSquare}
+              title="No claims yet"
+              description="When someone thinks this is theirs, their message appears here."
+              className="py-6"
+            />
+          </Card>
         )}
 
         <ConfirmDialog
@@ -142,23 +197,47 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
 
   if (!canClaim) {
     return (
-      <section className="flex flex-col gap-2" aria-label="Claims">
-        <h2 className="text-subtitle">Is it yours?</h2>
-        <p className="text-body-sm text-text-muted">This post is no longer taking claims.</p>
+      <section
+        className={cardStyles({ className: "flex items-center gap-3" })}
+        aria-labelledby="claim-heading"
+      >
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-subtle text-neutral">
+          <Lock className="size-5" aria-hidden />
+        </span>
+        <div className="flex flex-col">
+          <h2 id="claim-heading" className="text-subtitle">
+            Is it yours?
+          </h2>
+          <p className="text-body-sm text-text-muted">This post is no longer taking claims.</p>
+        </div>
       </section>
     );
   }
 
+  const length = message.trim().length;
   return (
-    <section className="flex flex-col gap-3" aria-label="Claims">
-      <h2 className="text-subtitle">Is it yours?</h2>
-      <p className="text-body-sm text-text-muted">
-        Only the person who posted this item can read your message.
-      </p>
+    <section
+      className={cardStyles({ variant: "widget", className: "flex flex-col gap-4" })}
+      aria-labelledby="claim-heading"
+    >
+      <div className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary">
+          <HandHeart className="size-5" aria-hidden />
+        </span>
+        <div className="flex flex-col gap-0.5">
+          <h2 id="claim-heading" className="text-subtitle">
+            Is it yours?
+          </h2>
+          <p className="flex items-center gap-1.5 text-body-sm text-text-muted">
+            <Lock className="size-3.5 shrink-0" aria-hidden />
+            Only the person who posted this item can read your message.
+          </p>
+        </div>
+      </div>
       <FormField
         label="Your claim"
         required
-        hint={`${CLAIM_MIN_LENGTH}–${CLAIM_MAX_LENGTH} characters.`}
+        hint={`Mention a detail only the owner would know, like a mark, a sticker or what is inside. ${CLAIM_MIN_LENGTH}–${CLAIM_MAX_LENGTH} characters.`}
       >
         <Textarea
           name="message"
@@ -169,14 +248,31 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
           onChange={(event) => setMessage(event.target.value)}
         />
       </FormField>
-      <Button
-        onClick={submitClaim}
-        loading={pending === "claim"}
-        disabled={message.trim().length < CLAIM_MIN_LENGTH}
-        fullWidth
-      >
-        Send claim
-      </Button>
+      <div className="flex items-center justify-between gap-3">
+        <span
+          className={cn(
+            "text-caption tabular-nums",
+            length < CLAIM_MIN_LENGTH ? "text-text-muted" : "text-success",
+          )}
+          aria-live="polite"
+        >
+          {length < CLAIM_MIN_LENGTH
+            ? `${CLAIM_MIN_LENGTH - length} more characters needed`
+            : `${length} / ${CLAIM_MAX_LENGTH}`}
+        </span>
+        <Button
+          onClick={submitClaim}
+          loading={pending === "claim"}
+          disabled={length < CLAIM_MIN_LENGTH}
+        >
+          <Send />
+          Send claim
+        </Button>
+      </div>
     </section>
   );
+}
+
+function initial(name: string) {
+  return name.trim().charAt(0).toUpperCase() || "?";
 }

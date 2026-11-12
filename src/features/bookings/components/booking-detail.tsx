@@ -86,7 +86,12 @@ export function BookingDetail({ booking, now }: { booking: BookingItem; now: str
             </dt>
             <dd className="ml-auto min-w-0 text-right text-body-sm">
               {booking.location ? (
-                <LocationText location={booking.location} className="justify-end" />
+                <LocationText
+                  location={booking.location}
+                  fallbackIcon={false}
+                  wrap
+                  className="justify-end text-right"
+                />
               ) : (
                 "Location not specified"
               )}

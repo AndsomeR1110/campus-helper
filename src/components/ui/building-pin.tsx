@@ -38,16 +38,28 @@ export function BuildingPin({
  * A location with a map marker: the building pin when the text names a
  * campus-map building ("Office C-308"), otherwise a plain map-pin icon.
  */
-export function LocationText({ location, className }: { location: string; className?: string }) {
+export function LocationText({
+  location,
+  className,
+  fallbackIcon = true,
+  wrap = false,
+}: {
+  location: string;
+  className?: string;
+  /** Show a map-pin icon when no building is recognised. Off where a label already has one. */
+  fallbackIcon?: boolean;
+  /** Let long places wrap instead of truncating. */
+  wrap?: boolean;
+}) {
   const building = buildingFromLocation(location);
   return (
     <span className={cn("inline-flex min-w-0 items-center gap-1.5", className)}>
       {building ? (
         <BuildingPin code={building.code} kind={building.kind} />
-      ) : (
+      ) : fallbackIcon ? (
         <MapPin className="size-4 shrink-0 text-text-muted" aria-hidden />
-      )}
-      <span className="truncate">
+      ) : null}
+      <span className={wrap ? "break-words" : "truncate"}>
         {building && <span className="sr-only">Building {building.code}: </span>}
         {location}
       </span>

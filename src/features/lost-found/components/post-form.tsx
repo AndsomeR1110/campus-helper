@@ -19,8 +19,9 @@ interface FieldErrors {
 }
 
 function isoFromLocal(value: string): string {
-  // `datetime-local` has no zone; the browser is the only thing that knows it.
-  return new Date(value).toISOString();
+  // The picker's "yyyy-mm-ddTHH:mm" is campus time (Asia/Shanghai, UTC+8 with no
+  // daylight saving), like every other time in the app — not the browser's zone.
+  return new Date(`${value}:00+08:00`).toISOString();
 }
 
 /** PG-15. Creates the post, then uploads the optional photo to the new id. */
