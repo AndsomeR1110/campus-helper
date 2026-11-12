@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
-import { Button, FormField, Input, Select, Textarea, toast } from "@/components/ui";
+import { Button, DateTimePicker, FormField, Input, Select, Textarea, toast } from "@/components/ui";
 
 import {
   CATEGORY_LABELS,
@@ -133,12 +133,7 @@ export function PostForm() {
         error={errors.occurredAt}
         hint="You cannot pick a time in the future."
       >
-        <Input
-          name="occurredAt"
-          type="datetime-local"
-          value={occurredAt}
-          onChange={(event) => setOccurredAt(event.target.value)}
-        />
+        <DateTimePicker value={occurredAt} onChange={setOccurredAt} max="today" />
       </FormField>
 
       <FormField

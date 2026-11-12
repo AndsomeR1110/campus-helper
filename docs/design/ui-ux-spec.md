@@ -415,7 +415,8 @@ Office Hour 时段和 Study Space 时段选择使用相同的视觉：
 - 原生 `date` / `time` 输入在很多手机上显示美式格式（`11/11/2026`、`10:00 PM`），与规范的 24 小时制不符。
 - 近期日期（如自习室未来 7 天）用 `DateStrip`：横向滚动的日期胶囊，"Today / Tomorrow / 周几 + 日"，提交隐藏字段 `yyyy-mm-dd`。`start` 由服务端传入 `dayKey(now)`。
 - 时间用 `TimeSelect`：原生下拉、24 小时制选项（默认 07:00–23:00、30 分钟步长），放在 `FormField` 中。
-- 任意历史日期（如 Lost & Found 的发生时间）暂保留原生控件。
+- 可能较远的日期（Lost & Found 发生时间、教师创建时段）用 `DatePicker` / `DateTimePicker`：点击后弹出月历（手机为底部抽屉，平板及以上为对话框），支持月份 / 年份跳转、Today / Yesterday / Tomorrow 快捷项、`min` / `max`（可传 `"today"`）、键盘方向键 / PageUp / PageDown / Home / End。`DateTimePicker` 输出与 `datetime-local` 相同的 `yyyy-mm-ddTHH:mm` 字符串，日期和时间都选好前输出空字符串。
+- 业务代码不再使用原生 `date` / `time` / `datetime-local` 输入。
 
 ### 4.18 地点与楼栋：BuildingPin / LocationText
 

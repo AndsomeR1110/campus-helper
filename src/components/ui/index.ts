@@ -18,6 +18,12 @@ export {
   DemoDataNotice,
   type DemoDataNoticeProps,
 } from "./demo-data-notice";
+export {
+  DatePicker,
+  DateTimePicker,
+  type DatePickerProps,
+  type DateTimePickerProps,
+} from "./date-picker";
 export { DateStrip, type DateStripProps } from "./date-strip";
 export { DateTile } from "./date-tile";
 export { EmptyState, type EmptyStateProps } from "./empty-state";
