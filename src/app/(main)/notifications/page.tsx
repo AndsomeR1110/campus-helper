@@ -1,14 +1,15 @@
-﻿import { Bell } from "lucide-react";
+import { Bell, BellRing, Smartphone } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { PageContainer, TopBar } from "@/components/layout";
-import { Card, EmptyState, ListItem, Skeleton, buttonStyles } from "@/components/ui";
+import { Card, EmptyState, Skeleton, buttonStyles, cardStyles } from "@/components/ui";
 import { getCurrentUser } from "@/features/courses/server";
 import { EnablePushButton, MarkAllReadButton } from "@/features/notifications";
 import { listForUser } from "@/features/notifications/server";
 import { formatRelativeTime } from "@/lib/time";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Notifications" };
 
@@ -43,28 +44,48 @@ async function NotificationList() {
 
   return (
     <ul className="flex flex-col gap-2">
-      {items.map((item) => (
-        <li key={item.id}>
-          <Link href={item.href} className="block">
-            <Card className="p-4">
-              <ListItem
-                leading={
+      {items.map((item) => {
+        const unread = !item.readAt;
+        return (
+          <li key={item.id}>
+            <Link
+              href={item.href}
+              className={cardStyles({
+                variant: unread ? "widget" : "default",
+                interactive: true,
+                className: "flex items-start gap-3 p-3.5",
+              })}
+            >
+              <span
+                aria-hidden
+                className="relative flex size-11 shrink-0 items-center justify-center rounded-sm bg-event-class-subtle text-event-class"
+              >
+                <BellRing className="size-5" />
+                {unread && (
+                  <span className="absolute -top-0.5 -right-0.5 size-3 rounded-full bg-primary ring-2 ring-surface" />
+                )}
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="flex items-start justify-between gap-2">
                   <span
-                    aria-hidden
-                    className={
-                      item.readAt
-                        ? "size-2 rounded-full bg-border-strong"
-                        : "size-2 rounded-full bg-primary"
-                    }
-                  />
-                }
-                title={item.title}
-                description={`${item.body} 路 ${formatRelativeTime(item.createdAt)}`}
-              />
-            </Card>
-          </Link>
-        </li>
-      ))}
+                    className={cn(
+                      "line-clamp-2 text-subtitle",
+                      unread ? "text-text" : "font-medium text-text-muted",
+                    )}
+                  >
+                    {item.title}
+                  </span>
+                  <span className="shrink-0 pt-0.5 text-caption text-text-muted">
+                    {formatRelativeTime(item.createdAt)}
+                  </span>
+                </span>
+                <span className="line-clamp-2 text-body-sm text-text-muted">{item.body}</span>
+                {unread && <span className="sr-only">Unread</span>}
+              </span>
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -89,9 +110,6 @@ async function HeaderActions() {
 
   return (
     <>
-      {unread > 0 && (
-        <span className="mr-2 text-body-sm text-text-muted tabular-nums">{unread} unread</span>
-      )}
       <MarkAllReadButton disabled={unread === 0} />
     </>
   );
@@ -104,7 +122,14 @@ function PushSection() {
       <h2 className="text-caption tracking-wide text-text-muted uppercase">
         Browser notifications
       </h2>
-      <EnablePushButton />
+      <Card className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-sm bg-primary-subtle text-primary">
+          <Smartphone className="size-5" aria-hidden />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <EnablePushButton />
+        </div>
+      </Card>
     </section>
   );
 }

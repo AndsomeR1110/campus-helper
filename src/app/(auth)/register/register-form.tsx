@@ -112,13 +112,13 @@ export function RegisterForm() {
         </p>
       ) : null}
 
-      <Button type="submit" fullWidth loading={submitting}>
+      <Button type="submit" size="lg" fullWidth loading={submitting}>
         {submitting ? "Creating account…" : "Create account"}
       </Button>
 
-      <p className="text-body-sm text-text-muted">
+      <p className="text-center text-body-sm text-text-muted">
         Already registered?{" "}
-        <Link href="/login" className="text-primary underline underline-offset-2">
+        <Link href="/login" className="font-medium text-primary hover:underline">
           Sign in
         </Link>
       </p>

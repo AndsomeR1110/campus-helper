@@ -95,13 +95,13 @@ export function LoginForm({ nextPath }: LoginFormProps) {
         </p>
       ) : null}
 
-      <Button type="submit" fullWidth loading={submitting}>
+      <Button type="submit" size="lg" fullWidth loading={submitting}>
         {submitting ? "Signing in…" : "Sign in"}
       </Button>
 
-      <p className="text-body-sm text-text-muted">
+      <p className="text-center text-body-sm text-text-muted">
         No account yet?{" "}
-        <Link href="/register" className="text-primary underline underline-offset-2">
+        <Link href="/register" className="font-medium text-primary hover:underline">
           Create one
         </Link>
       </p>
