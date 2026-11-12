@@ -39,7 +39,15 @@ const TAB_PREFIXES: ReadonlyArray<[prefix: string, tab: TabId]> = [
   ["/profile", "profile"],
   ["/bookings", "profile"],
   ["/my", "profile"],
+  // Role tools are reached from Profile on phones.
+  ["/teacher", "profile"],
+  ["/admin", "profile"],
 ];
+
+/** Teacher / admin tools. On desktop they are highlighted under "Role tools" instead of a tab. */
+export function isRoleToolRoute(pathname: string) {
+  return ["/teacher", "/admin"].some((prefix) => matchesPrefix(pathname, prefix));
+}
 
 function matchesPrefix(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);

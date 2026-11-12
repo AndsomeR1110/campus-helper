@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getActiveTab, roleToolsFor, shouldShowBottomNav } from "./nav-config";
+import { getActiveTab, roleToolsFor, shouldShowBottomNav, isRoleToolRoute } from "./nav-config";
 
 describe("getActiveTab", () => {
   it.each([
@@ -14,13 +14,21 @@ describe("getActiveTab", () => {
     ["/profile", "profile"],
     ["/bookings/office-1", "profile"],
     ["/my/posts", "profile"],
+    ["/teacher/office-hours", "profile"],
+    ["/admin", "profile"],
   ])("%s belongs to the %s tab", (pathname, tab) => {
     expect(getActiveTab(pathname)).toBe(tab);
   });
 
+  it("marks teacher and admin pages as role tools (desktop highlights them there)", () => {
+    expect(isRoleToolRoute("/teacher/office-hours")).toBe(true);
+    expect(isRoleToolRoute("/admin")).toBe(true);
+    expect(isRoleToolRoute("/administrator")).toBe(false);
+  });
+
   it("does not match on a partial segment", () => {
     expect(getActiveTab("/homework")).toBeNull();
-    expect(getActiveTab("/admin")).toBeNull();
+    expect(getActiveTab("/administrator")).toBeNull();
   });
 });
 
