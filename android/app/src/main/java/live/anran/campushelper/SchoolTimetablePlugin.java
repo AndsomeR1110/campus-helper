@@ -115,6 +115,3 @@ public class SchoolTimetablePlugin extends Plugin {
     @Override protected void handleOnResume(){foreground=true;if(pending!=null){handler.removeCallbacks(tick);handler.post(tick);}}
     @Override protected void handleOnDestroy(){fail("CANCELLED");}
 }
-
-
-
