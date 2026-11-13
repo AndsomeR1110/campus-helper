@@ -10,7 +10,9 @@
 //   - Seed data uses fictional names / IDs / emails only
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // native = dev machine (Windows); extra target = production container (Alpine)
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
