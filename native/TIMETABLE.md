@@ -13,7 +13,7 @@ Only 2026/27 S1 is enabled, using the existing project's 2026-09-07 week-one anc
 ## Public UI contract for Claude
 
 - Feature export: `@/features/school-timetable` -> `SchoolTimetableConnection` (functional component, actorId from the server's authenticated user).
-- Module-local bridge: `schoolTimetableAvailable()`, `readSyncState()`, `syncSchoolTimetable(expectedActor, stillActive?)`, `connectionError()`.
+- Public facade (also exported from `@/features/school-timetable`): `schoolTimetableAvailable()`, `readSyncState()`, `syncSchoolTimetable(expectedActor, stillActive?)`, `connectionError()`, `forgetSchoolConnection(actorId)` (clears the device connection, keeps saved courses).
 - State: `{ version, syncedAt, term, count }`. Native operation: `SchoolTimetable.connect()` returns a validated snapshot, not a cookie/hash/navigation API.
 - Keep initial connection, loading, saved/last-sync, offline, unavailable platform, cancellation, expiry/error and retry states. Successful native retrieval is not sufficient: wait for the server save response before showing success.
 - Keep bridge lifecycle, active-account guard, exact-week semantics and source isolation. Do not replace them with preview fixtures. No enrollment hash, ticket or credential should appear in UI or logs.
