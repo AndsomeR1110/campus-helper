@@ -49,3 +49,7 @@ AMS：候选 GET `/xjtlu/sign/qRCodeSign`（code 课堂码、type=2）会改变�
 - 本地 APK 依赖本机开发服务；没有生产发布、iOS 或 Web/PWA 完整校方预约能力。
 
 详尽原始研究保留在本机 `E:/ENT/school-services-review/`，不整体上传采集文件。云端以本文可用信息为起点；需要更多字段时由 Codex 输出最小脱敏样例。不要索要网络包、学校凭证、动态码或私人 URL。
+
+## 后续本地同步更新（2026-11-13）
+
+Codex 已将 `1607a8c` 合入本地区间车分支，保留 Claude 新版全站 UI；适配 Services widget 样式和共享 DatePicker。MuMu 发现 en-CA 日期输出带斜杠导致日历报错，已用 formatToParts 修复共享 dayKey，并补回归测试。迁移后已验证 MuMu 日历选日和真实班次查询，尚未重新执行真实预约/取消。功能代码仍待独立发布，不在本文档 PR 中。原来“未合入新 UI”的描述应以本段最新状态为准；Claude 仍负责新服务最终视觉。

@@ -6,7 +6,7 @@
 
 - GitHub：AndsomeR1110/campus-helper；UI 重构 PR #62 已合并，当前 main 为 `1607a8c`。Claude 后续工作以最新 main 为起点，不恢复旧 Demo 样式。
 - 第一个 Demo 由组员通过 Collaborator + PR 完成。Claude 负责整体规划与视觉重构；本地 Codex 负责学校集成、原生能力和测试。
-- 本地区间车原型位于 `E:/ENT/campus-shuttle-app`，分支 `feat/shuttle-native-app`，基于 `999d679`；代码尚未提交/推送。其页面是功能验证 UI，不是最终视觉稿。云端不能假定已能读取该分支或本机路径。
+- 本地区间车原型位于 `E:/ENT/campus-shuttle-app`，分支 `feat/shuttle-native-app`，原先基于 `999d679`，现已同步 `1607a8c`（PR #62）；功能代码尚未提交/推送。其页面是功能验证 UI，不是最终视觉稿。云端不能假定已能读取该分支或本机路径。
 - 本轮只同步协作方案和脱敏能力说明，不把未整理的原生实现混入 UI PR。已验证与待验证范围见 [能力交接](../docs/collaboration/school-services.md)。
 
 ## 职责与文件边界
@@ -26,7 +26,7 @@ Claude 不重写 `school-adapter.ts`、桥接协议、安全策略或原生代�
 ## 按依赖推进
 
 1. **同步计划（本 PR）**：所有 Agent 先读本文件、任务清单和能力交接。新功能是 PRD 增量；SH/ROOM/AMS 的编号是补充验收编号，不冒充现有 PG/AC。
-2. **Codex 发布接入基础**：保留原 worktree；在独立迁移分支合入最新 main，保留 Claude 的新布局。拆出原生壳/适配器和 UI facade 的 Draft PR，交付可安装 APK、公开类型及无凭证 fixtures。不要要求 Claude 从未经提交的本地文件复制代码。
+2. **Codex 发布接入基础**：保留原 worktree；已在原功能分支同步最新 main 并保留 Claude 的新布局，后续整理为可评审提交。拆出原生壳/适配器和 UI facade 的 Draft PR，交付可安装 APK、公开类型及无凭证 fixtures。不要要求 Claude 从未经提交的本地文件复制代码。
 3. **Claude 可立即做 UI 设计与预览**：从最新 main 开 UI 分支，先做服务入口和可审查的 UI 状态。稳定公共 facade 之前仅通过模块内预览 adapter 使用 fixtures；不要自创真实接口实现。Codex 发布 facade 后再对齐类型与 import。
 4. **区间车纵向交付**：Claude 的页面调用已发布 facade；Codex 接真实链路并验证，再回传截图与差异。共享页面由 Claude 的布局主导，旧原型不得整文件覆盖。
 5. **太仓讨论室纵向交付**：先 UI + 只读查询；再做选时/人数/确认；真实创建和取消须在本人及合法组员可参与时另行安排。原先授权仅限不提交讨论室真实预约，不能沿用校车授权。
