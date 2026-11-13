@@ -86,3 +86,14 @@ Ask the user which member / module they are if it is not clear. Then stay inside
 ## When unsure
 
 Stop and ask the user rather than inventing a shared interface, changing another module, changing the schema, or relaxing a rule above.
+
+## Claude / local Codex collaboration
+
+For school-service work, read `tasks/plan.md`, `tasks/todo.md` and
+`docs/collaboration/school-services.md` before editing. The project lead has assigned
+UI/UX and new service presentation to Claude; local Codex owns school adapters,
+Android/WebView integration and runtime verification. Preserve the latest merged
+UI. Do not replace it with the old integration prototype. Publish public service
+types before connecting cloud UI work; preview fixtures must never masquerade as
+real school results. Existing module ownership and non-author review still apply.
+This policy does not enable project dev logging.
