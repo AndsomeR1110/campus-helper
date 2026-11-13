@@ -43,6 +43,16 @@ export const STATUS_MAP = {
     RESOLVED: { label: "Resolved", tone: "success" },
     DISMISSED: { label: "Dismissed", tone: "neutral" },
   },
+  /** AMS class check-in: the window, then the record read back from the school. */
+  attendance: {
+    NOT_OPEN: { label: "Not open yet", tone: "neutral" },
+    OPEN: { label: "Check-in open", tone: "info" },
+    CLOSED: { label: "Check-in closed", tone: "neutral" },
+    PENDING: { label: "Awaiting school", tone: "warning" },
+    PRESENT: { label: "Checked in", tone: "success" },
+    LATE: { label: "Late", tone: "warning" },
+    ABSENT: { label: "Absent", tone: "danger" },
+  },
 } as const satisfies Record<string, Record<string, { label: string; tone: Tone }>>;
 
 export type StatusKind = keyof typeof STATUS_MAP;
