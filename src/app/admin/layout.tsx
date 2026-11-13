@@ -6,6 +6,7 @@ import { PageContainer, TopBar } from "@/components/layout";
 import { DemoDataNotice, Skeleton } from "@/components/ui";
 import { getCurrentAdmin } from "@/features/lost-found/server";
 import { getModerationRuntime } from "@/features/admin/server";
+import { AppFrame } from "../_shell/app-frame";
 
 export const metadata: Metadata = { title: "Administration" };
 
@@ -31,13 +32,13 @@ async function AdminGate({ children }: { children: ReactNode }) {
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-surface-muted">
-      <TopBar title="Administration" variant="large" />
-      <PageContainer width="content" className="flex flex-col gap-4 py-4">
+    <AppFrame>
+      <TopBar title="Admin dashboard" backHref="/profile" />
+      <PageContainer>
         <Suspense fallback={<Skeleton className="h-40 w-full" aria-hidden />}>
           <AdminGate>{children}</AdminGate>
         </Suspense>
       </PageContainer>
-    </div>
+    </AppFrame>
   );
 }

@@ -20,8 +20,8 @@ export function StickyActionBar({ summary, children, className }: StickyActionBa
       <div aria-hidden className="h-[calc(104px+env(safe-area-inset-bottom))] lg:hidden" />
       <div
         className={cn(
-          "fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]",
-          "lg:static lg:mt-6 lg:border-t-0 lg:bg-transparent lg:p-0",
+          "fixed inset-x-0 bottom-0 z-30 rounded-t-lg border-t glass px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-overlay",
+          "lg:static lg:mt-6 lg:rounded-none lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none",
           className,
         )}
       >

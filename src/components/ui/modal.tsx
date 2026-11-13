@@ -80,7 +80,7 @@ export function Modal({
     >
       <div
         className={cn(
-          "flex max-h-[85dvh] flex-col rounded-t-lg bg-surface shadow-overlay md:rounded-lg",
+          "flex max-h-[85dvh] flex-col rounded-t-lg border glass-strong shadow-overlay md:rounded-lg",
           "pb-[env(safe-area-inset-bottom)] md:pb-0",
           className,
         )}

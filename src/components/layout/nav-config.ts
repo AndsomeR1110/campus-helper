@@ -39,7 +39,15 @@ const TAB_PREFIXES: ReadonlyArray<[prefix: string, tab: TabId]> = [
   ["/profile", "profile"],
   ["/bookings", "profile"],
   ["/my", "profile"],
+  // Role tools are reached from Profile on phones.
+  ["/teacher", "profile"],
+  ["/admin", "profile"],
 ];
+
+/** Teacher / admin tools. On desktop they are highlighted under "Role tools" instead of a tab. */
+export function isRoleToolRoute(pathname: string) {
+  return ["/teacher", "/admin"].some((prefix) => matchesPrefix(pathname, prefix));
+}
 
 function matchesPrefix(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -72,6 +80,8 @@ export function shouldShowBottomNav(pathname: string) {
 
 export interface ServiceEntry {
   label: string;
+  /** One-word label for the phone quick-access grid when `label` would wrap. */
+  shortLabel?: string;
   description: string;
   href: string;
   /** Drives icon and colour via TypeTag helpers. */
@@ -94,6 +104,7 @@ export const SERVICES: readonly ServiceEntry[] = [
   },
   {
     label: "Class Reminder",
+    shortLabel: "Classes",
     description: "Your timetable and reminders",
     href: "/schedule",
     type: "class",

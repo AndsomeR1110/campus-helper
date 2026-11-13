@@ -32,16 +32,24 @@ export function NavItems({ active, unreadCount = 0, orientation }: NavItemsProps
               className={cn(
                 "flex items-center transition-colors duration-150",
                 vertical
-                  ? "h-11 gap-3 rounded-sm px-3 text-body font-medium"
-                  : "h-full flex-col justify-center gap-0.5 text-caption",
+                  ? "h-11 gap-3 rounded-full px-4 text-body font-medium"
+                  : "group h-full flex-col justify-center gap-0.5 text-caption",
                 selected
                   ? cn("text-primary", vertical && "bg-primary-subtle")
                   : cn("text-text-muted hover:text-text", vertical && "hover:bg-surface-muted"),
               )}
             >
-              <span className="relative">
+              <span
+                className={cn(
+                  "relative flex items-center justify-center",
+                  !vertical && "h-8 w-14 rounded-full transition-colors duration-200",
+                  !vertical &&
+                    selected &&
+                    "bg-liquid-pill shadow-[inset_0_1px_0_var(--color-liquid-highlight),0_2px_8px_-2px_rgb(var(--shadow-tint)/0.25)]",
+                )}
+              >
                 <Icon
-                  className={vertical ? "size-5" : "size-6"}
+                  className={vertical ? "size-5" : "size-5.5"}
                   strokeWidth={selected ? 2.25 : 1.75}
                   aria-hidden
                 />

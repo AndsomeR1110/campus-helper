@@ -4,6 +4,7 @@ import { Armchair, ChevronRight, SearchX, UserRound } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import {
   Button,
+  CampusIllustration,
   Card,
   Chip,
   ChipGroup,
@@ -25,6 +26,7 @@ import {
   cardStyles,
   toast,
 } from "@/components/ui";
+import { ThemeSwitcher } from "@/components/theme";
 import { formatDateTimeRange } from "@/lib/time";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -77,7 +79,14 @@ export function Showcase() {
           Shared components from <code>@/components/ui</code>. Rules:{" "}
           <code>docs/design/ui-ux-spec.md</code>.
         </p>
+        <ThemeSwitcher className="mt-2 max-w-sm" />
       </header>
+
+      <Section title="Campus illustration">
+        <Card className="overflow-hidden p-0">
+          <CampusIllustration />
+        </Card>
+      </Section>
 
       <Section title="Colour tokens">
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">

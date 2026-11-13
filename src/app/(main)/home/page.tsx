@@ -4,7 +4,15 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { PageContainer, SERVICES } from "@/components/layout";
-import { Card, EmptyState, ListItem, OfflineBanner, Skeleton, buttonStyles } from "@/components/ui";
+import {
+  CampusIllustration,
+  Card,
+  EmptyState,
+  ListItem,
+  OfflineBanner,
+  Skeleton,
+  buttonStyles,
+} from "@/components/ui";
 import { listForUser } from "@/features/notifications/server";
 import { loadNextClass } from "@/features/schedule/server";
 import { getCurrentUser } from "@/lib/auth";
@@ -49,7 +57,7 @@ async function NextClass() {
 
   if (!next) {
     return (
-      <Card className="p-0">
+      <Card variant="widget" className="p-0">
         <EmptyState
           icon={CalendarDays}
           title="No upcoming classes"
@@ -70,7 +78,7 @@ async function NextClass() {
 
   return (
     <Link href={next.href} className="block">
-      <Card>
+      <Card variant="widget">
         <ListItem
           title={next.title}
           description={
@@ -95,15 +103,15 @@ async function RecentNotifications() {
 
   if (recent.length === 0) {
     return (
-      <Card className="p-0">
+      <Card variant="widget" className="p-0">
         <EmptyState icon={Bell} title="You’re all caught up" className="py-6" />
       </Card>
     );
   }
 
   return (
-    <Card className="p-0">
-      <ul className="divide-y divide-border">
+    <Card variant="widget" className="p-0">
+      <ul className="divide-y divide-liquid-edge">
         {recent.map((item) => (
           <li key={item.id}>
             <Link href={item.href} className="block px-4 py-3">
@@ -116,7 +124,7 @@ async function RecentNotifications() {
         ))}
       </ul>
       {unread > 0 && (
-        <p className="border-t border-border px-4 py-2 text-body-sm text-text-muted">
+        <p className="border-t border-liquid-edge px-4 py-2 text-body-sm text-text-muted">
           {unread} unread
         </p>
       )}
@@ -149,21 +157,25 @@ export default function HomePage() {
       {/* Home has no TopBar, so it renders the connectivity banner itself. */}
       <OfflineBanner className="sticky top-0 z-30 pt-[max(8px,env(safe-area-inset-top))]" />
       <PageContainer className="pt-[max(24px,env(safe-area-inset-top))] md:pt-8">
-        <div className="flex items-start justify-between gap-4">
-          <Suspense fallback={<GreetingSkeleton />}>
-            <Greeting />
-          </Suspense>
-          <Link
-            href="/notifications"
-            aria-label="Notifications"
-            className="relative -mr-2 flex size-11 shrink-0 items-center justify-center rounded-full text-text hover:bg-surface-muted"
-          >
-            <Bell className="size-6" aria-hidden />
-            <Suspense fallback={null}>
-              <UnreadBadge />
+        {/* Hero: greeting over a flat campus-map illustration. */}
+        <section className="relative isolate min-h-48 overflow-hidden rounded-lg border border-glass-border bg-linear-to-br from-primary-subtle via-surface/70 to-surface/40 p-5 shadow-card md:min-h-52 md:p-6">
+          <CampusIllustration className="absolute -right-14 -bottom-14 -z-10 w-80 [mask-image:radial-gradient(closest-side,black_55%,transparent)] md:top-1/2 md:right-0 md:bottom-auto md:w-[28rem] md:-translate-y-1/2" />
+          <div className="flex items-start justify-between gap-4">
+            <Suspense fallback={<GreetingSkeleton />}>
+              <Greeting />
             </Suspense>
-          </Link>
-        </div>
+            <Link
+              href="/notifications"
+              aria-label="Notifications"
+              className="relative -mt-1 -mr-1 flex size-11 shrink-0 items-center justify-center rounded-full border glass text-text shadow-card transition-transform duration-150 active:scale-95"
+            >
+              <Bell className="size-5.5" aria-hidden />
+              <Suspense fallback={null}>
+                <UnreadBadge />
+              </Suspense>
+            </Link>
+          </div>
+        </section>
 
         <HomeSection title="Next class" seeAllHref="/schedule">
           <Suspense fallback={<Skeleton className="h-20 w-full" aria-hidden />}>
@@ -183,7 +195,7 @@ export default function HomePage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           <HomeSection title="Upcoming bookings" seeAllHref="/bookings">
-            <Card className="p-0">
+            <Card variant="widget" className="p-0">
               <EmptyState
                 icon={Inbox}
                 title="No upcoming bookings"

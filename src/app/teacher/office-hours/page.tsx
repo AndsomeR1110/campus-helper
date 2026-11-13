@@ -1,14 +1,24 @@
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, ChevronRight, Clock, Eye, TriangleAlert, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { EmptyState, Skeleton, StatusBadge, DemoDataNotice } from "@/components/ui";
+import { PageContainer, TopBar } from "@/components/layout";
+import {
+  Card,
+  DemoDataNotice,
+  EmptyState,
+  LocationText,
+  Skeleton,
+  StatusBadge,
+  cardStyles,
+} from "@/components/ui";
+import { TeacherAvatar } from "@/features/office-hours";
 import { ApiError } from "@/lib/api";
 import { requireTeacher } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db";
-import { formatDate, formatTimeRange } from "@/lib/time";
+import { dayKey, formatDate, formatTimeRange } from "@/lib/time";
 import { listSlotsForTeacher } from "@/features/office-hours/server";
 
 import { SlotForm } from "./slot-form";
@@ -34,109 +44,205 @@ export default async function TeacherOfficeHoursPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-list flex-col gap-6 px-5 py-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-title-lg text-text">My office hours</h1>
+    <>
+      <TopBar
+        title="My office hours"
+        backHref="/profile"
+        actions={
+          <Link
+            href="/office-hours"
+            aria-label="View student side"
+            title="View student side"
+            className="flex size-11 items-center justify-center rounded-full text-primary hover:bg-surface-muted"
+          >
+            <Eye className="size-5" aria-hidden />
+          </Link>
+        }
+      />
+      <PageContainer>
         <p className="text-body-sm text-text-muted">
           Create slots and see how many students have booked. You can only manage your own slots.
         </p>
-      </header>
 
-      <DemoDataNotice />
+        <DemoDataNotice />
 
-      <Suspense fallback={null}>
-        <TeacherProfileGate userId={user.id} />
-      </Suspense>
-
-      <Suspense fallback={<SlotListSkeleton />}>
-        <SlotList userId={user.id} />
-      </Suspense>
-
-      <Link href="/office-hours" className="text-body-sm text-text-muted hover:text-text">
-        ← View student side
-      </Link>
-    </main>
+        <Suspense fallback={<SlotListSkeleton />}>
+          <TeacherDashboard userId={user.id} />
+        </Suspense>
+      </PageContainer>
+    </>
   );
 }
 
-/** Explicit hint when a TEACHER account has no profile yet (instead of an empty page). */
-async function TeacherProfileGate({ userId }: { userId: string }) {
-  const profile = await prisma.teacherProfile.findUnique({
-    where: { userId },
-    select: { displayName: true, department: true },
-  });
+async function TeacherDashboard({ userId }: { userId: string }) {
+  const [slots, profile] = await Promise.all([
+    listSlotsForTeacher(userId),
+    prisma.teacherProfile.findUnique({
+      where: { userId },
+      select: { id: true, displayName: true, department: true, office: true },
+    }),
+  ]);
 
   if (!profile) {
     return (
-      <p className="rounded-md bg-warning-subtle px-4 py-3 text-body-sm text-warning">
+      <p className="flex items-start gap-2 rounded-md bg-warning-subtle px-4 py-3 text-body-sm text-warning">
+        <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
         This account has the TEACHER role but no teacher profile yet. Ask an admin to create one.
       </p>
     );
   }
 
-  return (
-    <p className="text-body-sm text-text-muted">
-      {profile.displayName} · {profile.department}
-    </p>
-  );
-}
+  const upcoming = slots.filter((slot) => !slot.isPast);
+  const past = slots.filter((slot) => slot.isPast);
+  const stats = [
+    { label: "Upcoming slots", value: upcoming.filter((s) => s.status === "OPEN").length },
+    {
+      label: "Booked",
+      value: upcoming.filter((s) => s.status === "OPEN" && s.bookingCount > 0).length,
+    },
+    { label: "Past slots", value: past.length },
+  ];
 
-async function SlotList({ userId }: { userId: string }) {
-  const [slots, profile] = await Promise.all([
-    listSlotsForTeacher(userId),
-    prisma.teacherProfile.findUnique({ where: { userId }, select: { id: true } }),
-  ]);
+  const days = new Map<string, typeof upcoming>();
+  for (const slot of upcoming) {
+    const key = dayKey(slot.startsAt);
+    days.set(key, [...(days.get(key) ?? []), slot]);
+  }
 
   return (
     <>
-      {profile ? <SlotForm /> : null}
-
-      {slots.length === 0 ? (
-        <EmptyState
-          icon={CalendarPlus}
-          title="No office hour slots yet"
-          description="Create your first slot above and students will see it immediately."
-        />
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {slots.map((slot) => (
-            <li
-              key={slot.id}
-              className="flex flex-col gap-1 rounded-md border border-border bg-surface p-4 shadow-card sm:flex-row sm:items-center sm:justify-between"
+      <section
+        aria-label="Your profile"
+        className={cardStyles({ variant: "widget", className: "flex flex-col gap-4" })}
+      >
+        <div className="flex items-center gap-4">
+          <TeacherAvatar name={profile.displayName} size="lg" />
+          <div className="flex min-w-0 flex-col gap-1">
+            <p className="truncate text-title text-text">{profile.displayName}</p>
+            <p className="truncate text-body-sm text-text-muted">{profile.department}</p>
+            {profile.office ? (
+              <LocationText
+                location={`Office ${profile.office}`}
+                className="text-body-sm text-text-muted"
+              />
+            ) : null}
+          </div>
+        </div>
+        <dl className="grid grid-cols-3 gap-2">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="flex flex-col items-center gap-0.5 rounded-md bg-surface-muted/70 px-2 py-3"
             >
-              <div className="flex flex-col gap-1">
-                <p className="text-subtitle text-text">
-                  {formatTimeRange(slot.startsAt, slot.endsAt)}
-                </p>
-                <p className="text-body-sm text-text-muted">{formatDate(slot.startsAt)}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <StatusBadge kind="slot" status={slot.status === "OPEN" ? "OPEN" : "CANCELLED"} />
-                {slot.bookingCount > 0 ? (
-                  <span className="rounded-sm bg-info-subtle px-2 py-1 text-caption text-info">
-                    {slot.bookingCount} booked
-                  </span>
-                ) : null}
-              </div>
-            </li>
+              <dd className="text-title-lg text-text tabular-nums">{stat.value}</dd>
+              <dt className="text-center text-caption text-text-muted">{stat.label}</dt>
+            </div>
           ))}
-        </ul>
+        </dl>
+      </section>
+
+      <SlotForm />
+
+      {upcoming.length === 0 ? (
+        <Card className="p-0">
+          <EmptyState
+            icon={CalendarPlus}
+            title="No upcoming slots"
+            description="Create a slot above and students will see it immediately."
+          />
+        </Card>
+      ) : (
+        [...days.entries()].map(([key, daySlots]) => (
+          <section
+            key={key}
+            aria-label={formatDate(daySlots[0].startsAt)}
+            className="flex flex-col gap-2"
+          >
+            <h2 className="text-caption tracking-wide text-text-muted uppercase">
+              {formatDate(daySlots[0].startsAt)}
+            </h2>
+            <ul className="grid gap-2 md:grid-cols-2">
+              {daySlots.map((slot) => (
+                <SlotRow key={slot.id} slot={slot} />
+              ))}
+            </ul>
+          </section>
+        ))
+      )}
+
+      {past.length > 0 && (
+        <details className="group flex flex-col gap-2">
+          <summary className="flex cursor-pointer list-none items-center gap-1 text-body-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
+            <ChevronRight
+              className="size-4 transition-transform group-open:rotate-90"
+              aria-hidden
+            />
+            Past slots ({past.length})
+          </summary>
+          <ul className="mt-2 grid gap-2 opacity-80 md:grid-cols-2">
+            {past.map((slot) => (
+              <SlotRow key={slot.id} slot={slot} showDate />
+            ))}
+          </ul>
+        </details>
       )}
     </>
   );
 }
 
+function SlotRow({
+  slot,
+  showDate = false,
+}: {
+  slot: Awaited<ReturnType<typeof listSlotsForTeacher>>[number];
+  showDate?: boolean;
+}) {
+  return (
+    <li className={cardStyles({ className: "flex items-center gap-3" })}>
+      <span
+        aria-hidden
+        className="flex size-11 shrink-0 items-center justify-center rounded-sm bg-event-office-subtle text-event-office"
+      >
+        <Clock className="size-5" />
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <p className="text-subtitle text-text tabular-nums">
+          {formatTimeRange(slot.startsAt, slot.endsAt)}
+          {showDate ? (
+            <span className="ml-2 text-body-sm font-normal text-text-muted">
+              {formatDate(slot.startsAt)}
+            </span>
+          ) : null}
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge kind="slot" status={slot.status === "OPEN" ? "OPEN" : "CANCELLED"} />
+          {slot.bookingCount > 0 ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-info-subtle px-2.5 py-0.5 text-caption text-info">
+              <Users className="size-3.5" aria-hidden />
+              {slot.bookingCount} booked
+            </span>
+          ) : null}
+          {slot.location ? (
+            <LocationText location={slot.location} className="text-caption text-text-muted" />
+          ) : null}
+        </div>
+      </div>
+    </li>
+  );
+}
+
 function SlotListSkeleton() {
   return (
-    <div className="flex flex-col gap-2" aria-hidden>
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className="flex h-20 items-center justify-between rounded-md border border-border bg-surface p-4"
-        >
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-6 w-20" />
+    <div className="flex flex-col gap-3" aria-hidden>
+      <div className="flex items-center gap-4 rounded-lg border border-border bg-surface p-4">
+        <Skeleton className="size-16 rounded-full" />
+        <div className="flex flex-1 flex-col gap-2">
+          <Skeleton className="h-5 w-1/3" />
+          <Skeleton className="h-4 w-1/2" />
         </div>
+      </div>
+      {[0, 1, 2].map((i) => (
+        <Skeleton key={i} className="h-20 w-full" />
       ))}
     </div>
   );

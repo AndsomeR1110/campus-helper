@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
-import { Button, FormField, Input, Select, Textarea, toast } from "@/components/ui";
+import { Button, DateTimePicker, FormField, Input, Select, Textarea, toast } from "@/components/ui";
 
 import {
   CATEGORY_LABELS,
@@ -19,8 +19,9 @@ interface FieldErrors {
 }
 
 function isoFromLocal(value: string): string {
-  // `datetime-local` has no zone; the browser is the only thing that knows it.
-  return new Date(value).toISOString();
+  // The picker's "yyyy-mm-ddTHH:mm" is campus time (Asia/Shanghai, UTC+8 with no
+  // daylight saving), like every other time in the app — not the browser's zone.
+  return new Date(`${value}:00+08:00`).toISOString();
 }
 
 /** PG-15. Creates the post, then uploads the optional photo to the new id. */
@@ -133,12 +134,7 @@ export function PostForm() {
         error={errors.occurredAt}
         hint="You cannot pick a time in the future."
       >
-        <Input
-          name="occurredAt"
-          type="datetime-local"
-          value={occurredAt}
-          onChange={(event) => setOccurredAt(event.target.value)}
-        />
+        <DateTimePicker value={occurredAt} onChange={setOccurredAt} max="today" />
       </FormField>
 
       <FormField
@@ -164,6 +160,7 @@ export function PostForm() {
           name="photo"
           type="file"
           accept="image/png,image/jpeg,image/webp"
+          className="h-auto cursor-pointer border-dashed py-2 text-body-sm text-text-muted file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-primary-subtle file:px-4 file:py-2 file:text-body-sm file:font-medium file:text-primary"
           onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
         />
       </FormField>

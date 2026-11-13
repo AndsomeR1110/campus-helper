@@ -3,9 +3,23 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-import { Button, FormField, Input, toast, useOffline } from "@/components/ui";
+import {
+  Button,
+  cardStyles,
+  DateTimePicker,
+  FormField,
+  Input,
+  toast,
+  useOffline,
+} from "@/components/ui";
 import { fromDateTimeLocalValue } from "@/features/office-hours";
 import { createSlotSchema } from "@/features/office-hours";
+
+/** "yyyy-mm-ddTHH:mm" + minutes, as wall-clock arithmetic (no time zone involved). */
+function plusMinutes(local: string, minutes: number) {
+  const next = new Date(Date.parse(`${local}:00Z`) + minutes * 60_000);
+  return next.toISOString().slice(0, 16);
+}
 
 /**
  * Teacher slot creation form (PG-07 / OH-AC-06).
@@ -80,24 +94,34 @@ export function SlotForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-md border border-border bg-surface p-4 shadow-card"
+      className={cardStyles({ variant: "widget", className: "flex flex-col gap-4" })}
       noValidate
     >
       <h2 className="text-subtitle text-text">Add an office hour slot</h2>
 
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <FormField label="Starts (Asia/Shanghai)" error={fieldErrors.startsAt} className="flex-1">
-          <Input
-            type="datetime-local"
+      <div className="grid gap-4 md:grid-cols-2">
+        <FormField label="Starts (Asia/Shanghai)" error={fieldErrors.startsAt}>
+          <DateTimePicker
             value={startsAt}
-            onChange={(event) => setStartsAt(event.target.value)}
+            onChange={(value) => {
+              setStartsAt(value);
+              // Suggest a 30-minute slot the first time a start is chosen.
+              if (value && !endsAt) setEndsAt(plusMinutes(value, 30));
+            }}
+            min="today"
+            timeFrom="07:00"
+            timeTo="22:00"
+            timeStep={15}
           />
         </FormField>
-        <FormField label="Ends" error={fieldErrors.endsAt} className="flex-1">
-          <Input
-            type="datetime-local"
+        <FormField label="Ends" error={fieldErrors.endsAt}>
+          <DateTimePicker
             value={endsAt}
-            onChange={(event) => setEndsAt(event.target.value)}
+            onChange={setEndsAt}
+            min="today"
+            timeFrom="07:00"
+            timeTo="22:00"
+            timeStep={15}
           />
         </FormField>
       </div>

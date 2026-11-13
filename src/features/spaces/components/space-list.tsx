@@ -1,58 +1,52 @@
+import { Armchair } from "lucide-react";
 import Link from "next/link";
 import { cardStyles, DemoDataNotice, EmptyState } from "@/components/ui";
-import { SEAT_TYPE_LABELS } from "../constants";
 import type { Space } from "../types";
+import { SeatSummary } from "./seat-summary";
 import { SpaceFilterForm } from "./space-filter-form";
 export function SpaceList({
   spaces,
   catalog,
   query,
   error,
+  today,
 }: {
   spaces: readonly (Space & { available: boolean })[];
   catalog: readonly Space[];
   query: string;
   error?: string;
+  today?: string;
 }) {
   return (
     <>
       <DemoDataNotice />
-      <p className="text-body-sm text-text-muted">
-        Shared demo account: Mia Chen. Bookings are not private until sign-in is connected.
-      </p>
-      <SpaceFilterForm query={query} catalog={catalog} />
+      <SpaceFilterForm query={query} catalog={catalog} today={today} />
       {error ? (
         <p role="alert" className="text-body-sm text-danger">
           {error}
         </p>
       ) : spaces.length === 0 ? (
         <EmptyState
+          icon={Armchair}
           title="No matching seats"
           description="Try another building, floor or seat type."
         />
       ) : (
         <>
-          <p className="text-body-sm text-text-muted">
-            {spaces.length} seats · Times shown in Asia/Shanghai
+          <p className="text-caption tracking-wide text-text-muted uppercase">
+            {spaces.length} seats · {spaces.filter((s) => s.available).length} available
           </p>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {spaces.map((space) => (
               <Link
                 key={space.id}
                 href={`/spaces/${encodeURIComponent(space.id)}?${query}`}
-                className={cardStyles({ interactive: true })}
+                className={cardStyles({ interactive: true, className: "h-full" })}
               >
-                <h2 className="text-subtitle">Seat {space.seat}</h2>
-                <p className="text-body-sm text-text-muted">
-                  {space.campus} · {space.building} · Floor {space.floor}
-                </p>
-                <p className="text-body-sm">
-                  {SEAT_TYPE_LABELS[space.type]} ·{" "}
-                  {space.power ? "Power socket" : "No power socket"}
-                </p>
-                <p className="text-body-sm">
-                  {space.available ? "Available" : "Booked for this time"} · View seat
-                </p>
+                <SeatSummary
+                  space={space}
+                  availability={space.available ? "Available" : "Booked for this time"}
+                />
               </Link>
             ))}
           </div>

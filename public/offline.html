@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#1f5c4a" />
+    <meta name="theme-color" content="#f3f1f8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#131211" media="(prefers-color-scheme: dark)" />
     <title>You're offline · CAMPUS HELPER</title>
     <!--
       Served by public/sw.js when a page can't be loaded without a connection.
@@ -13,13 +14,31 @@
     -->
     <style>
       :root {
-        --background: #f6f4ef;
-        --surface: #fffdf9;
-        --border: #e3dfd6;
-        --text: #1f1d1a;
-        --text-muted: #6b665c;
-        --primary: #1f5c4a;
-        --primary-hover: #174a3b;
+        --background: #f3f1f8;
+        --surface: #fdfcff;
+        --border: #e6e1ef;
+        --text: #1e1b2e;
+        --text-muted: #635e78;
+        --text-disabled: #a49fb5;
+        --primary: #6b3fa0;
+        --primary-hover: #5a3389;
+        --on-primary: #fff;
+        --focus-ring: #8a5cc4;
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #131211;
+          --surface: #1c1b1a;
+          --border: #2f2d2b;
+          --text: #eeece8;
+          --text-muted: #aaa59d;
+          --text-disabled: #6f6b64;
+          --primary: #d9aee0;
+          --primary-hover: #e6c6ea;
+          --on-primary: #241726;
+          --focus-ring: #e6c6ea;
+        }
       }
       * {
         box-sizing: border-box;
@@ -50,15 +69,15 @@
         max-width: 400px;
         padding: 32px 24px;
         border: 1px solid var(--border);
-        border-radius: 16px;
+        border-radius: 28px;
         background: var(--surface);
-        box-shadow: 0 1px 2px rgb(31 29 26 / 0.06);
+        box-shadow: 0 12px 40px -12px rgb(60 30 110 / 0.2);
         text-align: center;
       }
       svg {
         width: 48px;
         height: 48px;
-        color: #a39e92;
+        color: var(--text-disabled);
       }
       h1 {
         margin: 16px 0 8px;
@@ -79,9 +98,9 @@
         height: 44px;
         margin-top: 16px;
         padding: 0 20px;
-        border-radius: 8px;
+        border-radius: 999px;
         background: var(--primary);
-        color: #fff;
+        color: var(--on-primary);
         font-weight: 500;
         text-decoration: none;
       }
@@ -89,7 +108,7 @@
         background: var(--primary-hover);
       }
       a:focus-visible {
-        outline: 2px solid #2e7d64;
+        outline: 2px solid var(--focus-ring);
         outline-offset: 2px;
       }
     </style>

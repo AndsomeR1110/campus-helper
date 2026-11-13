@@ -1,10 +1,18 @@
-import { CalendarDays, CalendarPlus } from "lucide-react";
+import { BookOpen, CalendarDays, CalendarPlus, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { PageContainer, TopBar } from "@/components/layout";
-import { Card, EmptyState, ListItem, Skeleton, buttonStyles } from "@/components/ui";
+import {
+  Card,
+  EmptyState,
+  ListItem,
+  LocationText,
+  Skeleton,
+  buttonStyles,
+  cardStyles,
+} from "@/components/ui";
 import { WEEKDAY_LABELS } from "@/features/courses";
 import { getCurrentUser, listCourses } from "@/features/courses/server";
 
@@ -43,19 +51,23 @@ async function CourseList() {
           <Link
             href={`/courses/${course.id}/edit`}
             aria-label={`Edit ${course.code}`}
-            className={buttonStyles({
-              variant: "secondary",
-              className: "h-auto w-full justify-start border-border bg-surface p-0 text-left",
-            })}
+            className={cardStyles({ interactive: true })}
           >
-            <Card className="w-full p-4">
-              <ListItem
-                title={`${course.code} ${course.name}`}
-                description={`${WEEKDAY_LABELS[course.weekday]} ${course.startTime}–${course.endTime}${
-                  course.location ? ` · ${course.location}` : ""
-                }`}
-              />
-            </Card>
+            <ListItem
+              leading={
+                <span className="flex size-10 items-center justify-center rounded-sm bg-event-class-subtle text-event-class">
+                  <BookOpen aria-hidden />
+                </span>
+              }
+              title={`${course.code} ${course.name}`}
+              description={
+                <span className="flex flex-wrap items-center gap-x-2 tabular-nums">
+                  {WEEKDAY_LABELS[course.weekday]} {course.startTime}–{course.endTime}
+                  {course.location ? <LocationText location={course.location} /> : null}
+                </span>
+              }
+              trailing={<ChevronRight className="size-5 text-text-muted" aria-hidden />}
+            />
           </Link>
         </li>
       ))}

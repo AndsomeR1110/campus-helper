@@ -7,7 +7,10 @@ import { Skeleton } from "@/components/ui";
  */
 export default function TeacherDetailLoading() {
   return (
-    <main className="mx-auto flex w-full max-w-list flex-col gap-6 px-5 py-8" aria-busy>
+    <div
+      className="mx-auto flex w-full max-w-list flex-col gap-6 px-4 py-4 md:px-6 md:py-6"
+      aria-busy
+    >
       <Skeleton className="h-4 w-36" />
       <div className="flex flex-col gap-2">
         <Skeleton className="h-7 w-1/3" />
@@ -27,6 +30,6 @@ export default function TeacherDetailLoading() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

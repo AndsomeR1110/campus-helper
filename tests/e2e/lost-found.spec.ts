@@ -32,7 +32,10 @@ async function publishPost(page: Page, title: string, description: string): Prom
   await page.getByLabel("Title").fill(title);
   await page.getByLabel("Category").selectOption({ label: "Electronics" });
   await page.getByLabel("Location").fill("Library, 3rd floor");
-  await page.getByLabel("When did it happen?").fill("2026-11-01T09:30");
+  // Calendar picker: open it, take the "Yesterday" shortcut, then pick a time.
+  await page.getByRole("button", { name: "When did it happen?" }).click();
+  await page.getByRole("button", { name: "Yesterday" }).click();
+  await page.getByRole("combobox", { name: "Time" }).selectOption("09:30");
   await page.getByLabel("Description").fill(description);
   await page.getByRole("button", { name: "Publish post" }).click();
 

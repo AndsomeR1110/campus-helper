@@ -24,3 +24,5 @@ export {
 } from "@/features/office-hours/schemas";
 
 export { toDateTimeLocalValue, fromDateTimeLocalValue } from "./datetime-local";
+
+export { TeacherAvatar } from "./components/teacher-avatar";

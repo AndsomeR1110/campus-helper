@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
+import { AppLogo } from "@/components/ui";
 import { BottomNav } from "./bottom-nav";
 import { NavItems } from "./nav-items";
 import { NavigationTracker } from "./navigation-history";
@@ -30,14 +31,9 @@ export function AppShell({ children, unreadCount, roleLinks }: AppShellProps) {
         Skip to content
       </a>
 
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-side-nav flex-col border-r border-border bg-surface px-3 py-4 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-side-nav flex-col border-r glass px-3 py-4 lg:flex">
         <Link href="/home" className="mb-6 flex items-center gap-2 px-3 py-2">
-          <span
-            aria-hidden
-            className="flex size-8 items-center justify-center rounded-sm bg-primary text-subtitle text-on-primary"
-          >
-            C
-          </span>
+          <AppLogo className="size-9 drop-shadow-sm" />
           <span className="text-subtitle tracking-wide">CAMPUS HELPER</span>
         </Link>
         <nav aria-label="Main">

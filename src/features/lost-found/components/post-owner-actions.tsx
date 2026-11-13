@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { Button, ConfirmDialog, toast } from "@/components/ui";
+import { Archive, CircleCheck } from "lucide-react";
+import { Button, ConfirmDialog, cardStyles, toast } from "@/components/ui";
 
 import type { LostFoundPost } from "../types";
 
@@ -45,13 +46,29 @@ export function PostOwnerActions({
   if (status === "RESOLVED" || status === "CLOSED") return null;
 
   return (
-    <div className="flex flex-col gap-2">
-      <Button variant="secondary" fullWidth onClick={() => setNext("RESOLVED")} loading={pending}>
-        Mark as resolved
-      </Button>
-      <Button variant="ghost" fullWidth onClick={() => setNext("CLOSED")} loading={pending}>
-        Close this post
-      </Button>
+    <section
+      aria-labelledby="owner-actions"
+      className={cardStyles({ className: "flex flex-col gap-3" })}
+    >
+      <div className="flex flex-col gap-0.5">
+        <h2 id="owner-actions" className="text-subtitle">
+          Manage your post
+        </h2>
+        <p className="text-body-sm text-text-muted">
+          Mark it resolved once the item is back with its owner, or close it if it no longer
+          matters.
+        </p>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Button onClick={() => setNext("RESOLVED")} loading={pending}>
+          <CircleCheck />
+          Mark as resolved
+        </Button>
+        <Button variant="secondary" onClick={() => setNext("CLOSED")} loading={pending}>
+          <Archive />
+          Close this post
+        </Button>
+      </div>
 
       <ConfirmDialog
         open={next !== null}
@@ -68,6 +85,6 @@ export function PostOwnerActions({
           if (next) await apply(next);
         }}
       />
-    </div>
+    </section>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Trash2 } from "lucide-react";
+import { BookOpen, Clock, Trash2, type LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { PageContainer, StickyActionBar, TopBar } from "@/components/layout";
@@ -10,7 +10,10 @@ import {
   ConfirmDialog,
   FormField,
   Input,
+  Chip,
+  ChipGroup,
   Select,
+  TimeSelect,
   toast,
   useOffline,
 } from "@/components/ui";
@@ -157,6 +160,7 @@ export function CourseForm({ course }: CourseFormProps) {
       <PageContainer width="content">
         <form id="course-form" onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
           <Card className="flex flex-col gap-4">
+            <SectionHeading icon={BookOpen} title="Course" />
             <FormField label="Course code" error={errors.code} hint="For example CS101" required>
               <Input
                 value={draft.code}
@@ -197,37 +201,47 @@ export function CourseForm({ course }: CourseFormProps) {
           </Card>
 
           <Card className="flex flex-col gap-4">
-            <FormField label="Weekday" error={errors.weekday} required>
-              <Select
-                value={draft.weekday}
-                onChange={(event) =>
-                  update("weekday", event.target.value as CourseDraft["weekday"])
-                }
-              >
+            <SectionHeading icon={Clock} title="When" />
+            <div className="flex flex-col gap-1.5">
+              <ChipGroup label="Weekday" className="md:flex-wrap">
                 {WEEKDAYS.map((day) => (
-                  <option key={day} value={day}>
-                    {WEEKDAY_LABELS[day]}
-                  </option>
+                  <Chip
+                    key={day}
+                    selected={draft.weekday === day}
+                    aria-label={WEEKDAY_LABELS[day]}
+                    onClick={() => update("weekday", day)}
+                  >
+                    {WEEKDAY_LABELS[day].slice(0, 3)}
+                  </Chip>
                 ))}
-              </Select>
-            </FormField>
+              </ChipGroup>
+              {errors.weekday && (
+                <p role="alert" className="text-body-sm text-danger">
+                  {errors.weekday}
+                </p>
+              )}
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Starts" error={errors.startTime} required>
-                <Input
-                  type="time"
+                <TimeSelect
+                  from="07:00"
+                  to="22:45"
+                  step={15}
+                  placeholder="Select"
                   value={draft.startTime}
                   onChange={(event) => update("startTime", event.target.value)}
-                  step={300}
                 />
               </FormField>
 
               <FormField label="Ends" error={errors.endTime} required>
-                <Input
-                  type="time"
+                <TimeSelect
+                  from="07:00"
+                  to="22:45"
+                  step={15}
+                  placeholder="Select"
                   value={draft.endTime}
                   onChange={(event) => update("endTime", event.target.value)}
-                  step={300}
                 />
               </FormField>
             </div>
@@ -334,5 +348,16 @@ export function CourseForm({ course }: CourseFormProps) {
         onConfirm={handleDelete}
       />
     </>
+  );
+}
+
+function SectionHeading({ icon: Icon, title }: { icon: LucideIcon; title: string }) {
+  return (
+    <h2 className="flex items-center gap-2 text-subtitle">
+      <span className="flex size-8 items-center justify-center rounded-sm bg-event-class-subtle text-event-class">
+        <Icon className="size-4" aria-hidden />
+      </span>
+      {title}
+    </h2>
   );
 }

@@ -76,7 +76,7 @@ function ToastView({ item }: { item: ToastItem }) {
   return (
     <div
       role={item.type === "error" ? "alert" : "status"}
-      className="pointer-events-auto flex w-full items-start gap-3 rounded-md border border-border bg-surface p-4 shadow-overlay md:w-90"
+      className="pointer-events-auto flex w-full items-start gap-3 rounded-md border glass-strong p-4 shadow-overlay md:w-90"
     >
       <Icon className={cn("mt-0.5 size-5 shrink-0", iconClass)} aria-hidden />
       <p className="flex-1 text-body-sm text-text">{item.message}</p>
