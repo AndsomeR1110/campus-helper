@@ -1,0 +1,15 @@
+export {
+  schoolAuthAvailable,
+  schoolAuthError,
+  beginSchoolAuth,
+  submitSchoolCredentials,
+  submitSchoolImageCode,
+  refreshSchoolImage,
+  showSchoolChallenge,
+  cancelSchoolAuth,
+  completeSchoolConnection,
+  disconnectSchoolAccount,
+  type SchoolAuthState,
+  type SchoolService,
+  type SchoolAuthOperation,
+} from "./bridge";

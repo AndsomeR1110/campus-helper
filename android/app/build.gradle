@@ -51,8 +51,10 @@ tasks.register('generateShuttleAdapter', Exec) {
     commandLine 'node', 'scripts/build-shuttle-adapter.mjs'
     inputs.files(new File(rootProject.projectDir.parentFile, 'src/features/shuttle/school-adapter.ts'), new File(rootProject.projectDir.parentFile, 'scripts/build-shuttle-adapter.mjs'))
     inputs.file(new File(rootProject.projectDir.parentFile, 'src/features/school-timetable/school-adapter.ts'))
+    inputs.file(new File(rootProject.projectDir.parentFile, 'src/features/school-auth/school-adapter.ts'))
     outputs.file('src/main/assets/shuttle-adapter.js')
     outputs.file('src/main/assets/school-timetable.js')
+    outputs.file('src/main/assets/school-auth.js')
 }
 preBuild.dependsOn generateShuttleAdapter
 
