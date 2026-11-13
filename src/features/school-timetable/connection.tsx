@@ -52,9 +52,9 @@ const isCancelled = (e: unknown) =>
 
 /** Current time for relative labels, read only on the client after mount. */
 function useNow() {
-  const [now, setNow] = useState<number | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
-    const tick = () => setNow(Date.now());
+    const tick = () => setNow(new Date());
     tick();
     const id = window.setInterval(tick, 60_000);
     return () => window.clearInterval(id);
@@ -184,7 +184,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
             {hasSnapshot(state) ? classCount(state!.count) : "None yet"}
           </InfoRow>
           <InfoRow icon={CalendarRange} label="Term">
-            {state?.term ?? "2026/27 Semester 1"}
+            {state?.term ?? "Not connected"}
           </InfoRow>
         </dl>
 
@@ -202,10 +202,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
 
       {available && hasSnapshot(state) && (
         <section aria-labelledby="device-heading" className="flex flex-col gap-2">
-          <h2
-            id="device-heading"
-            className="text-caption tracking-wide text-text-muted uppercase"
-          >
+          <h2 id="device-heading" className="text-caption tracking-wide text-text-muted uppercase">
             This device
           </h2>
           <Card className="flex flex-col gap-3">

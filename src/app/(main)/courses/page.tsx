@@ -47,7 +47,10 @@ async function CourseList() {
             title="No courses yet"
             description="Connect your school timetable, or add a course yourself. Campus Helper will remind you before every class."
             action={
-              <Link href="/courses/new" className={buttonStyles({ variant: "secondary", size: "sm" })}>
+              <Link
+                href="/courses/new"
+                className={buttonStyles({ variant: "secondary", size: "sm" })}
+              >
                 Add a course
               </Link>
             }
@@ -89,16 +92,16 @@ function SchoolSyncCard({
         }
         title="School timetable"
         description={
-          connected
-            ? `${classCount(count)}${syncedAt ? ` · Synced ${formatRelativeTime(syncedAt, now)}` : ""}`
-            : "Import your classes from your university account"
-        }
-        trailing={
-          <span className="flex items-center gap-1">
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <StatusBadge kind="connection" status={connected ? "CONNECTED" : "NOT_CONNECTED"} />
-            <ChevronRight className="size-5 text-text-muted" aria-hidden />
+            <span>
+              {connected
+                ? `${classCount(count)}${syncedAt ? ` · Synced ${formatRelativeTime(syncedAt, now)}` : ""}`
+                : "Import classes from your university account"}
+            </span>
           </span>
         }
+        trailing={<ChevronRight className="size-5 text-text-muted" aria-hidden />}
       />
     </Link>
   );

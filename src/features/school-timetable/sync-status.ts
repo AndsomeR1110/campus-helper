@@ -16,11 +16,7 @@ export type SyncPhase =
   | "cancelled"; // user closed the school window
 
 export type ConnectionStatus =
-  | "CONNECTED"
-  | "SYNCING"
-  | "NOT_CONNECTED"
-  | "NEEDS_ATTENTION"
-  | "ANDROID_ONLY";
+  "CONNECTED" | "SYNCING" | "NOT_CONNECTED" | "NEEDS_ATTENTION" | "ANDROID_ONLY";
 
 export interface SyncInputs {
   /** null until the client knows the platform. */
