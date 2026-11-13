@@ -6,7 +6,7 @@
 
 - GitHub：AndsomeR1110/campus-helper；UI 重构 PR #62 已合并，当前 main 为 `1607a8c`。Claude 后续工作以最新 main 为起点，不恢复旧 Demo 样式。
 - 第一个 Demo 由组员通过 Collaborator + PR 完成。Claude 负责整体规划与视觉重构；本地 Codex 负责学校集成、原生能力和测试。
-- 本地区间车原型位于 `E:/ENT/campus-shuttle-app`，分支 `feat/shuttle-native-app`，原先基于 `999d679`，现已同步 `1607a8c`（PR #62）；功能代码尚未提交/推送。其页面是功能验证 UI，不是最终视觉稿。云端不能假定已能读取该分支或本机路径。
+- 本地区间车原型位于 `E:/ENT/campus-shuttle-app`，当前分支 `feat/timetable-native-sync`，原先基于 `999d679`，现已同步 `1607a8c`（PR #62）；功能代码现已提交、推送并发布 Draft PR #65，包含已通过 MuMu 验证的自动课表及此前原生/区间车依赖。页面是功能验证 UI，不是最终视觉稿；云端直接读取 PR 分支即可。
 - 本轮只同步协作方案和脱敏能力说明，不把未整理的原生实现混入 UI PR。已验证与待验证范围见 [能力交接](../docs/collaboration/school-services.md)。
 
 ## 职责与文件边界

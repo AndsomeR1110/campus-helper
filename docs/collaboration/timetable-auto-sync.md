@@ -1,6 +1,6 @@
 # 自动学校课表同步：接入分析与交接
 
-日期：2026-11-13。用户最新要求：学校账号登录后自动获取本人课表，用户不再上传/粘贴 JSON。本文替代旧课表规划中的手动导入主流程；不宣称原生课表同步已经实现。
+日期：2026-11-13。用户最新要求：学校账号登录后自动获取本人课表，用户不再上传/粘贴 JSON。当前实现已发布为 [Draft PR #65](https://github.com/AndsomeR1110/campus-helper/pull/65)，包含 MuMu 完整验证；以下保留研究过程，最新实现以该 PR 的 native/TIMETABLE.md 为准。
 
 ## 核验结论
 
@@ -21,7 +21,7 @@
 
 1. 原生 Timetable 组件加载 eBridge 官方 HTTPS 入口，首次由用户登录；优先验证与校车是否能在同一 App WebView 数据存储中复用 UIM 会话，不导出/复制 cookie。
 2. 识别已认证门户，按当前 DOM 的 Timetables、My Personal Class Timetable 真实控件导航。屏幕票据一次性，不存储密文导航 URL，也不重放上次票据。找不到菜单要报可恢复的导航错误，不让用户粘贴 JSON。
-3. 等待个人课表 iframe，验证其 URL 精确 HTTPS 主机和路径，再于原生私有流程中获取 64 hex enrollment hash。hash 等同凭证，只存内存，不通过前端 DTO、后端、日志或错误消息传出。
+3. 等待个人课表 iframe，验证其 URL 精确 HTTPS 主机和路径，再于原生私有流程中获取 64 hex enrollment hash。hash 等同凭证，不通过前端 DTO、后端、日志或错误消息传出。为支持冷启动免登录，当前实现仅将连接凭证用 Android Keystore 的非导出密钥及 AES-GCM 加密保存在设备私有区，按应用账号隔离、30天本地过期；不保存学校密码，失效则回退 SSO。
 4. 在受限 WebView 顶层加载 TimetablePlus 页面；等待学校页面准备好，在该页面上下文执行固定读取操作：GET `/ptapi/api/enrollment/hash/<64hex>/activity?start=<范围起点>&end=<范围终点>`。使用学校运行时已有 fetch/XHR hook，不重放 WAF 签名，不把裸 HTTP 客户端视为可靠方案。
 5. 校验响应状态、JSON 结构、大小、活动字段以及所选学期/覆盖范围。来自登录页、WAF页面、部分响应或未知学期的数据不能当空课表并删除旧课程。旧 start=1/end=13 或20只是实验范围；必须先验证当前学期周数，不能固定为所有学期的范围。
 6. 在设备侧移除凭证信息后交给应用层课程解析器。服务器按应用当前用户校验课程 DTO，处理同步事务，再回读课程/日程。学校主体和当前应用账号的绑定需要显式确认；换学校账号要清理旧绑定并重新确认。
@@ -72,3 +72,11 @@
 - 另查本地 constants：TERM_START_DATE 固定为2026-09-07；跨学期自动同步需要真实的周一锚点/校历配置及休假规则，不可只取得周编号就声称完整学期日期正确。
 
 验证结论：本轮已证明“登录后自动导航、发现个人课表、页面内自动取数”在 Chrome 当前学校会话下可行；不是 Android App 自动同步完成、自动登录永久有效或跨学期同步完成。没有保存原始私人课表和标识值；登录窗口及自建验证会话已关闭。下一步是 AUTO-01 的 Android 专用适配器与原生链路验收，不需要继续开发 JSON 主入口。
+
+## Android 实现与验收更新
+
+[PR #65](https://github.com/AndsomeR1110/campus-helper/pull/65) 已跑通 2026/27 S1：登录后自动导航/取数/保存、7条教学活动（4个课程编码）、再次刷新、课程列表与日程读取，以及强制结束进程再打开后无账号输入自动同步（版本7→8）。私有连接缓存仅含密文，没有明文课表地址。之前“只在 Chrome 验证/Android 未实现”的结论已被本段取代。学校凭证被撤销、本地缓存过期或其他学期仍需重连/新增配置，不是永久会话承诺。
+
+当前采用独立 SchoolTimetable 快照表；按应用会话 owner 保存、版本冲突拒绝，精确保留不规则教学周，刷新不改手工 Course。旧 JSON 导入无来源标记，保留为手工数据，相同课次仅折叠展示。Member 2/4 对迁移与课程/日程接口的合并评审仍待完成。UI 是沿用共享组件的功能入口，Claude 继续负责最终视觉。
+
+公开前端接口已在 `@/features/school-timetable` 导出：schoolTimetableAvailable、readSyncState、syncSchoolTimetable、forgetSchoolConnection、connectionError、SyncState；Claude 使用该接口，不另写原生取数或 JSON 主流程。具体状态、构建步骤和测试限制见 PR 中 native/TIMETABLE.md。
