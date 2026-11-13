@@ -49,6 +49,11 @@
 
 浅色：右上紫 `rgb(190 160 240/.48)`、左中蓝 `rgb(150 205 235/.42)`、底部绿 `rgb(190 225 160/.38)`、右中粉 `rgb(245 190 215/.3)`，大半径 radial-gradient。作用：给玻璃提供可透的颜色。
 
+### 半透明的写法（重要）
+
+- 不要在主题色上用 `/NN` 透明度（如 `bg-surface/80`）：老安卓浏览器不支持 `color-mix()` 时会退回浅色值，深色模式出现白块（真机上发现过：首页 Hero 左上角发白）。
+- 用按主题定义的 Token：`surface-translucent`（浅 `rgb(253 252 255/.7)`，深 `rgb(38 37 35/.7)`）、`primary-soft`（浅 `rgb(107 63 160/.4)`，深 `rgb(217 174 224/.45)`），或 `opacity-*`；`src/components/ui/theme-opacity.test.ts` 会拦截违规写法。
+
 ## 3. 玻璃效果（三档，均配合 `border` 类使用）
 
 | 工具类         | 配方                                                                                                                                                            | 用在                                                                                            |
@@ -98,7 +103,7 @@
 - 详情页：液态玻璃 Hero（大图标 + 标签 + 标题）+ 圆角信息行列表（图标 + 标签 + 右对齐值）。
 - 统计：玻璃数字卡（教师端、管理后台、My posts）。
 - 课表：时间线（左侧起止时间、彩色圆点、"Up next" 玻璃高亮）。
-- 首页：Hero（问候 + 地图插画 + 玻璃铃铛）、widget 卡片、手机端 Quick access 为无卡片的应用图标网格（单行标签，"Class Reminder" 手机显示 "Classes"）。
+- 首页：Hero（`liquid-glass` 底 + 一层 primary-subtle→透明 的渐变光晕 + 地图插画 + 玻璃铃铛）、widget 卡片、手机端 Quick access 为无卡片的应用图标网格（单行标签，"Class Reminder" 手机显示 "Classes"）。
 - Services：液态玻璃四入口 + "Good to know" 小贴士 + 校园指南（地图 + 楼栋目录）。
 - 登录/注册：左地图 Hero + 功能亮点，右玻璃表单卡；手机只留 logo + 表单。
 

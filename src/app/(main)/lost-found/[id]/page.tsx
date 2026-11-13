@@ -105,7 +105,7 @@ async function PostDetailBody({ params }: { params: Params }) {
 
         <PostProgress status={post.status} kind={post.kind} />
 
-        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-muted/60 px-4">
+        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-translucent px-4">
           <InfoRow icon={MapPin} label="Where">
             <LocationText
               location={post.location}
