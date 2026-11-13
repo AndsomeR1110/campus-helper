@@ -6,7 +6,7 @@
 
 - 当前正式产品代码只有 JSON 预览/上传入口及导入 API。`scripts/dev/import-school.mjs` 已有自动导航取数逻辑，但它是本机 Playwright 开发脚本，不是安装后 App 的运行能力。
 - 已有 11 月 11 日实测：eBridge 菜单可进入个人课表，顶层读取 iframe.src，TimetablePlus 顶层页内 fetch 可取得活动 JSON。不能把桌面 Chrome 结果视为 Android WebView 已通过。
-- 11 月 13 日复查代码、解析器和数据库规则；本轮已连接 BrowserSkill 并从 eBridge 正常入口进入 UIM，当前会话要求重新登录，已发起用户登录协助；尚无新的在线取数证据。自动调试采集被审批拦截后改为普通页面导航，没有采集登录请求，没有提取学校凭证或使用旧 hash 发请求。
+- 11 月 13 日复查代码、解析器和数据库规则；本轮已连接 BrowserSkill 并从 eBridge 正常入口进入 UIM，当前会话要求重新登录，已发起用户登录协助；当时尚无新的在线取数证据，后续验证成功见文末。自动调试采集被审批拦截后改为普通页面导航，没有采集登录请求，没有提取学校凭证或使用旧 hash 发请求。
 - 原生壳和学校 SSO 窗口已存在于本地区间车分支，可复用容器的安全设计；不能把仅允许 shuttlebus 的插件白名单直接扩大成任意域名/脚本桥。
 
 ## 产品行为
@@ -59,3 +59,16 @@
 | AUTO-05 | Codex + Claude     | 实际登录→自动获取→保存→课表展示，重新启动自动刷新；课程数量/时间/教室/周次对照，失效重连和切账号测试           |
 
 关键测试：第一次登录、校车登录后是否免二次 SSO、App重启/会话过期、WAF拒绝、菜单变化、重复同步、调课/删除、空快照、学期切换、非连续教学周、不同账号、人工修改课程与提醒。没有实际跑通的项保持待验证，JSON手动导入可暂作开发诊断但不再作为用户主流程。
+
+## 2026-11-13 Chrome 在线复验结果（更新）
+
+用户完成学校登录后，本轮自动点击门户 Timetables → My Personal Class Timetable - 2026/27 S1，读已验证 iframe 地址并在页面内进入 TimetablePlus 顶层页面。未向用户要求 JSON，也未复用旧票据/旧 hash。hash 只在页面上下文中参与取数，未输出或保存到交接文档。
+
+- 在 TimetablePlus 页面内使用学校现有 fetch 上下文请求 activity，start=1/end=13，HTTP 200；7 条教学活动、4 个 moduleId，核心字段齐全。
+- 每条 activity.name 和所有 weekPattern 均能在官网可见课表找到。随后重复取数两次，仍均为 7 条；没有执行数据库写入或预约操作。
+- 实际字段：department、weekPattern、scheduledDay、startTime、endTime、activityType、staff、location、plannedSize、moduleId、templateId、sectionId、isLocked、realSize、identity、name。没有 id/activityId 字段；identity 为字符串，在当前7条中唯一且短时间多次读取稳定，可作为候选 sourceActivityId。sectionId 有 null，不能要求其必填。仍未验证调课后 identity 是否保持、跨学期命名空间或所有账号字段一致性。
+- scheduledDay 为字符串，0=周一，与当前课表对应；时间为带 Z 的2000年占位日期，按 UTC+8解释与官网起始时间相符。逐项核对7条的结束时间，均为接口结束减10分钟，与官网换教室缓冲提示相符。自动同步应保留原始时段并明确展示结束时间规则，不能简单把原值当官网展示值。
+- weekPattern 为 `1-3, 4-13` 或 `1-3, 4-10`。这是当前学期、当前范围快照，不证明 start/end=1/13 适用于下一学期。
+- 另查本地 constants：TERM_START_DATE 固定为2026-09-07；跨学期自动同步需要真实的周一锚点/校历配置及休假规则，不可只取得周编号就声称完整学期日期正确。
+
+验证结论：本轮已证明“登录后自动导航、发现个人课表、页面内自动取数”在 Chrome 当前学校会话下可行；不是 Android App 自动同步完成、自动登录永久有效或跨学期同步完成。没有保存原始私人课表和标识值；登录窗口及自建验证会话已关闭。下一步是 AUTO-01 的 Android 专用适配器与原生链路验收，不需要继续开发 JSON 主入口。
