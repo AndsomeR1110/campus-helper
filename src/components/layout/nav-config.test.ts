@@ -45,6 +45,7 @@ describe("shouldShowBottomNav", () => {
     "/spaces/s1",
     "/bookings/space-1",
     "/courses/new",
+    "/courses/sync",
     "/courses/c1/edit",
     "/lost-found/new",
     "/lost-found/p1",

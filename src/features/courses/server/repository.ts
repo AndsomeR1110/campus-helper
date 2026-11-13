@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { ApiError } from "@/lib/api";
 import { prisma } from "@/lib/db";
+import { listSchoolCourses } from "@/features/school-timetable/server";
+import { mergeCourseSources } from "../merge-sources";
 import type { Course, CourseDraft, WeekParity, Weekday } from "../types";
 
 /** Row shape returned by Prisma, mapped to the module's domain type. */
@@ -32,7 +34,7 @@ export async function findCourses(ownerId: string): Promise<Course[]> {
     orderBy: [{ weekday: "asc" }, { startTime: "asc" }],
   });
 
-  return rows.map(toCourse);
+  return mergeCourseSources(rows.map(toCourse), await listSchoolCourses(ownerId));
 }
 
 export async function findCourse(ownerId: string, id: string): Promise<Course> {

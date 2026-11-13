@@ -1,0 +1,1 @@
+export { SchoolTimetableConnection } from "./connection";
