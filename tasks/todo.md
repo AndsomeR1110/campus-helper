@@ -21,3 +21,5 @@
 | QA-01   | Codex + Claude | 新 main 回归既有 Office Hours、Spaces、课程与日程；检查响应式与原生；交负责人验收                    | 按每个 UI/接入 PR 执行                            | 待做                       |
 
 检查点：CO-03 后锁定区间车接口；SH-02 后交付第一个新 UI 的真实服务；ROOM-02 和 AMS-01 在各自条件满足后分别验收。不要为等待课堂码或合法组员而拖住其他 UI。
+
+课表新增任务：AUTO-01（Codex：Android 登录后自动取数，官网对照）、AUTO-02（Codex + Member4/2：来源/学期/完整教学周与同步模型评审）、AUTO-03（Claude：连接/刷新/同步状态，移除 JSON 主流程）、AUTO-04/05（Codex：增删改和端到端验证）。全部仍待实现/验证，细分验收见 [自动课表分析](../docs/collaboration/timetable-auto-sync.md)。
