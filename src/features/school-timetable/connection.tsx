@@ -82,17 +82,23 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
   const [forgetOpen, setForgetOpen] = useState(false);
   const [forgetFailure, setForgetFailure] = useState("");
   const [signIn, setSignIn] = useState(false);
+  const [authNeeded, setAuthNeeded] = useState(false);
   const active = useRef(true);
   const running = useRef(false);
 
   // The facade owns native connection, validation and the server save; this
   // only serialises attempts and ignores results after the page is left.
-  async function run() {
+  /**
+   * `interactive` is true when the user tapped the button. An automatic
+   * refresh never opens the password sheet by itself; it asks first.
+   */
+  async function run(interactive: boolean) {
     if (running.current || offline) return;
     running.current = true;
     setBusy(true);
     setError("");
     setCancelled(false);
+    setAuthNeeded(false);
     try {
       // Silent: reuse this device's school session; never open a school page.
       const result = await syncSchoolTimetable(actorId, () => active.current, true);
@@ -100,7 +106,11 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
     } catch (e) {
       if (!active.current) return;
       if (needsSignIn(e)) {
-        setSignIn(true);
+        if (interactive) setSignIn(true);
+        else {
+          setAuthNeeded(true);
+          setError("Sign in to your university account to refresh. Your saved classes are kept.");
+        }
         return;
       }
       setCancelled(isCancelled(e));
@@ -127,7 +137,8 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
         setLoadError(false);
         setState(saved);
         // Refresh once on entering the page; later refreshes are user-initiated.
-        if (loadAttempt === 0 && saved.version > 0 && available && navigator.onLine) void run();
+        if (loadAttempt === 0 && saved.version > 0 && available && navigator.onLine)
+          void run(false);
       })
       .catch(() => {
         if (!ignore) setLoadError(true);
@@ -166,7 +177,8 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
   }
   if (phase === "checking") return <ConnectionSkeleton />;
 
-  const action = primaryActionLabel(phase, state);
+  const action =
+    authNeeded && phase === "attention" ? "Sign in to refresh" : primaryActionLabel(phase, state);
   const synced = state?.syncedAt ?? null;
   const summary =
     synced && now !== null ? `Synced ${formatRelativeTime(synced, now)}` : "Not synced yet";
@@ -183,6 +195,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
             if (result.synced) {
               setState(result.synced);
               setError("");
+              setAuthNeeded(false);
               setCancelled(false);
             }
           }}
@@ -267,7 +280,10 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
             fullWidth
             disabled={busy || offline || signIn}
             loading={busy}
-            onClick={() => void run()}
+            onClick={() => {
+              if (authNeeded) setSignIn(true);
+              else void run(true);
+            }}
           >
             {action}
           </Button>

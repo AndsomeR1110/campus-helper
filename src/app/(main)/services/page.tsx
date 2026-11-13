@@ -29,8 +29,8 @@ export default function ServicesPage() {
                 className: "flex h-full flex-col gap-3",
               })}
             >
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-sm bg-primary-subtle text-primary">
-                <Bus className="size-6" />
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-sm bg-accent-subtle text-accent">
+                <Bus className="size-6" aria-hidden />
               </span>
               <span className="flex flex-col gap-0.5">
                 <span className="text-subtitle">Shuttle bus</span>
