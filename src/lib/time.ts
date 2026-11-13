@@ -55,12 +55,16 @@ function zonedParts(value: DateInput): ZonedParts {
 
 /** Calendar day key (yyyy-mm-dd) in the app time zone, for same-day comparisons. */
 export function dayKey(value: DateInput) {
-  return new Intl.DateTimeFormat("en-CA", {
+  // Older Android ICU versions use slashes even for en-CA. Assemble semantic
+  // parts so calendar controls always receive ISO keys in the app time zone.
+  const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: APP_TIME_ZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(toDate(value));
+  }).formatToParts(toDate(value));
+  const part = (type: "year" | "month" | "day") => parts.find((p) => p.type === type)!.value;
+  return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
 /** "Mon 3 Nov" */
