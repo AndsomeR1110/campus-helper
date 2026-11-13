@@ -16,6 +16,7 @@ import {
   useOffline,
 } from "@/components/ui";
 import { formatDate, formatTimeRange } from "@/lib/time";
+import { SchoolAccountSignIn, schoolAuthAvailable } from "@/features/school-auth";
 import { BoardingPass } from "./boarding-pass";
 import { shuttle, shuttleAvailable, shuttleError } from "./bridge";
 import type { Schedule, Trip } from "./schemas";
@@ -26,9 +27,13 @@ const range = (trip: Schedule | Trip) =>
     `${trip.date}T${trip.arrival}:00+08:00`,
   );
 const subscribe = () => () => {};
-export function ShuttlePage({ initialDate }: { initialDate: string }) {
+export function ShuttlePage({ initialDate, actorId }: { initialDate: string; actorId: string }) {
   const offline = useOffline();
-  const available = useSyncExternalStore(subscribe, shuttleAvailable, () => null);
+  const available = useSyncExternalStore(
+    subscribe,
+    () => shuttleAvailable() && schoolAuthAvailable(),
+    () => null,
+  );
   const [date, setDate] = useState(initialDate);
   const [route, setRoute] = useState<1 | 2>(2);
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
@@ -38,6 +43,8 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
   const [booking, setBooking] = useState<Schedule | null>(null);
   const [cancelling, setCancelling] = useState<Trip | null>(null);
   const [pass, setPass] = useState<Trip | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [signIn, setSignIn] = useState(false);
   async function run(action: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -70,6 +77,17 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
     );
   return (
     <div className="flex flex-col gap-5 pb-6">
+      {signIn && (
+        <SchoolAccountSignIn
+          actorId={actorId}
+          service="shuttle"
+          onClose={() => setSignIn(false)}
+          onConnected={() => {
+            setConnected(true);
+            void run(refreshTrips).catch(() => {});
+          }}
+        />
+      )}
       <Card variant="widget" className="flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <Bus className="size-7 text-primary" />
@@ -82,15 +100,10 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
         </div>
         <Button
           variant="secondary"
-          disabled={busy || offline}
-          onClick={() =>
-            void run(async () => {
-              await shuttle.login();
-              await refreshTrips();
-            }).catch(() => {})
-          }
+          disabled={busy || offline || !!pass}
+          onClick={() => setSignIn(true)}
         >
-          Connect school account
+          {connected ? "Reconnect school account" : "Connect school account"}
         </Button>
         <div className="grid gap-3 md:grid-cols-2">
           <FormField label="Direction">
@@ -119,7 +132,7 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
           </FormField>
         </div>
         <Button
-          disabled={offline || busy || !date || !!pass}
+          disabled={offline || busy || !connected || !date || !!pass}
           loading={busy}
           onClick={() => void search()}
         >
@@ -167,7 +180,7 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
           <h2 className="text-subtitle">My trips</h2>
           <Button
             variant="ghost"
-            disabled={offline || busy || !!pass}
+            disabled={offline || busy || !connected || !!pass}
             onClick={() => void run(refreshTrips).catch(() => {})}
           >
             Refresh trips

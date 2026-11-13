@@ -46,6 +46,8 @@ public class SchoolTimetablePlugin extends Plugin {
         }catch(Exception e){call.reject("NATIVE_UNAVAILABLE","NATIVE_UNAVAILABLE");return;}
                 scope=call.getString("actorId", "");
         if(!scope.matches("[A-Za-z0-9_-]{1,128}")){call.reject("INVALID_INPUT","INVALID_INPUT");return;}
+        String owner=getContext().getSharedPreferences("school_auth_scope",0).getString("actor",null);
+        if(!scope.equals(owner)){String code=owner==null?"AUTH_REQUIRED":"ACCOUNT_SWITCH_REQUIRED";call.reject(code,code);return;}
         credentials=new TimetableCredentialStore(getContext());
         pending=call;connecting=true;silent=call.getBoolean("silent",false);nonce=UUID.randomUUID().toString();term=null;busy=false;fetching=false;recoveries=0;usingCached=false;
         school=new WebView(getActivity());WebSettings settings=school.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setCacheMode(WebSettings.LOAD_NO_CACHE);

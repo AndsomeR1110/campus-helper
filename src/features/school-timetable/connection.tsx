@@ -12,6 +12,7 @@ import {
   buttonStyles,
 } from "@/components/ui";
 import { formatDateTimeRange } from "@/lib/time";
+import { SchoolAccountSignIn, schoolAuthAvailable } from "@/features/school-auth";
 import {
   connectionError,
   readSyncState,
@@ -21,8 +22,13 @@ import {
 } from "./bridge";
 const subscribe = () => () => {};
 export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
-  const available = useSyncExternalStore(subscribe, schoolTimetableAvailable, () => null);
+  const available = useSyncExternalStore(
+    subscribe,
+    () => schoolTimetableAvailable() && schoolAuthAvailable(),
+    () => null,
+  );
   const offline = useOffline();
+  const [signIn, setSignIn] = useState(false);
   const [state, setState] = useState<SyncState | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -34,10 +40,14 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
     setBusy(true);
     setError("");
     try {
-      const result = await syncSchoolTimetable(actorId, () => active.current);
+      const result = await syncSchoolTimetable(actorId, () => active.current, true);
       if (active.current) setState(result);
     } catch (e) {
-      if (active.current) setError(connectionError(e));
+      if (active.current) {
+        const code = e && typeof e === "object" && "code" in e ? String(e.code) : "";
+        if (code === "AUTH_REQUIRED" || code === "ACCOUNT_SWITCH_REQUIRED") setSignIn(true);
+        else setError(connectionError(e));
+      }
     } finally {
       running.current = false;
       if (active.current) setBusy(false);
@@ -70,6 +80,19 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
   if (available === null) return <Skeleton className="h-32" />;
   return (
     <div className="flex flex-col gap-4">
+      {signIn && (
+        <SchoolAccountSignIn
+          actorId={actorId}
+          service="timetable"
+          onClose={() => setSignIn(false)}
+          onConnected={(result) => {
+            if (result.synced) {
+              setState(result.synced);
+              setError("");
+            }
+          }}
+        />
+      )}
       <Card className="flex flex-col gap-3">
         <h2 className="text-subtitle">School timetable</h2>
         <p className="text-body-sm text-text-muted">

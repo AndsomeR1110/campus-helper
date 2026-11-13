@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/features/courses/server";
 import { SchoolTimetableConnection } from "@/features/school-timetable";
 async function Content() {
   const user = await getCurrentUser();
-  return <SchoolTimetableConnection actorId={user.id} />;
+  return <SchoolTimetableConnection key={user.id} actorId={user.id} />;
 }
 export default function Page() {
   return (

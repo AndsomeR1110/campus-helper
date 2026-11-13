@@ -1,5 +1,5 @@
 "use client";
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor/core";
 import { z } from "zod";
 import { syncSchoolTimetable, type SyncState } from "@/features/school-timetable";
 import { resumeShuttleSession } from "@/features/shuttle";
@@ -33,6 +33,7 @@ const stateSchema = z
 export type SchoolAuthState = z.infer<typeof stateSchema>;
 export type SchoolService = SchoolAuthState["service"];
 export type SchoolAuthOperation = Pick<SchoolAuthState, "operationId" | "actorId">;
+export type SchoolAuthEnd = SchoolAuthOperation & { code: string };
 type Operation = SchoolAuthOperation;
 const native = registerPlugin<{
   begin(options: Operation & { service: SchoolService }): Promise<unknown>;
@@ -42,7 +43,23 @@ const native = registerPlugin<{
   showChallenge(options: Operation): Promise<unknown>;
   cancel(options: Operation): Promise<void>;
   disconnect(options: { actorId: string; confirmed: true }): Promise<void>;
+  addListener(
+    name: "stateChanged",
+    listener: (state: { active: boolean }) => void,
+  ): Promise<PluginListenerHandle>;
+  addListener(
+    name: "operationEnded",
+    listener: (state: SchoolAuthEnd) => void,
+  ): Promise<PluginListenerHandle>;
 }>("SchoolAuth");
+export function onSchoolAuthEnd(listener: (state: SchoolAuthEnd) => void) {
+  check();
+  return native.addListener("operationEnded", listener);
+}
+export function onSchoolAuthActivity(listener: (state: { active: boolean }) => void) {
+  check();
+  return native.addListener("stateChanged", listener);
+}
 export const schoolAuthAvailable = () =>
   Capacitor.getPlatform() === "android" && Capacitor.isPluginAvailable("SchoolAuth");
 export function schoolAuthError(error: unknown) {

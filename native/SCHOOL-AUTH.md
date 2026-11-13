@@ -1,6 +1,6 @@
 # Android 自定义学校登录桥：Claude 接口交接
 
-2026-11-14。依赖 [PR #65](https://github.com/AndsomeR1110/campus-helper/pull/65) 的 Android 壳、课表与区间车插件。当前工作分支 `feat/school-native-auth`。本轮提供认证引擎和公开客户端 facade，最终登录 UI 继续由 Claude 实现；现有页面尚未替换成新的表单。
+2026-11-14。依赖 [PR #65](https://github.com/AndsomeR1110/campus-helper/pull/65) 的 Android 壳、课表与区间车插件。原生桥来自 #71；当前 `feat/school-signin-integration` 已接入 Claude #70 的真实弹层与两个业务入口，见 [SCHOOL-SIGNIN-UI.md](SCHOOL-SIGNIN-UI.md)。下面保留原生 facade 契约及其独立验证记录。
 
 ## Claude 应调用的接口
 
@@ -20,6 +20,8 @@ completeSchoolConnection(state, stillActive?): Promise<{
 }>
 disconnectSchoolAccount(actorId, true): Promise<void>
 schoolAuthError(errorOrCode): string
+onSchoolAuthActivity(listener): Promise<PluginListenerHandle>
+onSchoolAuthEnd(listener): Promise<PluginListenerHandle>
 ```
 
 `service` 为 `"timetable" | "shuttle"`。`actorId` 必须来自服务端当前 App 用户，不能用学校账号字符串替代。`operationId` 为 UUID；建议 UI 在开始前生成并传入，以便等待 `beginSchoolAuth` 时也能取消。所有后续动作都必须使用原生返回的同一操作/账号状态，不允许并行提交或自动循环重试密码。
@@ -36,6 +38,8 @@ type SchoolAuthState = {
 ```
 
 状态由原生 DTO 白名单和客户端 strict schema 双重限制；Cookie、学校 token、重定向 URL 和加密请求 payload 不进入这个契约。`begin`/提交 Promise 等待下一步需要 UI 的状态，内部 preparing/submitting/跳转期间由 UI 持有 loading；一次操作总期限 5 分钟。回到后台会取消，恢复后重新 begin。
+
+整合 UI 的 SchoolAccountSignIn 已负责订阅并释放两个通知：activity 为 `{ active: boolean }`，operationEnded 为 `{ actorId, operationId, code }`。后者用于在用户尚未提交输入时直接处理原生过期/失败，必须按原 actor/UUID 过滤旧通知，不含认证凭据。
 
 ## UI 接线顺序
 
