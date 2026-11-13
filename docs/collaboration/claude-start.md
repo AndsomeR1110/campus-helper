@@ -1,0 +1,27 @@
+# 发给 Claude 云端的开工说明
+
+2026-11-14 学校账号自定义登录已落实原生桥：[PR #71](https://github.com/AndsomeR1110/campus-helper/pull/71)，基于 #65。请基于 `feat/school-native-auth` 分支，阅读 [学校登录接口交接](school-login-api.md) 与 [native/SCHOOL-AUTH.md](https://github.com/AndsomeR1110/campus-helper/blob/feat/school-native-auth/native/SCHOOL-AUTH.md)。从 `@/features/school-auth` 接自己的账号、密码和按需验证码 UI；完整页面仍由 Claude 完成。原生已验证真实密码登录、区间车查询和同进程课表自动保存，真实验证码尚未触发。原先“登录展示内部官方窗口”是兼容路径；不要直接跨域请求、建立密码代理或重写 #65 的课表/区间车协议。
+
+将下面的正文发到负责 Campus Helper UI 的 Claude 会话，并提供本说明所在的 GitHub 分支或 PR。它不会自动收到本地聊天；未合并时必须切到文档分支阅读。此说明不是让 Claude 自动合并 PR。
+
+---
+
+你继续负责 AndsomeR1110/campus-helper 的 UI/UX 和整体产品体验；本地 Codex 负责学校接口、Android 原生桥和测试。项目负责人是 Ran An。原组员仍通过 PR 协作，原数据库及跨模块评审规则继续适用。
+
+先 fetch 最新 main，保留已经合并的 PR #62 视觉重构。阅读 AGENTS.md、tasks/plan.md、tasks/todo.md、docs/collaboration/school-services.md，再读现有设计规范、共享组件与前端架构；不要凭旧 Demo 截图恢复旧 UI。
+
+本轮请推进 UI-01，然后区间车 UI-02/03，再太仓讨论室 UI-04/05、AMS UI-06。每个独立 UI 切片开小 Draft PR。不要把所有界面塞在一次整站重构中，也不要重做已完成的主站样式。先提交服务入口/状态预览供负责人审阅。
+
+新增真实学校服务必须延续 main 的布局、主题、token、导航和英文文案。太仓优先；图书馆座位不做。区间车查询、预约、取消、乘车码应在我们自己的页面中使用；只有学校登录允许内部官方窗口。讨论室和 AMS 尚未验证的流程要有明确状态，不能用假数据标记完成。
+
+区间车和自动课表的代码已发布在 Draft PR #65（feat/timetable-native-sync），包含 Android 壳依赖。请以该分支的公开接口及 native/TIMETABLE.md 为准接 UI，不要继续假定这些功能只有本地文件。fixtures 只用于明确标注的开发预览，不得成为真实模式失败时的回退。
+
+不要修改原生插件、学校 HTML 解析、认证/CSRF/签名代码、QR 的过期/前后台安全行为或数据库模型。不另写代理抓学校 cookie，不直接跨域 fetch 学校接口。涉及 service facade 的变更先在交接文档提出字段/状态需求，由 Codex 统一实现。
+
+交付至少包含未连接、加载、空、错误、离线、冲突/业务拒绝、待确认、未知结果；成功必须来自学校确认及回读。讨论室显示合法人数与组员要求；AMS 输入教师提供的课堂签到码，不是账户密码。未开放扫码不要标可用。
+
+每个 PR 记录 base SHA、依赖的契约 PR、修改路径和状态覆盖表；补 375/768/1280px、双主题与键盘操作材料，运行 npm run check 和 npm run build。返回 PR 链接、测试结果、仍使用预览的部分及交给 Codex 的接入清单，由负责人评审合并。
+
+## 最新课表需求（2026-11-13）
+
+课表主流程改为“学校 SSO 登录后自动获取并同步”，不要求用户粘贴/上传 JSON。请先阅读 [自动课表分析](timetable-auto-sync.md)。当前学期 Android 链路及独立学校快照同步已在 MuMu 通过，代码与接口见 PR #65；迁移和课程/日程契约仍需 Member 2/4 评审，跨学期待配置。Claude 负责连接/刷新/同步状态 UI，不继续美化旧 JSON 导入作为主要体验。
