@@ -56,6 +56,16 @@ export const SERVICE_CONTINUING: Record<SchoolService, string> = {
 /** Plain-language copy for each failure; never invents school error details. */
 export function errorCopy(error: SchoolAuthError): { title: string; text: string } {
   switch (error.kind) {
+    case "account-switch":
+      return {
+        title: "Another app account is connected",
+        text: "Disconnect the previous university session before connecting this account. Your saved courses will be kept.",
+      };
+    case "unavailable":
+      return {
+        title: "Android app update needed",
+        text: "Open the current Android app with an up-to-date Android System WebView to connect your university account.",
+      };
     case "rejected":
       return {
         title: "Sign-in not accepted",
@@ -91,7 +101,7 @@ export function errorCopy(error: SchoolAuthError): { title: string; text: string
     default:
       return {
         title: "Couldn’t reach the university",
-        text: "Check your connection and try again. Nothing was saved.",
+        text: "Check your connection and try again. Your saved data remains available.",
       };
   }
 }

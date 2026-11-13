@@ -44,4 +44,4 @@ Services and the web-only shuttle platform notice were checked at 375/768/1280px
 
 ## Custom school sign-in (2026-11-14)
 
-The additive `SchoolAuth` native bridge and `@/features/school-auth` facade support custom credential/image-code inputs and an official slider-only challenge. See [SCHOOL-AUTH.md](SCHOOL-AUTH.md) for the UI contract, service continuation, cancellation and verification limits. Final UI remains assigned to Claude; the existing pages retain their compatibility connection paths until that UI is integrated.
+The `SchoolAuth` bridge supports custom credentials/image-code inputs and an official slider-only challenge. This branch wires Claude's #70 sheet into timetable and shuttle through #71's facade. See [SCHOOL-SIGNIN-UI.md](SCHOOL-SIGNIN-UI.md) for the integrated UI and [SCHOOL-AUTH.md](SCHOOL-AUTH.md) for native contracts and verification limits. The self-drawn slider remains preview-only; the real adapter uses the official challenge control.

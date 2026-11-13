@@ -1,6 +1,8 @@
 export {
   schoolAuthAvailable,
   schoolAuthError,
+  onSchoolAuthActivity,
+  onSchoolAuthEnd,
   beginSchoolAuth,
   submitSchoolCredentials,
   submitSchoolImageCode,
@@ -14,6 +16,7 @@ export {
   type SchoolAuthOperation,
 } from "./bridge";
 export { SchoolSignIn, type SchoolSignInProps } from "./components/school-sign-in";
+export { SchoolAccountSignIn } from "./components/connected-sign-in";
 export type {
   SchoolAuthCommands,
   SchoolAuthError,

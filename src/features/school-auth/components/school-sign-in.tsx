@@ -47,7 +47,7 @@ export interface SchoolSignInProps {
 
 type Phase = "account" | "verify" | "connect";
 const phaseOf = (s: SchoolAuthState): Phase =>
-  s.step === "image-challenge" || s.step === "slider-challenge"
+  s.step === "image-challenge" || s.step === "slider-challenge" || s.step === "official-challenge"
     ? "verify"
     : s.step === "continuing" || s.step === "connected"
       ? "connect"
@@ -70,8 +70,10 @@ export function SchoolSignIn({
   const liveOffline = useOffline();
   const offline = offlineOverride ?? liveOffline;
   const busy =
+    state.step === "preparing" ||
     state.step === "submitting" ||
     state.step === "continuing" ||
+    (state.step === "official-challenge" && !!state.busy) ||
     ((state.step === "image-challenge" || state.step === "slider-challenge") && !!state.busy);
   const formId = useId();
 
@@ -111,9 +113,32 @@ export function SchoolSignIn({
             }}
           />
         );
+      case "official-challenge":
+        return (
+          <FooterButtons
+            secondary={{ label: "Cancel", onClick: cancel }}
+            primary={{
+              label: "Complete university verification",
+              onClick: commands.useOfficialSignIn,
+              loading: state.busy,
+              disabled: offline,
+            }}
+          />
+        );
       case "connected":
         return <FooterButtons primary={{ label: "Done", onClick: onClose }} />;
       case "failed":
+        if (state.error.kind === "account-switch")
+          return (
+            <FooterButtons
+              secondary={{ label: "Close", onClick: cancel }}
+              primary={{
+                label: "Disconnect previous session",
+                onClick: commands.disconnect,
+                disabled: offline || !commands.disconnect,
+              }}
+            />
+          );
         return state.error.kind === "unsupported-challenge" ? (
           <FooterButtons
             secondary={{ label: "Close", onClick: cancel }}
@@ -152,7 +177,7 @@ export function SchoolSignIn({
         <Steps phase={phaseOf(state)} done={state.step === "connected"} />
         {offline && state.step !== "connected" && (
           <Notice tone="warning" icon={WifiOff}>
-            You’re offline. Connect to sign in. Nothing you typed was sent.
+            You’re offline. Reconnect to continue. New submissions are paused.
           </Notice>
         )}
         <Body
@@ -181,6 +206,13 @@ function Body({
   offline: boolean;
 }) {
   switch (state.step) {
+    case "official-challenge":
+      return (
+        <Notice tone="info" title="University verification required">
+          Complete the university’s verification control to continue. Your account and password stay
+          in this sign-in flow.
+        </Notice>
+      );
     case "preparing":
       return (
         <div role="status" className="flex flex-col gap-3">
@@ -246,7 +278,7 @@ function Body({
           />
           {service === "timetable" && (
             <p className="text-body-sm text-text-muted">
-              Your classes are saved when the timetable page shows the new sync time.
+              Your classes have been saved. The timetable page shows the new sync time.
             </p>
           )}
         </div>
@@ -265,7 +297,7 @@ function Body({
     case "cancelled":
       return (
         <Notice tone="neutral" title="Sign-in cancelled">
-          Nothing was saved and your password was cleared.
+          Your password was cleared. Check the service page for the latest saved status.
         </Notice>
       );
   }
@@ -303,10 +335,13 @@ function CredentialsForm({
         const found = credentialIssues(account, password);
         setIssues(found);
         if (found.account || found.password) return;
-        onSubmit(account, password);
-        // Hand the password over once; the UI never keeps it.
-        setPassword("");
-        setVisible(false);
+        try {
+          onSubmit(account, password);
+        } finally {
+          // Clear even when a synchronous adapter validation error rejects submission.
+          setPassword("");
+          setVisible(false);
+        }
       }}
     >
       {copy && (

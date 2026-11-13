@@ -1,6 +1,7 @@
 /**
- * PROPOSED UI contract for signing in to the school account with our own
- * form — NOT implemented. See docs/collaboration/school-login-api.md (#63).
+ * Presentation contract adapted to the native facade by session.ts.
+ * The custom slider below remains development-preview only; real sliders
+ * use official-challenge, without exposing the school's challenge tokens.
  *
  * Codex owns the Android authentication runtime: policy, RSA encryption,
  * challenges, redirects and the hand-over to the timetable or shuttle
@@ -24,12 +25,15 @@ export type SchoolAuthError =
   /** The sign-in took too long or the school session ended. */
   | { kind: "session-expired" }
   | { kind: "network" }
-  | { kind: "offline" };
+  | { kind: "offline" }
+  | { kind: "account-switch" }
+  | { kind: "unavailable" };
 
 export type SchoolAuthState =
   | { step: "preparing" }
   | { step: "credentials"; account?: string; error?: SchoolAuthError }
   | { step: "submitting" }
+  | { step: "official-challenge"; busy?: boolean }
   | {
       step: "image-challenge";
       /** data: URL rendered in memory only. */
@@ -62,8 +66,8 @@ export interface SchoolAuthCommands {
   submitCredentials: (account: string, password: string) => void;
   submitImageCode: (code: string) => void;
   /**
-   * Slider answer as the piece's left edge over the displayed background
-   * width (0–1). Native converts it to source-image pixels and rounds.
+   * Development-preview command only. Real sliders use useOfficialSignIn;
+   * the production adapter does not accept or simulate a slider answer.
    */
   submitSlider: (offsetRatio: number) => void;
   refreshChallenge: () => void;
@@ -72,4 +76,5 @@ export interface SchoolAuthCommands {
   /** Cancels the in-flight operation; also called on account switch. */
   cancel: () => void;
   retry: () => void;
+  disconnect?: () => void;
 }

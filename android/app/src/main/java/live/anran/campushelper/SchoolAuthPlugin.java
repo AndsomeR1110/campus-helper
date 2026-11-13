@@ -174,10 +174,10 @@ public class SchoolAuthPlugin extends Plugin {
     private JSObject state(String next){JSObject r=new JSObject();r.put("operationId",operationId);r.put("actorId",actorId);r.put("service",service);r.put("status",next);return r;}
     private void resolve(JSObject dto){if(pending!=null){PluginCall done=pending;pending=null;afterRevision=-1;done.resolve(dto);}}
     private void rejectAction(String code){if(pending!=null){PluginCall done=pending;pending=null;done.reject(code,code);}}
-    private void fail(String code){rejectAction(code);cleanup();}
+    private void fail(String code){if(operationId!=null){JSObject ended=new JSObject();ended.put("operationId",operationId);ended.put("actorId",actorId);ended.put("code",code);notifyListeners("operationEnded",ended);}rejectAction(code);cleanup();}
     private void detach(){if(school!=null&&school.getParent() instanceof ViewGroup p)p.removeView(school);}
     private void cleanup(){boolean wasActive=active&&!disconnecting;handler.removeCallbacksAndMessages(null);if(challenge!=null){challenge.setOnCancelListener(null);challenge.dismiss();challenge=null;}if(school!=null){detach();school.stopLoading();school.destroy();school=null;}if(parking!=null){if(parking.getParent() instanceof ViewGroup p)p.removeView(parking);parking=null;}operationId=null;actorId=null;status=null;evaluating=false;active=disconnecting;if(wasActive&&!secureBefore)getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);}
-    @Override protected void handleOnPause(){foreground=false;fail("CANCELLED");}
-    @Override protected void handleOnResume(){foreground=true;}
+    @Override protected void handleOnPause(){foreground=false;JSObject state=new JSObject();state.put("active",false);notifyListeners("stateChanged",state);fail("CANCELLED");}
+    @Override protected void handleOnResume(){foreground=true;JSObject state=new JSObject();state.put("active",true);notifyListeners("stateChanged",state);}
     @Override protected void handleOnDestroy(){fail("CANCELLED");}
 }
