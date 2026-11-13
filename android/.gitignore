@@ -96,6 +96,7 @@ capacitor-cordova-android-plugins
 app/src/main/assets/public
 app/src/main/assets/shuttle-adapter.js
 app/src/main/assets/school-timetable.js
+app/src/main/assets/school-auth.js
 
 # Generated Config files
 app/src/main/assets/capacitor.config.json

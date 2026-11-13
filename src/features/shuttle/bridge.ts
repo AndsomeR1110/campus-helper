@@ -13,6 +13,7 @@ import {
 
 interface ShuttleNative {
   login(): Promise<void>;
+  resumeSession(): Promise<{ authenticated: boolean }>;
   closePass(): Promise<void>;
   invoke(options: { operation: string; input: Record<string, unknown> }): Promise<unknown>;
   addListener(
@@ -23,6 +24,11 @@ interface ShuttleNative {
 const native = registerPlugin<ShuttleNative>("Shuttle");
 export const shuttleAvailable = () =>
   Capacitor.getPlatform() === "android" && Capacitor.isPluginAvailable("Shuttle");
+export async function resumeShuttleSession() {
+  if (!shuttleAvailable()) throw Error("NATIVE_UNAVAILABLE");
+  const state = await native.resumeSession();
+  if (state.authenticated !== true) throw Error("AUTH_REQUIRED");
+}
 async function invoke(operation: string, input: Record<string, unknown> = {}) {
   if (!shuttleAvailable()) throw new Error("NATIVE_UNAVAILABLE");
   return native.invoke({ operation, input });
