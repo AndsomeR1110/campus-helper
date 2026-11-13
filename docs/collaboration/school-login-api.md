@@ -1,16 +1,18 @@
 # 学校账号自定义登录：接口交接给 Claude
 
-核验日期：2026-11-14（Asia/Hong_Kong）。功能代码基线为 [PR #65](https://github.com/AndsomeR1110/campus-helper/pull/65)，分支 `feat/timetable-native-sync`，本次核验 HEAD `952dc33`。本文是接口调查与职责交接，没有实现或验证一套新的自定义登录器，也没有改 UI。
+更新日期：2026-11-14（Asia/Hong_Kong）。功能基线为 [PR #65](https://github.com/AndsomeR1110/campus-helper/pull/65)，新增原生认证实现在 [PR #71](https://github.com/AndsomeR1110/campus-helper/pull/71)，分支 `feat/school-native-auth`，提交 `a641228`（基于 #65 的 `952dc33`）。**SchoolAuth 插件与公开 facade 已实现，账号密码、课表保存及区间车会话接续已在 MuMu 验证；最终 UI 未修改，仍由 Claude 负责。**
+
+当前实现、方法、状态、取消/断开语义和完整验证范围请以 [native/SCHOOL-AUTH.md](https://github.com/AndsomeR1110/campus-helper/blob/feat/school-native-auth/native/SCHOOL-AUTH.md) 为准。下文上游表格保留初次接口调查证据，不是让 UI 直接调用的协议。
 
 ## 给 Claude 的任务正文
 
 请为 Campus Helper 的学校账号连接提供与项目设计语言一致的账号、密码及按需验证码界面。用户不希望看到整张学校网页或浏览器式登录窗口。你负责 UI；本地 Codex 负责 Android 认证适配器、会话接续和 MuMu 回归。本文不规定视觉方案。
 
-先阅读 PR #65 的 `native/TIMETABLE.md`、`native/README.md` 和公开 feature facade。PR #65 的学校登录仍使用内部官方 WebView；**不能把下面发现的上游接口当成项目已经实现的登录 API**。现有 `syncSchoolTimetable()` 和 `shuttle.login()` 均没有账号、密码或验证码参数。尚无供自定义表单调用的 `SchoolAuth` 插件。
+请基于 `feat/school-native-auth` 工作，并阅读 `native/SCHOOL-AUTH.md`、`native/TIMETABLE.md`。从 `@/features/school-auth` 调用 beginSchoolAuth、submitSchoolCredentials、submitSchoolImageCode、refreshSchoolImage、showSchoolChallenge、cancelSchoolAuth 和 completeSchoolConnection；需要用户确认断开时使用 disconnectSchoolAccount。不要把账号密码加到旧 syncSchoolTimetable 或 shuttle.login 参数中。
 
-本轮 UI 可以先围绕下述状态与事件完成明确标注的开发预览，真实模式必须等待 Codex 提供并验证公开认证 facade。不要在云端凭接口说明直接写新的学校登录协议或生产代理。需要的字段/事件请以契约变更清单交给 Codex；不要给旧函数强加参数后宣称完成接入。
+真实模式现在可以接现有 facade，无需另写学校登录协议或生产代理。账号密码、取消、主动断开、跨 App actor 拒绝、区间车班次读取及同进程免重复密码的课表保存已验证。真实验证码本轮未由学校触发；验证码分支实现并有单元测试，不能宣称真验证码已全通过。最终 UI 接线后交回 Codex 补 MuMu 回归。
 
-## 已确认的学校上游入口
+## 已确认的学校上游入口（初次调查记录）
 
 身份认证来源：[XJTLU Authentication Centre](https://uim.xjtlu.edu.cn/esc-sso/login)。入口页面使用 HTMLDesign SDK 和账号组件，不是普通 HTML form POST。
 
@@ -71,9 +73,9 @@ SDK 还列出 `/api/v3/auth/queryUserValid`，但本次账号组件未证明它�
 
 ## 自定义 UI 与认证引擎的边界
 
-可以研究“我们自己的表单 + 私有学校 WebView 作为认证运行时”的接法：用户看到项目表单，原生层保留学校初始化、RSA、WAF 和重定向；图片验证码通过限界接口显示，复杂滑块必要时显示官方挑战控件。**这是待实现方向，不是已验证能力。** 如原生层暂不能安全承载某种挑战，应明确交回官方认证挑战，不伪造成功或跳过挑战。
+已实现“自己的表单 + 私有学校 WebView 认证运行时”的桥：原生层保留学校初始化、RSA、WAF 和重定向；图片通过限界 DTO 显示，滑块使用官方挑战控件。UI 调用已发布 facade；未知 MFA 尚不支持，真验证码通过仍待自然触发后验证，不伪造成功或跳过挑战。
 
-UI 所需事件/状态清单（**待双方定型，不是现有 TS 类型/插件方法**）：
+下面是职责/状态需求摘要；**具体 TypeScript 类型和方法以 native/SCHOOL-AUTH.md 为准**，不要照此清单重新发明另一套桥：
 
 - 开始连接：目标服务（课表 / 区间车）和当前已认证 App actor；先判断原生可用性及现有学校会话。
 - `preparing` → `credentialsRequired` → `submitting`。
@@ -94,11 +96,11 @@ UI 所需事件/状态清单（**待双方定型，不是现有 TS 类型/插件
 - 区间车的 CSRF、个人预约所有权核验、未知写入结果处理、取消确认，以及动态乘车码 TTL、前后台生命周期与防截图保护。
 - 不重写项目账号登录、数据库模型、真实预约规则；不以假数据作为学校接口失败回退。
 
-## 本次证据范围和待验证项
+## 首轮公开接口调查的证据范围（历史记录）
 
 已核验：公开登录 HTML、SDK、账号组件和共享 loader 的提交、RSA、验证码及 redirect 源码；策略 GET、验证码图片 GET、滑块初始化 POST 和策略 CORS 响应。只输出结构与状态，没有保存真实密码、Cookie、挑战 token 或个人票据。
 
-本次桌面浏览器控制遇到学校页面 load 超时及 renderer 无响应，已停止本次任务会话；以上接口证据来自学校公开页面/脚本和不带学校账号凭据的直接请求。**没有在本轮完成自定义表单真实登录、错误密码、触发验证码、滑块通过或 MuMu 新认证器端到端验证。** 不反复提交错误密码来制造验证码。
+初次调查时桌面浏览器控制遇到学校页面 load 超时及 renderer 无响应，已停止当时的任务会话；上游表格的初始证据来自学校公开页面/脚本和不带账号凭据的请求。后续原生实现已经完成真实密码登录和 MuMu 业务接续，见本文顶部的实现契约。错误密码、真实验证码与滑块通过不在本次已实测范围；不反复提交错误密码制造验证码。
 
 本地公开脚本调查文件在 `E:/ENT/school-services-review/login/`，不提交第三方整份脚本进仓库。Claude 可直接阅读以下原始来源复核（页面内容随学校部署改变）：
 
@@ -107,4 +109,4 @@ UI 所需事件/状态清单（**待双方定型，不是现有 TS 类型/插件
 - [账号密码组件](https://uim.xjtlu.edu.cn/login/html-design-builtIn/accountPsw.js)
 - [共享 loader / RSA 与验证码处理](https://uim.xjtlu.edu.cn/login/html-design-builtIn/loader.js)
 
-后续验收由 Codex 负责：自定义表单首次登录、已有会话免输、两类验证码、取消与失效、切换 App 账号、冷启动、登录后自动课表保存、区间车接续，以及保证凭据不进入服务器和日志。UI 验收由 Claude 按项目规范完成。当前不把这些待验证项标记已完成。
+剩余验收：Claude 接好最终 UI 后由 Codex 复测真实交互，并在学校自然触发时验证两类真验证码。已完成项、限制和测试证据见实现契约；本说明不把未触发的验证码标成已完成。

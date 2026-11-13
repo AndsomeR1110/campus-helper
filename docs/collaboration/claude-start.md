@@ -1,6 +1,6 @@
 # 发给 Claude 云端的开工说明
 
-2026-11-14 学校账号自定义登录需求：请同时阅读 [学校登录接口交接](school-login-api.md)。用户希望账号、密码与按需验证码采用项目自己的界面；原先“只有学校登录允许内部官方窗口”是旧体验基线。本轮由 Claude 负责表单与状态呈现，Codex 负责新的原生认证适配及验证。已发现上游接口不等于项目已有可用登录 facade；在该 facade 落地前保留已验证链路，不直接跨域请求、建立密码代理或重写 PR #65 原生逻辑。
+2026-11-14 学校账号自定义登录已落实原生桥：[PR #71](https://github.com/AndsomeR1110/campus-helper/pull/71)，基于 #65。请基于 `feat/school-native-auth` 分支，阅读 [学校登录接口交接](school-login-api.md) 与 [native/SCHOOL-AUTH.md](https://github.com/AndsomeR1110/campus-helper/blob/feat/school-native-auth/native/SCHOOL-AUTH.md)。从 `@/features/school-auth` 接自己的账号、密码和按需验证码 UI；完整页面仍由 Claude 完成。原生已验证真实密码登录、区间车查询和同进程课表自动保存，真实验证码尚未触发。原先“登录展示内部官方窗口”是兼容路径；不要直接跨域请求、建立密码代理或重写 #65 的课表/区间车协议。
 
 将下面的正文发到负责 Campus Helper UI 的 Claude 会话，并提供本说明所在的 GitHub 分支或 PR。它不会自动收到本地聊天；未合并时必须切到文档分支阅读。此说明不是让 Claude 自动合并 PR。
 
