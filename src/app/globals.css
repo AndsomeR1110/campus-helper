@@ -49,6 +49,12 @@
   --color-glass-strong: rgb(253 252 255 / 0.86);
   --color-glass-border: rgb(255 255 255 / 0.75);
 
+  /* Translucent tints, written per theme. Never use opacity modifiers such as
+   * bg-surface/80 on theme colours: browsers without color-mix() fall back to
+   * the light value, which shows as white patches in dark mode. */
+  --color-surface-translucent: rgb(253 252 255 / 0.7);
+  --color-primary-soft: rgb(107 63 160 / 0.4);
+
   /* Ambient background glows (campus map: lavender, river, lawn) */
   --color-ambient-1: rgb(190 160 240 / 0.48);
   --color-ambient-2: rgb(150 205 235 / 0.42);
@@ -205,6 +211,9 @@
   --color-glass-strong: rgb(28 27 26 / 0.9);
   --color-glass-border: rgb(255 255 255 / 0.07);
 
+  --color-surface-translucent: rgb(38 37 35 / 0.7);
+  --color-primary-soft: rgb(217 174 224 / 0.45);
+
   /* Lamplight, lawn and river — kept very faint at night */
   --color-ambient-1: rgb(242 179 61 / 0.07);
   --color-ambient-2: rgb(110 170 120 / 0.06);
@@ -310,6 +319,15 @@
     background-image: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+}
+
+/* Plain box-shadow keeps pill-shaped keyboard focus visible in older WebViews
+ * where the generated ring shadow can compute to none. */
+@layer utilities {
+  .nav-focus:focus-visible,
+  :focus-visible > .nav-focus {
+    box-shadow: 0 0 0 2px var(--color-focus-ring);
   }
 }
 

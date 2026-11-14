@@ -229,7 +229,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
           </div>
         </div>
 
-        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-muted/60 px-4">
+        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-translucent px-4">
           <InfoRow icon={Clock} label="Last synced">
             {synced && now !== null
               ? `${formatRelativeDay(synced, now)}, ${formatTime(synced)}`

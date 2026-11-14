@@ -20,6 +20,7 @@ These rules apply to every agent working in this repository, for every team memb
 | `docs/team-assignment.md`       | Who owns which module, pages, entities and branches.                                                           |
 | `CONTRIBUTING.md`               | Branches, commits, PRs, ownership, API conventions, Definition of Done.                                        |
 | `docs/design/ui-ux-spec.md`     | Tokens, layout, components, states, copy and date formats.                                                     |
+| `docs/design/ui-handoff.md`     | Visual language at a glance: campus-map palette, dark mode, glass / liquid glass, components, page patterns.   |
 | `docs/frontend-architecture.md` | Directory structure, routes, layering, data fetching, shared interfaces, Next.js 16 notes (§5.1).              |
 | `src/components/ui/README.md`   | Which shared component to use for what.                                                                        |
 

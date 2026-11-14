@@ -94,7 +94,10 @@ export function DateStrip({
               )}
             >
               <span
-                className={cn("text-caption", selected ? "text-on-primary/85" : "text-text-muted")}
+                className={cn(
+                  "text-caption",
+                  selected ? "text-on-primary opacity-85" : "text-text-muted",
+                )}
               >
                 {relative}
               </span>

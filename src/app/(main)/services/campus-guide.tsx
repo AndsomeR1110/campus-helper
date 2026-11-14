@@ -22,7 +22,7 @@ export function CampusGuide() {
       <Card variant="widget" className="flex flex-col gap-4 p-0">
         <div className="relative overflow-hidden rounded-t-lg">
           <CampusIllustration className="mx-auto max-w-xl px-2 pt-3" />
-          <p className="absolute bottom-2 left-4 rounded-full bg-surface/80 px-2.5 py-0.5 text-caption text-text-muted backdrop-blur">
+          <p className="absolute bottom-2 left-4 rounded-full bg-surface-translucent px-2.5 py-0.5 text-caption text-text-muted backdrop-blur">
             The ring links buildings A–G
           </p>
         </div>

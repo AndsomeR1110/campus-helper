@@ -31,3 +31,13 @@
 - Windows 虚拟内存压力曾使本地服务和调试命令退出。MuMu 临时以 2 GB / 2 CPU 启动后完成验证，已恢复原 middle 模式与原自定义参数；没有因该环境问题改学校认证协议。
 
 后续 Claude 调整样式时保留 `restoreSchoolConnection`、`SchoolAccountSignIn`、`session.ts`、原生桥和既有区间车写入/乘车码逻辑。完整 API 见 [会话复用](SCHOOL-SESSION-REUSE.md) 与 [认证桥](SCHOOL-AUTH.md)。
+
+## #77 合入后的旧 WebView 复验
+
+2026-11-14 同步 main `13ad721`（已合并 #77），保留上述功能整合，未修改认证/课表/区间车业务协议。已读取新版 AGENTS.md 和 docs/design/ui-handoff.md。
+
+- #77 的主题透明度测试在新学校功能中找到 4 处 bg-surface-muted/60：登录表单提示、课表统计区、区间车已连接/未连接区。统一使用已有 surface-translucent token；测试由失败转为通过，没有放宽检查或新增浅色回退。
+- MuMu 实际 WebView 版本为 110.0.5481.154.1；CSS.supports 的 color-mix 检测为 false。首页、Schedule、Profile、自动课表、区间车在 375/768/1280 CSS px、深浅主题共 30 张截图中无横向溢出；等主题过渡完成后检查，深色透明底均为 rgba(38,37,35,0.7)，Profile 的 Log out 不再发白。先前提及的浅灰底问题在当前集成版本已修复。
+- 发现 #77 的 Tailwind ring 在此 WebView 中计算为 none，虽然 focus-visible 已匹配，键盘仍无可见焦点。导航现用普通 CSS box-shadow 画 2px 的语义色焦点环，沿用原胶囊圆角，不恢复方形 outline。375px 底栏和 1280px 侧栏均实测焦点可见、blur 后移除。
+- 截图在本机 .screenshots/main77-*.png，未提交。设备为模拟器，不代表实体手机验收；没有预约/取消操作，也没有清学校会话。
+- 本次全量检查 455 passed / 19 skipped，构建成功；保留既有通知和文件追踪构建诊断。共享导航/CSS 兼容补丁仍需 Member 1 审查。

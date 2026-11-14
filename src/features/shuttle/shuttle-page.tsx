@@ -519,13 +519,13 @@ function AccountRow({
 }) {
   if (account === "connected")
     return (
-      <p className="flex items-center gap-2 rounded-sm bg-surface-muted/60 px-3 py-2 text-body-sm">
+      <p className="flex items-center gap-2 rounded-sm bg-surface-translucent px-3 py-2 text-body-sm">
         <CircleCheck className="size-4 shrink-0 text-success" aria-hidden />
         University account connected
       </p>
     );
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-sm bg-surface-muted/60 px-3 py-2">
+    <div className="flex flex-wrap items-center gap-3 rounded-sm bg-surface-translucent px-3 py-2">
       <KeyRound className="size-4 shrink-0 text-text-muted" aria-hidden />
       <p className="min-w-0 flex-1 text-body-sm">
         {account === "expired"
