@@ -1,5 +1,5 @@
 "use client";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Bus, ArrowRight } from "lucide-react";
 import {
   Button,
@@ -16,7 +16,11 @@ import {
   useOffline,
 } from "@/components/ui";
 import { formatDate, formatTimeRange } from "@/lib/time";
-import { SchoolAccountSignIn, schoolAuthAvailable } from "@/features/school-auth";
+import {
+  SchoolAccountSignIn,
+  schoolAuthAvailable,
+  restoreSchoolConnection,
+} from "@/features/school-auth";
 import { BoardingPass } from "./boarding-pass";
 import { shuttle, shuttleAvailable, shuttleError } from "./bridge";
 import type { Schedule, Trip } from "./schemas";
@@ -45,6 +49,39 @@ export function ShuttlePage({ initialDate, actorId }: { initialDate: string; act
   const [pass, setPass] = useState<Trip | null>(null);
   const [connected, setConnected] = useState(false);
   const [signIn, setSignIn] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  useEffect(() => {
+    let live = true;
+    const abort = new AbortController();
+    queueMicrotask(async () => {
+      if (!live || !available || !navigator.onLine) return;
+      setRestoring(true);
+      try {
+        await restoreSchoolConnection(actorId, "shuttle", () => live, abort.signal);
+        if (!live) return;
+        setConnected(true);
+        const saved = await shuttle.trips();
+        if (live) setTrips(saved);
+      } catch (e) {
+        if (!live) return;
+        setConnected(false);
+        const code =
+          e && typeof e === "object" && "code" in e
+            ? String(e.code)
+            : e instanceof Error
+              ? e.message
+              : "";
+        if (code !== "AUTH_REQUIRED" && code !== "ACCOUNT_SWITCH_REQUIRED" && code !== "CANCELLED")
+          setError(shuttleError(e));
+      } finally {
+        if (live) setRestoring(false);
+      }
+    });
+    return () => {
+      live = false;
+      abort.abort();
+    };
+  }, [actorId, available]);
   async function run(action: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -100,10 +137,15 @@ export function ShuttlePage({ initialDate, actorId }: { initialDate: string; act
         </div>
         <Button
           variant="secondary"
-          disabled={busy || offline || !!pass}
+          disabled={busy || restoring || signIn || offline || !!pass}
+          loading={restoring || signIn}
           onClick={() => setSignIn(true)}
         >
-          {connected ? "Reconnect school account" : "Connect school account"}
+          {restoring || signIn
+            ? "Checking school connection…"
+            : connected
+              ? "Check school connection"
+              : "Connect school account"}
         </Button>
         <div className="grid gap-3 md:grid-cols-2">
           <FormField label="Direction">
@@ -132,7 +174,7 @@ export function ShuttlePage({ initialDate, actorId }: { initialDate: string; act
           </FormField>
         </div>
         <Button
-          disabled={offline || busy || !connected || !date || !!pass}
+          disabled={offline || busy || restoring || signIn || !connected || !date || !!pass}
           loading={busy}
           onClick={() => void search()}
         >
@@ -180,7 +222,7 @@ export function ShuttlePage({ initialDate, actorId }: { initialDate: string; act
           <h2 className="text-subtitle">My trips</h2>
           <Button
             variant="ghost"
-            disabled={offline || busy || !connected || !!pass}
+            disabled={offline || busy || restoring || signIn || !connected || !!pass}
             onClick={() => void run(refreshTrips).catch(() => {})}
           >
             Refresh trips

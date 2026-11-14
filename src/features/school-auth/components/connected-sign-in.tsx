@@ -12,6 +12,7 @@ import {
   showSchoolChallenge,
   submitSchoolCredentials,
   submitSchoolImageCode,
+  resumeExistingSchoolConnection,
   type SchoolService,
 } from "../bridge";
 import { SchoolSignInSession, type ConnectionResult } from "../session";
@@ -23,14 +24,18 @@ export function SchoolAccountSignIn({
   service,
   onClose,
   onConnected,
+  resumeFirst = true,
 }: {
   actorId: string;
   service: SchoolService;
   onClose: () => void;
   onConnected: (result: ConnectionResult) => void;
+  resumeFirst?: boolean;
 }) {
   const [state, setState] = useState<SchoolAuthState>({ step: "preparing" });
   const [confirm, setConfirm] = useState(false);
+  const [interactive, setInteractive] = useState(false);
+  const hadInteraction = useRef(false);
   const session = useRef<SchoolSignInSession | null>(null);
   const callbacks = useRef({ onClose, onConnected });
   const offline = useOffline();
@@ -50,9 +55,20 @@ export function SchoolAccountSignIn({
         cancel: cancelSchoolAuth,
         complete: completeSchoolConnection,
         disconnect: disconnectSchoolAccount,
+        restore: resumeFirst ? resumeExistingSchoolConnection : undefined,
       },
-      setState,
-      (result) => callbacks.current.onConnected(result),
+      (next) => {
+        if (next.step === "cancelled" && !hadInteraction.current) callbacks.current.onClose();
+        else if (!["preparing", "continuing", "connected"].includes(next.step)) {
+          hadInteraction.current = true;
+          setInteractive(true);
+        }
+        setState(next);
+      },
+      (result) => {
+        callbacks.current.onConnected(result);
+        if (!hadInteraction.current) callbacks.current.onClose();
+      },
     );
     session.current = current;
     let live = true;
@@ -76,8 +92,14 @@ export function SchoolAccountSignIn({
       .catch(() => null);
     queueMicrotask(() => {
       if (!live) return;
+      hadInteraction.current = false;
+      setInteractive(false);
       if (navigator.onLine) void current.start();
-      else setState({ step: "failed", error: { kind: "offline" } });
+      else {
+        hadInteraction.current = true;
+        setInteractive(true);
+        setState({ step: "failed", error: { kind: "offline" } });
+      }
     });
     return () => {
       live = false;
@@ -87,7 +109,7 @@ export function SchoolAccountSignIn({
       current.dispose();
       if (session.current === current) session.current = null;
     };
-  }, [actorId, service]);
+  }, [actorId, service, resumeFirst]);
   const commands: SchoolAuthCommands = {
     submitCredentials: (account, password) => {
       if (!offline) void session.current?.submitCredentials(account, password);
@@ -113,7 +135,7 @@ export function SchoolAccountSignIn({
     <>
       <SchoolSignIn
         key={`${actorId}:${service}`}
-        open={!confirm}
+        open={interactive && !confirm}
         service={service}
         state={state}
         commands={commands}

@@ -12,14 +12,12 @@ import {
   buttonStyles,
 } from "@/components/ui";
 import { formatDateTimeRange } from "@/lib/time";
-import { SchoolAccountSignIn, schoolAuthAvailable } from "@/features/school-auth";
 import {
-  connectionError,
-  readSyncState,
-  schoolTimetableAvailable,
-  syncSchoolTimetable,
-  type SyncState,
-} from "./bridge";
+  SchoolAccountSignIn,
+  schoolAuthAvailable,
+  restoreSchoolConnection,
+} from "@/features/school-auth";
+import { connectionError, readSyncState, schoolTimetableAvailable, type SyncState } from "./bridge";
 const subscribe = () => () => {};
 export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
   const available = useSyncExternalStore(
@@ -34,21 +32,35 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
     [error, setError] = useState("");
   const active = useRef(true),
     running = useRef(false);
+  const restoreAbort = useRef<AbortController | null>(null);
   async function run() {
     if (running.current || offline) return;
     running.current = true;
     setBusy(true);
     setError("");
+    const abort = new AbortController();
+    restoreAbort.current = abort;
     try {
-      const result = await syncSchoolTimetable(actorId, () => active.current, true);
-      if (active.current) setState(result);
+      const result = await restoreSchoolConnection(
+        actorId,
+        "timetable",
+        () => active.current,
+        abort.signal,
+      );
+      if (active.current && result.synced) setState(result.synced);
     } catch (e) {
       if (active.current) {
-        const code = e && typeof e === "object" && "code" in e ? String(e.code) : "";
+        const code =
+          e && typeof e === "object" && "code" in e
+            ? String(e.code)
+            : e instanceof Error
+              ? e.message
+              : "";
         if (code === "AUTH_REQUIRED" || code === "ACCOUNT_SWITCH_REQUIRED") setSignIn(true);
         else setError(connectionError(e));
       }
     } finally {
+      if (restoreAbort.current === abort) restoreAbort.current = null;
       running.current = false;
       if (active.current) setBusy(false);
     }
@@ -57,6 +69,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
     active.current = true;
     return () => {
       active.current = false;
+      restoreAbort.current?.abort();
     };
   }, []);
   useEffect(() => {
@@ -84,6 +97,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
         <SchoolAccountSignIn
           actorId={actorId}
           service="timetable"
+          resumeFirst={false}
           onClose={() => setSignIn(false)}
           onConnected={(result) => {
             if (result.synced) {
@@ -133,7 +147,12 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
       {error && <ErrorState description={error} onRetry={() => void run()} />}
       {available && (
         <StickyActionBar>
-          <Button fullWidth disabled={busy || offline} loading={busy} onClick={() => void run()}>
+          <Button
+            fullWidth
+            disabled={busy || signIn || offline}
+            loading={busy || signIn}
+            onClick={() => void run()}
+          >
             {state?.version ? "Refresh school timetable" : "Connect school account"}
           </Button>
         </StickyActionBar>

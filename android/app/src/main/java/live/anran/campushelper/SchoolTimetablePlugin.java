@@ -57,7 +57,8 @@ public class SchoolTimetablePlugin extends Plugin {
             try{String raw=message.getData();if(raw==null||raw.length()>500000){fail("INVALID_SCHOOL_DATA");return;}
                 JSONObject result=new JSONObject(raw);if(!nonce.equals(result.optString("nonce")))return;
                                 if(result.has("error")){
-                    if(usingCached){credentials.forget(scope);usingCached=false;fetching=false;term=null;school.loadUrl(EBRIDGE+"/");}
+                    String code=result.optString("error","SCHOOL_UNAVAILABLE");
+                    if(usingCached&&(code.equals("AUTH_REQUIRED")||code.equals("INVALID_SCHOOL_DATA")||code.equals("INVALID_SCHOOL_PAGE"))){credentials.forget(scope);usingCached=false;fetching=false;term=null;school.loadUrl(EBRIDGE+"/");}
                     else fail("SCHOOL_UNAVAILABLE");
                     return;
                 }
@@ -97,7 +98,7 @@ public class SchoolTimetablePlugin extends Plugin {
         if(origin(url,TIMETABLE)){
             if(!"2026/27 S1".equals(term)){fail("UNSUPPORTED_TERM");return;}
             fetching=true;
-            school.evaluateJavascript(script+"\nfetchSchoolTimetable().then(data=>CampusTimetableReply.postMessage(JSON.stringify({nonce:"+JSONObject.quote(nonce)+",data}))).catch(()=>CampusTimetableReply.postMessage(JSON.stringify({nonce:"+JSONObject.quote(nonce)+",error:true})))",null);return;
+            school.evaluateJavascript(script+"\nfetchSchoolTimetable().then(data=>CampusTimetableReply.postMessage(JSON.stringify({nonce:"+JSONObject.quote(nonce)+",data}))).catch(error=>CampusTimetableReply.postMessage(JSON.stringify({nonce:"+JSONObject.quote(nonce)+",error:['AUTH_REQUIRED','INVALID_SCHOOL_DATA','INVALID_SCHOOL_PAGE'].includes(error.message)?error.message:'SCHOOL_UNAVAILABLE'})))",null);return;
         }
         if(!origin(url,EBRIDGE))return;
         busy=true;

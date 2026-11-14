@@ -46,7 +46,15 @@ export function connectionError(error: unknown) {
     return "This school term is not configured yet. Your saved timetable is unchanged.";
   if (code === "TIMED_OUT") return "School connection timed out. Please reconnect.";
   if (code === "UPDATE_WEBVIEW") return "Update Android System WebView before connecting.";
-  return error instanceof Error && !code && !error.message.includes("[")
+  if (
+    code === "NATIVE_UNAVAILABLE" ||
+    (error instanceof Error && error.message === "NATIVE_UNAVAILABLE")
+  )
+    return "Update and open the Android app to restore your school connection. Saved courses are kept.";
+  return error instanceof Error &&
+    !code &&
+    !error.message.includes("[") &&
+    !/^[A-Z_]+$/.test(error.message)
     ? error.message
     : "Could not read the school timetable. Check your connection and reconnect. Your saved timetable is unchanged.";
 }

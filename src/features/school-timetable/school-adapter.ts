@@ -61,7 +61,8 @@ export async function fetchSchoolTimetable() {
     credentials: "same-origin",
     signal: AbortSignal.timeout(20000),
   });
-  if (!r.ok) throw Error("SCHOOL_UNAVAILABLE");
+  if (!r.ok)
+    throw Error(r.status === 401 || r.status === 403 ? "AUTH_REQUIRED" : "SCHOOL_UNAVAILABLE");
   const rows: unknown = await r.json();
   if (!Array.isArray(rows) || !rows.length || rows.length > 200) throw Error("INVALID_SCHOOL_DATA");
   const keys = [

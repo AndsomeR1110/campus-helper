@@ -36,7 +36,8 @@ export type SchoolAuthOperation = Pick<SchoolAuthState, "operationId" | "actorId
 export type SchoolAuthEnd = SchoolAuthOperation & { code: string };
 type Operation = SchoolAuthOperation;
 const native = registerPlugin<{
-  begin(options: Operation & { service: SchoolService }): Promise<unknown>;
+  checkSessionScope(options: { actorId: string }): Promise<void>;
+  begin(options: Operation & { service: SchoolService; silent?: boolean }): Promise<unknown>;
   submitCredentials(options: Operation & { username: string; password: string }): Promise<unknown>;
   submitImageCode(options: Operation & { answer: string }): Promise<unknown>;
   refreshImage(options: Operation): Promise<unknown>;
@@ -176,7 +177,77 @@ export async function completeSchoolConnection(
     if (!stillActive()) throw Error("STALE_OPERATION");
     return { service: "timetable", synced };
   }
-  await resumeShuttleSession();
+  await resumeShuttleSession(state.actorId);
   if (!stillActive()) throw Error("STALE_OPERATION");
   return { service: "shuttle" };
+}
+
+/** Verify existing credentials, without displaying or starting a login form. */
+export async function resumeExistingSchoolConnection(
+  actorId: string,
+  service: SchoolService,
+  active: () => boolean = () => true,
+): Promise<Awaited<ReturnType<typeof completeSchoolConnection>>> {
+  if (!active()) throw Error("CANCELLED");
+  check();
+  try {
+    await native.checkSessionScope({ actorId });
+  } catch (error) {
+    const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
+    if (code === "UNIMPLEMENTED" || code === "UNAVAILABLE") throw Error("NATIVE_UNAVAILABLE");
+    throw error;
+  }
+  if (!active()) throw Error("CANCELLED");
+  if (service === "timetable") {
+    const synced = await syncSchoolTimetable(actorId, active, true);
+    if (!active()) throw Error("CANCELLED");
+    return { service, synced };
+  }
+  await resumeShuttleSession(actorId);
+  if (!active()) throw Error("CANCELLED");
+  return { service };
+}
+/** Cache/service session first, then existing federation. Never asks for credentials. */
+export async function restoreSchoolConnection(
+  actorId: string,
+  service: SchoolService,
+  active: () => boolean = () => true,
+  signal?: AbortSignal,
+) {
+  const live = () => active() && !signal?.aborted;
+  try {
+    return await resumeExistingSchoolConnection(actorId, service, live);
+  } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String(error.code)
+        : error instanceof Error
+          ? error.message
+          : "";
+    if (code !== "AUTH_REQUIRED" || !live()) throw error;
+  }
+  check();
+  const operation = { actorId, operationId: crypto.randomUUID() };
+  const cancel = () => {
+    void native.cancel(operation).catch(() => {});
+  };
+  signal?.addEventListener("abort", cancel, { once: true });
+  try {
+    const state = await reply(native.begin({ ...operation, service, silent: true }), {
+      ...operation,
+      service,
+    });
+    if (!live()) {
+      cancel();
+      throw Error("CANCELLED");
+    }
+    // Older APKs may ignore silent. Cancel rather than leaving an invisible form alive.
+    if (state.status !== "authenticated") {
+      cancel();
+      throw Error("AUTH_REQUIRED");
+    }
+    return await completeSchoolConnection(state, live);
+  } finally {
+    signal?.removeEventListener("abort", cancel);
+  }
 }

@@ -156,6 +156,7 @@ public class ShuttlePlugin extends Plugin {
                         finishError(ERRORS.contains(code) ? code : writing ? "RESULT_UNKNOWN" : "SCHOOL_UNAVAILABLE");
                     } else {
                         resuming=false;
+                        if(response.getJSONObject("data").optBoolean("authenticated",false))CookieManager.getInstance().flush();
                         PluginCall done = pending;
                         pending = null;
                         requestId = null;
@@ -174,10 +175,11 @@ public class ShuttlePlugin extends Plugin {
                 if(resuming&&pending!=null){
                     if(!ready){finishError("AUTH_REQUIRED");return;}
                     resuming=false;
-                    school.evaluateJavascript(adapter+"\nshuttleSchoolRequest('session',{}).then(data=>CampusShuttleReply.postMessage(JSON.stringify({id:"+JSONObject.quote(requestId)+",data}))).catch(()=>CampusShuttleReply.postMessage(JSON.stringify({id:"+JSONObject.quote(requestId)+",error:'AUTH_REQUIRED'})))",null);
+                    school.evaluateJavascript(adapter+"\nshuttleSchoolRequest('session',{}).then(data=>CampusShuttleReply.postMessage(JSON.stringify({id:"+JSONObject.quote(requestId)+",data}))).catch(error=>CampusShuttleReply.postMessage(JSON.stringify({id:"+JSONObject.quote(requestId)+",error:String(error.message)})))",null);
                 }
             }
             @Override public void onReceivedSslError(WebView view,android.webkit.SslErrorHandler h,android.net.http.SslError e){h.cancel();finishError("SCHOOL_UNAVAILABLE");}
+            @Override public void onReceivedError(WebView view,WebResourceRequest request,android.webkit.WebResourceError error){if(request.isForMainFrame()){ready=false;finishError("SCHOOL_UNAVAILABLE");}}
         });
         parking = new FrameLayout(getActivity());
         parking.setAlpha(0);
@@ -201,6 +203,10 @@ public class ShuttlePlugin extends Plugin {
     @PluginMethod public void resumeSession(PluginCall call){getActivity().runOnUiThread(()->{
         if(!allowedCaller()){call.reject("UNTRUSTED_ORIGIN","UNTRUSTED_ORIGIN");return;}
         if(!foreground||pending!=null||loginDialog!=null||SchoolAuthPlugin.isActive()){call.reject("BUSY","BUSY");return;}
+        String actor=call.getString("actorId","");
+        if(!actor.matches("[A-Za-z0-9_-]{1,128}")){call.reject("INVALID_INPUT","INVALID_INPUT");return;}
+        String owner=getContext().getSharedPreferences("school_auth_scope",0).getString("actor",null);
+        if(!actor.equals(owner)){String code=owner==null?"AUTH_REQUIRED":"ACCOUNT_SWITCH_REQUIRED";call.reject(code,code);return;}
         if(!ensureSchool(call,false))return;
         pending=call;writing=false;resuming=true;requestId=UUID.randomUUID().toString();final String id=requestId;
         school.loadUrl(SCHOOL+"/");handler.postDelayed(()->{if(pending!=null&&id.equals(requestId))finishError("SCHOOL_UNAVAILABLE");},30000);
