@@ -120,7 +120,7 @@ async function TeacherDetail({ id, userId }: { id: string; userId: string }) {
                     className={cardStyles({
                       className: cn(
                         "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
-                        bookingId && "border-primary/40 bg-primary-subtle/60",
+                        bookingId && "border-primary-soft bg-primary-subtle",
                       ),
                     })}
                   >

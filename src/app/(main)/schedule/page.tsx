@@ -99,7 +99,7 @@ async function WeekTimetable({ week }: { week: number }) {
                         interactive: true,
                         className: cn(
                           "ml-2 flex min-w-0 flex-1 items-center gap-3 p-3.5",
-                          next && "ring-2 ring-primary/40",
+                          next && "ring-2 ring-primary-soft",
                         ),
                       })}
                     >

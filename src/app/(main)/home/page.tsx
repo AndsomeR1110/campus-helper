@@ -158,7 +158,11 @@ export default function HomePage() {
       <OfflineBanner className="sticky top-0 z-30 pt-[max(8px,env(safe-area-inset-top))]" />
       <PageContainer className="pt-[max(24px,env(safe-area-inset-top))] md:pt-8">
         {/* Hero: greeting over a flat campus-map illustration. */}
-        <section className="relative isolate min-h-48 overflow-hidden rounded-lg border border-glass-border bg-linear-to-br from-primary-subtle via-surface/70 to-surface/40 p-5 shadow-card md:min-h-52 md:p-6">
+        <section className="relative isolate min-h-48 overflow-hidden rounded-lg border liquid-glass p-5 md:min-h-52 md:p-6">
+          <span
+            aria-hidden
+            className="absolute inset-0 -z-20 bg-linear-to-br from-primary-subtle to-transparent"
+          />
           <CampusIllustration className="absolute -right-14 -bottom-14 -z-10 w-80 [mask-image:radial-gradient(closest-side,black_55%,transparent)] md:top-1/2 md:right-0 md:bottom-auto md:w-[28rem] md:-translate-y-1/2" />
           <div className="flex items-start justify-between gap-4">
             <Suspense fallback={<GreetingSkeleton />}>

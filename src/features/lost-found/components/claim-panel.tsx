@@ -136,7 +136,7 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
                     </div>
                     <StatusBadge kind="claim" status={claim.status} />
                   </div>
-                  <blockquote className="rounded-sm border-l-4 border-primary/40 bg-surface-muted/70 px-3 py-2 text-body-sm whitespace-pre-line text-text">
+                  <blockquote className="rounded-sm border-l-4 border-primary-soft bg-surface-translucent px-3 py-2 text-body-sm whitespace-pre-line text-text">
                     {claim.message}
                   </blockquote>
                   {open ? (

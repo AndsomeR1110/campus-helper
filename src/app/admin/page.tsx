@@ -115,7 +115,7 @@ async function ModerationQueue() {
                       </p>
                     </div>
                   </div>
-                  <blockquote className="rounded-sm border-l-4 border-warning bg-warning-subtle/60 px-3 py-2 text-body-sm text-text">
+                  <blockquote className="rounded-sm border-l-4 border-warning bg-warning-subtle px-3 py-2 text-body-sm text-text">
                     {report.reason}
                   </blockquote>
                   <div className="mt-auto">
