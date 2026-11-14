@@ -24,6 +24,16 @@ function fixture() {
   return { port, view, connected, session };
 }
 describe("school UI and native session integration", () => {
+  it("resumes an existing connection before asking native to authenticate", async () => {
+    const { session, port, connected, view } = fixture();
+    Object.assign(port, {
+      restore: vi.fn().mockResolvedValue({ service: "timetable", synced: { count: 7 } }),
+    });
+    await session.start();
+    expect(port.begin).not.toHaveBeenCalled();
+    expect(connected).toHaveBeenCalledOnce();
+    expect(view).toHaveBeenLastCalledWith({ step: "connected", service: "timetable" });
+  });
   it("only reports connected after the existing server save completes", async () => {
     const { session, port, view, connected } = fixture();
     port.begin.mockResolvedValue({ ...state, status: "authenticated" });
