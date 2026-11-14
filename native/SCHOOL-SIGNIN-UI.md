@@ -1,5 +1,7 @@
 # 学校登录 UI 与原生桥整合
 
+最新的 #74 新版页面与 #75 会话复用整合、以及忘记课表连接的准确范围见 [新版页面接线说明](SCHOOL-PAGES-INTEGRATION.md)。进页认证失效只提示，由用户点击打开表单。
+
 后续会话复用实现和新的原生参数见 [学校会话复用说明](SCHOOL-SESSION-REUSE.md)。有效连接下现在优先静默恢复；下文保留 PR #72 整合时的记录。
 
 本分支 `feat/school-signin-integration` 合并 Claude [PR #70](https://github.com/AndsomeR1110/campus-helper/pull/70) 的 `1714453` 与 Codex [PR #71](https://github.com/AndsomeR1110/campus-helper/pull/71) 的 `a641228`，两者均依赖 #65。保留 Claude 的弹层、设计 token 和预览页；新增真实状态适配与课表/区间车入口接线。没有合并到 main，也没有提交预约。

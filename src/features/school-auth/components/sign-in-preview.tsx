@@ -15,6 +15,8 @@ type Scenario =
   | "connected"
   | "image"
   | "slider"
+  | "official"
+  | "account-switch"
   | "rejected"
   | "not-activated"
   | "unsupported"
@@ -24,7 +26,9 @@ type Scenario =
 const SCENARIOS: { id: Scenario; label: string }[] = [
   { id: "connected", label: "Signs in" },
   { id: "image", label: "Image check" },
-  { id: "slider", label: "Puzzle check" },
+  { id: "official", label: "University check" },
+  { id: "slider", label: "Puzzle (preview only)" },
+  { id: "account-switch", label: "Other app account" },
   { id: "rejected", label: "Rejected" },
   { id: "not-activated", label: "Not activated" },
   { id: "unsupported", label: "Unsupported check" },
@@ -48,9 +52,16 @@ export function SignInPreview() {
     if (run.current === token) setState(next);
   }
 
+  // The device session belongs to another app account until the user disconnects it.
+  const switched = useRef(false);
+
   function start() {
     const token = ++run.current;
     setState({ step: "preparing" });
+    if (scenario === "account-switch" && !switched.current) {
+      void step(token, { step: "failed", error: { kind: "account-switch" } }, 600);
+      return;
+    }
     void step(token, { step: "credentials", account: account.current }, 600);
   }
 
@@ -86,6 +97,8 @@ export function SignInPreview() {
         connected: () => void continueService(token),
         image: () => void step(token, image()),
         slider: () => void step(token, puzzle()),
+        official: () => void step(token, { step: "official-challenge" }),
+        "account-switch": () => void continueService(token),
         rejected: () => void step(token, failWith({ kind: "rejected" })),
         "not-activated": () => void step(token, failWith({ kind: "not-activated" })),
         unsupported: () => void step(token, failWith({ kind: "unsupported-challenge" })),
@@ -111,7 +124,13 @@ export function SignInPreview() {
         s.step === "image-challenge" ? image() : s.step === "slider-challenge" ? puzzle() : s,
       );
     },
+    disconnect() {
+      // Real mode confirms first, then clears the device session and starts again.
+      switched.current = true;
+      start();
+    },
     useOfficialSignIn() {
+      setState((s) => (s.step === "official-challenge" ? { ...s, busy: true } : s));
       // Real mode hands over to the university's own screen; the preview just finishes.
       void continueService(run.current);
     },

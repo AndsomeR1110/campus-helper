@@ -1,5 +1,7 @@
 # 学校会话复用：Claude 接线说明
 
+后续 #74 新版页面的整合行为见 [新版页面说明](SCHOOL-PAGES-INTEGRATION.md)：自动恢复失效不直接弹表单，由用户点击登录；课表“忘记连接”与全局学校登出分开。
+
 基于 PR #72 的 `feat/school-signin-integration`，本次功能分支为 `feat/school-session-reuse`。目标是减少有效连接下的重复登录和弹层，不保存学校密码，也不承诺永久登录。
 
 ## 当前行为

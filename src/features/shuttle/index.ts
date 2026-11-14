@@ -1,2 +1,2 @@
-export { ShuttlePage } from "./shuttle-page";
+export { ShuttlePage, ShuttleSkeleton } from "./shuttle-page";
 export { resumeShuttleSession } from "./bridge";
