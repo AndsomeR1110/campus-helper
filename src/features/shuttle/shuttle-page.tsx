@@ -32,7 +32,11 @@ import {
 import { formatDate, formatTimeRange } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { BoardingPass } from "./boarding-pass";
-import { SchoolAccountSignIn, schoolAuthAvailable } from "@/features/school-auth";
+import {
+  SchoolAccountSignIn,
+  schoolAuthAvailable,
+  restoreSchoolConnection,
+} from "@/features/school-auth";
 import { shuttle, shuttleAvailable, shuttleError } from "./bridge";
 import type { Schedule, Trip } from "./schemas";
 import {
@@ -52,7 +56,7 @@ const dayLabel = (date: string) => formatDate(`${date}T12:00:00+08:00`);
 const timeRange = (j: Schedule | Trip) => formatTimeRange(journeyStart(j), journeyEnd(j));
 const routeText = (j: Schedule | Trip) => `${campusShort(j.from)} → ${campusShort(j.to)}`;
 
-/** No school request is made until a connection is confirmed for this app account. */
+/** Trip and departure reads require a connection confirmed for this app account. */
 type Account = "not-connected" | "connected" | "expired";
 type Busy = null | "search" | "trips" | "write";
 type Notice = { tone: "success" | "warning" | "info"; title: string; text: string } | null;
@@ -70,6 +74,7 @@ export function ShuttlePage({ initialDate, actorId }: { initialDate: string; act
   const [trips, setTrips] = useState<Trip[] | null>(null);
   const [account, setAccount] = useState<Account>("not-connected");
   const [signingIn, setSigningIn] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   // The school bridge has a single request channel: one request at a time.
   const [busy, setBusy] = useState<Busy>(null);
   const [searchError, setSearchError] = useState("");
@@ -94,6 +99,41 @@ export function ShuttlePage({ initialDate, actorId }: { initialDate: string; act
       active.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    let live = true;
+    const abort = new AbortController();
+    queueMicrotask(async () => {
+      if (!live || !available || !navigator.onLine) return;
+      running.current = true;
+      setRestoring(true);
+      try {
+        await restoreSchoolConnection(actorId, "shuttle", () => live, abort.signal);
+        if (!live) return;
+        setAccount("connected");
+        await readTrips();
+      } catch (e) {
+        if (!live) return;
+        const code =
+          e && typeof e === "object" && "code" in e
+            ? String(e.code)
+            : e instanceof Error
+              ? e.message
+              : "";
+        if (code === "AUTH_REQUIRED") setAccount("expired");
+        else if (code !== "ACCOUNT_SWITCH_REQUIRED" && code !== "CANCELLED")
+          setTripsError(shuttleError(e));
+      } finally {
+        running.current = false;
+        if (live) setRestoring(false);
+      }
+    });
+    return () => {
+      live = false;
+      abort.abort();
+    };
+    // This attempt belongs to the mounted actor. User actions handle later retries.
+  }, [actorId, available]);
 
   /** Serialises bridge requests; returns false if another one is running. */
   async function exclusive(kind: NonNullable<Busy>, action: () => Promise<void>) {
@@ -258,7 +298,7 @@ export function ShuttlePage({ initialDate, actorId }: { initialDate: string; act
   if (available === null) return <ShuttleSkeleton />;
   if (!available) return <Unsupported />;
 
-  const locked = busy !== null || offline || pass !== null || signingIn;
+  const locked = busy !== null || offline || pass !== null || signingIn || restoring;
   const selected = ROUTES.find((r) => r.route === route)!;
 
   return (
@@ -290,7 +330,12 @@ export function ShuttlePage({ initialDate, actorId }: { initialDate: string; act
           </div>
         </div>
 
-        <AccountRow account={account} loading={signingIn} disabled={locked} onSignIn={signIn} />
+        <AccountRow
+          account={account}
+          loading={signingIn || restoring}
+          disabled={locked}
+          onSignIn={signIn}
+        />
 
         <div className="flex flex-col gap-1.5">
           <span className="text-body-sm font-medium" aria-hidden>
@@ -377,7 +422,7 @@ export function ShuttlePage({ initialDate, actorId }: { initialDate: string; act
           <SectionHeading id="trips-heading">My trips</SectionHeading>
           <IconButton
             aria-label="Refresh my trips"
-            disabled={locked}
+            disabled={locked || account !== "connected"}
             onClick={() => void loadTrips()}
             className="[&_svg]:size-5"
           >
@@ -474,13 +519,13 @@ function AccountRow({
 }) {
   if (account === "connected")
     return (
-      <p className="flex items-center gap-2 rounded-sm bg-surface-muted/60 px-3 py-2 text-body-sm">
+      <p className="flex items-center gap-2 rounded-sm bg-surface-translucent px-3 py-2 text-body-sm">
         <CircleCheck className="size-4 shrink-0 text-success" aria-hidden />
         University account connected
       </p>
     );
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-sm bg-surface-muted/60 px-3 py-2">
+    <div className="flex flex-wrap items-center gap-3 rounded-sm bg-surface-translucent px-3 py-2">
       <KeyRound className="size-4 shrink-0 text-text-muted" aria-hidden />
       <p className="min-w-0 flex-1 text-body-sm">
         {account === "expired"

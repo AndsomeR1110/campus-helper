@@ -390,7 +390,7 @@ function CredentialsForm({
           </IconButton>
         </div>
       </FormField>
-      <p className="flex items-start gap-2 rounded-sm bg-surface-muted/60 px-3 py-2 text-body-sm">
+      <p className="flex items-start gap-2 rounded-sm bg-surface-translucent px-3 py-2 text-body-sm">
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
         <span>
           Your password goes only to the university to sign you in. Campus Helper doesn’t store it

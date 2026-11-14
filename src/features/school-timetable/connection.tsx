@@ -27,7 +27,11 @@ import {
   toast,
   useOffline,
 } from "@/components/ui";
-import { SchoolAccountSignIn, schoolAuthAvailable } from "@/features/school-auth";
+import {
+  SchoolAccountSignIn,
+  schoolAuthAvailable,
+  restoreSchoolConnection,
+} from "@/features/school-auth";
 import { formatRelativeDay, formatRelativeTime, formatTime } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import {
@@ -35,7 +39,6 @@ import {
   forgetSchoolConnection,
   readSyncState,
   schoolTimetableAvailable,
-  syncSchoolTimetable,
   type SyncState,
 } from "./bridge";
 import {
@@ -48,7 +51,8 @@ import {
 } from "./sync-status";
 
 const subscribe = () => () => {};
-const errorCode = (e: unknown) => (e && typeof e === "object" && "code" in e ? String(e.code) : "");
+const errorCode = (e: unknown) =>
+  e && typeof e === "object" && "code" in e ? String(e.code) : e instanceof Error ? e.message : "";
 const isCancelled = (e: unknown) => errorCode(e) === "CANCELLED";
 /** The device's school session is missing or belongs to another app account. */
 const needsSignIn = (e: unknown) =>
@@ -85,6 +89,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
   const [authNeeded, setAuthNeeded] = useState(false);
   const active = useRef(true);
   const running = useRef(false);
+  const restoreAbort = useRef<AbortController | null>(null);
 
   // The facade owns native connection, validation and the server save; this
   // only serialises attempts and ignores results after the page is left.
@@ -99,10 +104,16 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
     setError("");
     setCancelled(false);
     setAuthNeeded(false);
+    const abort = new AbortController();
+    restoreAbort.current = abort;
     try {
-      // Silent: reuse this device's school session; never open a school page.
-      const result = await syncSchoolTimetable(actorId, () => active.current, true);
-      if (active.current) setState(result);
+      const result = await restoreSchoolConnection(
+        actorId,
+        "timetable",
+        () => active.current,
+        abort.signal,
+      );
+      if (active.current && result.synced) setState(result.synced);
     } catch (e) {
       if (!active.current) return;
       if (needsSignIn(e)) {
@@ -116,6 +127,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
       setCancelled(isCancelled(e));
       setError(connectionError(e));
     } finally {
+      if (restoreAbort.current === abort) restoreAbort.current = null;
       running.current = false;
       if (active.current) setBusy(false);
     }
@@ -125,6 +137,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
     active.current = true;
     return () => {
       active.current = false;
+      restoreAbort.current?.abort();
     };
   }, []);
 
@@ -154,11 +167,11 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
     try {
       await forgetSchoolConnection(actorId);
     } catch (e) {
-      setForgetFailure("Couldn’t disconnect this device. Please try again.");
+      setForgetFailure("Couldn’t forget the timetable connection. Please try again.");
       throw e;
     }
     setForgetOpen(false);
-    toast.success("This device is disconnected");
+    toast.success("Saved timetable connection forgotten");
   }
 
   const phase = syncPhase({ available, state, busy, error, cancelled, loadError });
@@ -189,6 +202,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
         <SchoolAccountSignIn
           actorId={actorId}
           service="timetable"
+          resumeFirst={false}
           onClose={() => setSignIn(false)}
           onConnected={(result) => {
             // Only a confirmed server save counts as synced.
@@ -215,7 +229,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
           </div>
         </div>
 
-        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-muted/60 px-4">
+        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-translucent px-4">
           <InfoRow icon={Clock} label="Last synced">
             {synced && now !== null
               ? `${formatRelativeDay(synced, now)}, ${formatTime(synced)}`
@@ -248,21 +262,21 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
           </h2>
           <Card className="flex flex-col gap-3">
             <p className="text-body-sm text-text-muted">
-              This device keeps an encrypted timetable connection so refreshes don’t ask you to sign
-              in each time. Disconnecting removes it from this device only. Your saved classes stay.
+              This device keeps an encrypted timetable connection for quick refreshes. Forgetting it
+              keeps your saved classes and university sign-in, including your shuttle connection.
             </p>
             <Button
               variant="ghost"
               size="sm"
               className="self-start"
-              disabled={busy}
+              disabled={busy || signIn}
               onClick={() => {
                 setForgetFailure("");
                 setForgetOpen(true);
               }}
             >
               <Unplug className="size-4" aria-hidden />
-              Disconnect this device
+              Forget saved timetable connection
             </Button>
           </Card>
         </section>
@@ -279,7 +293,7 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
             size="lg"
             fullWidth
             disabled={busy || offline || signIn}
-            loading={busy}
+            loading={busy || signIn}
             onClick={() => {
               if (authNeeded) setSignIn(true);
               else void run(true);
@@ -293,11 +307,12 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
       <ConfirmDialog
         open={forgetOpen}
         onClose={() => setForgetOpen(false)}
-        title="Disconnect this device?"
+        title="Forget the saved timetable connection?"
         description={
           <>
-            Campus Helper will forget the timetable connection stored on this device. Your saved
-            classes stay. A later refresh may ask you to sign in to your university account again.
+            Only the encrypted timetable connection is removed from this device. Your saved classes
+            and university sign-in stay. A later refresh can reconnect automatically while your
+            university session is valid.
             {forgetFailure && (
               <span role="alert" className="mt-2 block text-danger">
                 {forgetFailure}
@@ -305,8 +320,8 @@ export function SchoolTimetableConnection({ actorId }: { actorId: string }) {
             )}
           </>
         }
-        confirmLabel="Disconnect device"
-        cancelLabel="Keep connected"
+        confirmLabel="Forget connection"
+        cancelLabel="Keep connection"
         onConfirm={forget}
       />
     </div>

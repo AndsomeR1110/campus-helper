@@ -11,6 +11,7 @@ const native = vi.hoisted(() => ({
   disconnectSchoolAccount: vi.fn(),
   onSchoolAuthActivity: vi.fn(),
   onSchoolAuthEnd: vi.fn(),
+  resumeExistingSchoolConnection: vi.fn(),
 }));
 vi.mock("../bridge", () => native);
 import { SchoolAccountSignIn } from "./connected-sign-in";
@@ -26,8 +27,29 @@ beforeEach(() => {
   native.disconnectSchoolAccount.mockResolvedValue(undefined);
   native.onSchoolAuthActivity.mockResolvedValue({ remove: vi.fn() });
   native.onSchoolAuthEnd.mockResolvedValue({ remove: vi.fn() });
+  native.resumeExistingSchoolConnection.mockRejectedValue(new Error("AUTH_REQUIRED"));
 });
 describe("connected school sign-in sheet", () => {
+  it("silently closes when the existing connection is valid, without a login sheet", async () => {
+    native.resumeExistingSchoolConnection.mockResolvedValue({
+      service: "timetable",
+      synced: { count: 7 },
+    });
+    const onClose = vi.fn(),
+      onConnected = vi.fn();
+    const { container } = render(
+      <SchoolAccountSignIn
+        actorId="owner"
+        service="timetable"
+        onClose={onClose}
+        onConnected={onConnected}
+      />,
+    );
+    await waitFor(() => expect(onConnected).toHaveBeenCalledOnce());
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(native.beginSchoolAuth).not.toHaveBeenCalled();
+    expect(container.querySelector("dialog[open]")).toBeNull();
+  });
   it("clears the visible password immediately and retains the account after rejection", async () => {
     let reject!: (value: unknown) => void;
     native.submitSchoolCredentials.mockImplementation(

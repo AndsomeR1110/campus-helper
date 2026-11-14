@@ -27,7 +27,7 @@ public class SchoolAuthPlugin extends Plugin {
     private PluginCall pending;
     private String operationId,actorId,service,script,status;
     private int revision,afterRevision=-1,pageVersion;
-    private boolean evaluating,foreground=true,secureBefore,disconnecting;
+    private boolean evaluating,foreground=true,secureBefore,disconnecting,silent;
     private long lastSubmit;
 
     private boolean caller(){
@@ -42,6 +42,14 @@ public class SchoolAuthPlugin extends Plugin {
         if(operationId==null||!operationId.equals(call.getString("operationId"))||!Objects.equals(actorId,call.getString("actorId"))){call.reject("STALE_OPERATION","STALE_OPERATION");return false;}
         if(!foreground||pending!=null){call.reject("BUSY","BUSY");return false;}return true;
     }
+    @PluginMethod public void checkSessionScope(PluginCall call){getActivity().runOnUiThread(()->{
+        if(!caller()){call.reject("UNTRUSTED_ORIGIN","UNTRUSTED_ORIGIN");return;}
+        String actor=call.getString("actorId","");
+        if(!actor.matches("[A-Za-z0-9_-]{1,128}")){call.reject("INVALID_INPUT","INVALID_INPUT");return;}
+        String owner=getContext().getSharedPreferences("school_auth_scope",0).getString("actor",null);
+        if(!actor.equals(owner)){String code=owner==null?"AUTH_REQUIRED":"ACCOUNT_SWITCH_REQUIRED";call.reject(code,code);return;}
+        call.resolve();
+    });}
     @PluginMethod public void begin(PluginCall call){getActivity().runOnUiThread(()->{
         if(!caller()){call.reject("UNTRUSTED_ORIGIN","UNTRUSTED_ORIGIN");return;}
         if(active||!foreground||SchoolTimetablePlugin.isConnecting()||ShuttlePlugin.isWorking()){call.reject("BUSY","BUSY");return;}
@@ -49,7 +57,10 @@ public class SchoolAuthPlugin extends Plugin {
         String requestedId=call.getString("operationId","");
         try{if(!UUID.fromString(requestedId).toString().equalsIgnoreCase(requestedId))throw new Exception();}catch(Exception e){call.reject("INVALID_INPUT","INVALID_INPUT");return;}
         if(!actor.matches("[A-Za-z0-9_-]{1,128}")||!(target.equals("timetable")||target.equals("shuttle"))){call.reject("INVALID_INPUT","INVALID_INPUT");return;}
-        String owner=getContext().getSharedPreferences("school_auth_scope",0).getString("actor",actor);
+        boolean quiet=call.getBoolean("silent",false);
+        String owner=getContext().getSharedPreferences("school_auth_scope",0).getString("actor",null);
+        if(quiet&&owner==null){call.reject("AUTH_REQUIRED","AUTH_REQUIRED");return;}
+        if(owner==null)owner=actor;
         if(!actor.equals(owner)){call.reject("ACCOUNT_SWITCH_REQUIRED","ACCOUNT_SWITCH_REQUIRED");return;}
         try(var in=getContext().getAssets().open("school-auth.js");var out=new ByteArrayOutputStream()){
             byte[] bytes=new byte[4096];int n;while((n=in.read(bytes))!=-1)out.write(bytes,0,n);script=out.toString(StandardCharsets.UTF_8.name());
@@ -59,7 +70,7 @@ public class SchoolAuthPlugin extends Plugin {
         if(!getContext().getSharedPreferences("school_auth_scope",0).edit().putString("actor",actor).commit()){
             call.reject("SCHOOL_UNAVAILABLE","SCHOOL_UNAVAILABLE");return;
         }
-        actorId=actor;service=target;operationId=requestedId;active=true;pending=call;afterRevision=-1;revision=0;lastSubmit=0;status="preparing";
+        actorId=actor;service=target;operationId=requestedId;silent=quiet;active=true;pending=call;afterRevision=-1;revision=0;lastSubmit=0;status="preparing";
         school=new WebView(getActivity());WebSettings settings=school.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setSaveFormData(false);
         if(android.os.Build.VERSION.SDK_INT>=26)school.setImportantForAutofill(android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
@@ -155,6 +166,7 @@ public class SchoolAuthPlugin extends Plugin {
                     if(next.equals("cancelled")){fail("CANCELLED");return;}
                     if(next.equals("error")){fail("SCHOOL_UNAVAILABLE");return;}
                     if(!Set.of("credentialsRequired","imageRequired","interactiveRequired").contains(next)||revision<=afterRevision)return;
+                    if(silent){fail("AUTH_REQUIRED");return;}
                     status=next;JSObject dto=state(next);String code=r.optString("errorCode");if(code.matches("SSO[0-9]{5}")||code.equals("AUTH_REJECTED"))dto.put("errorCode",code);
                     if(next.equals("imageRequired")){String image=r.optString("image");if(image.length()>100000||!image.matches("data:image/png;base64,[A-Za-z0-9+/=]+")){fail("INVALID_SCHOOL_DATA");return;}dto.put("image",image);}
                     resolve(dto);

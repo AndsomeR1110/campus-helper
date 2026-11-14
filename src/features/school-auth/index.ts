@@ -10,6 +10,7 @@ export {
   showSchoolChallenge,
   cancelSchoolAuth,
   completeSchoolConnection,
+  restoreSchoolConnection,
   disconnectSchoolAccount,
   type SchoolAuthState,
   type SchoolService,

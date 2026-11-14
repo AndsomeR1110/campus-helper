@@ -34,7 +34,7 @@ export default async function LoginPage({
 
       <LoginForm nextPath={safeNext} />
 
-      <dl className="rounded-md border border-dashed border-border-strong bg-surface/60 px-4 py-3 text-body-sm text-text-muted">
+      <dl className="rounded-md border border-dashed border-border-strong bg-surface-translucent px-4 py-3 text-body-sm text-text-muted">
         <dt className="font-medium text-text">Demo accounts</dt>
         <dd className="mt-1">
           student.mia@campus-helper.demo · teacher.smith@campus-helper.demo ·

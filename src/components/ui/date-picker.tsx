@@ -333,7 +333,7 @@ export function DatePicker({
                           : cn(
                               "hover:bg-surface-muted",
                               outside ? "text-text-disabled" : "text-text",
-                              isToday && "font-semibold text-primary ring-1 ring-primary/50",
+                              isToday && "font-semibold text-primary ring-1 ring-primary-soft",
                             ),
                       )}
                     >

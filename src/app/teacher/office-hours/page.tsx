@@ -132,7 +132,7 @@ async function TeacherDashboard({ userId }: { userId: string }) {
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col items-center gap-0.5 rounded-md bg-surface-muted/70 px-2 py-3"
+              className="flex flex-col items-center gap-0.5 rounded-md bg-surface-translucent px-2 py-3"
             >
               <dd className="text-title-lg text-text tabular-nums">{stat.value}</dd>
               <dt className="text-center text-caption text-text-muted">{stat.label}</dt>

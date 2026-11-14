@@ -8,6 +8,7 @@ import type {
 import type { SchoolAuthState as ViewState, SchoolAuthError } from "./types";
 export type ConnectionResult = Awaited<ReturnType<typeof completeSchoolConnection>>;
 export interface SchoolAuthPort {
+  restore?(actor: string, service: SchoolService, active: () => boolean): Promise<ConnectionResult>;
   begin(actor: string, service: SchoolService, id: string): Promise<NativeState>;
   credentials(state: NativeState, account: string, password: string): Promise<NativeState>;
   image(state: NativeState, code: string): Promise<NativeState>;
@@ -66,6 +67,24 @@ export class SchoolSignInSession {
     this.operation = undefined;
     if (previous) await this.port.cancel(previous).catch(() => {});
     if (!this.active(token)) return;
+    if (this.port.restore) {
+      try {
+        const result = await this.port.restore(this.actor, this.service, () => this.active(token));
+        if (this.active(token)) {
+          this.connected(result);
+          this.view({ step: "connected", service: this.service });
+          this.working = false;
+        }
+        return;
+      } catch (error) {
+        if (!this.active(token)) return;
+        if (codeOf(error) !== "AUTH_REQUIRED") {
+          this.reject(error, token);
+          this.working = false;
+          return;
+        }
+      }
+    }
     const id = crypto.randomUUID();
     this.operation = { actorId: this.actor, operationId: id };
     try {

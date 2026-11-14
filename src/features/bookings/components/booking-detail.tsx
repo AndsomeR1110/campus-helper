@@ -71,7 +71,7 @@ export function BookingDetail({ booking, now }: { booking: BookingItem; now: str
             <StatusBadge kind="booking" status={booking.status} />
           </div>
         </div>
-        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-muted/60 px-4">
+        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-translucent px-4">
           <div className="flex items-center gap-3 py-3">
             <dt className="flex items-center gap-2 text-body-sm text-text-muted">
               <Clock className="size-4" aria-hidden />
