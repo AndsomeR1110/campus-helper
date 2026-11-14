@@ -225,17 +225,18 @@
   --color-ambient-4: rgb(217 174 224 / 0.04);
 
   /*
-   * Night glass is smoked, not frosted: a dark base under a barely-there white
-   * fill, so phones that blur/saturate the backdrop strongly don't wash it grey.
+   * At night the liquid glass flattens into plain frosted glass: a see-through
+   * graphite fill with blur, no white sheen or gradient, which phones that
+   * blur/saturate the backdrop strongly would otherwise wash grey.
    */
-  --color-liquid-base: rgb(19 18 17 / 0.6);
-  --color-liquid-from: rgb(255 255 255 / 0.035);
-  --color-liquid-to: rgb(255 255 255 / 0.008);
-  --color-liquid-sheen: rgb(255 255 255 / 0.025);
-  --color-liquid-highlight: rgb(255 255 255 / 0.08);
-  --color-liquid-lowlight: rgb(255 255 255 / 0.02);
-  --color-liquid-edge: rgb(255 255 255 / 0.06);
-  --color-liquid-pill: rgb(255 255 255 / 0.07);
+  --color-liquid-base: rgb(28 27 26 / 0.5);
+  --color-liquid-from: transparent;
+  --color-liquid-to: transparent;
+  --color-liquid-sheen: transparent;
+  --color-liquid-highlight: rgb(255 255 255 / 0.04);
+  --color-liquid-lowlight: transparent;
+  --color-liquid-edge: rgb(255 255 255 / 0.07);
+  --color-liquid-pill: rgb(255 255 255 / 0.08);
 
   --color-map-lawn: #1f2620;
   --color-map-lawn-deep: #2c3a2d;

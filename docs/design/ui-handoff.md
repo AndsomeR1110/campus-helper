@@ -62,7 +62,7 @@
 | `glass-strong` | 底 .86 + `blur(24px)`                                                                                                                                           | Modal / BottomSheet、Toast                                                                      |
 | `liquid-glass` | 160° 渐变填充 白 .62→.30 + 左上径向高光 白 .65 + 顶部内亮线 `inset 0 1px 0 白.95` + 底部内线 白.12 + 深柔投影 `0 16px 36px -14px` + `blur(28px) saturate(180%)` | BottomNav 胶囊、`<Card variant="widget">`（首页卡片、Services 卡片、各页 Hero/搜索面板/统计卡） |
 
-- 深色时 liquid 是"烟熏玻璃"而非磨砂：先铺暗底 `rgb(19 18 17/.6)`（`--color-liquid-base`，浅色为 transparent），再叠 白 .035→.008、高光 .08、底线 .02、边 .06、选中胶囊 .07；`saturate` 降到 110%（`--liquid-saturate`，浅色 180%）。否则部分手机上模糊+饱和会把卡片冲成灰白。
+- 深色时 liquid 退化为"偏透的毛玻璃"：只有石墨底 `rgb(28 27 26/.5)`（`--color-liquid-base`，浅色为 transparent）+ 模糊，无白色渐变/光斑，顶部高光仅 .04、边 .07、选中胶囊 .08；`saturate` 110%（`--liquid-saturate`，浅色 180%）。否则部分手机上模糊+饱和会把卡片冲成灰白。
 - 降级：不支持 backdrop-filter 或 `prefers-reduced-transparency` → 实色 `surface`。
 - **长列表卡片不用玻璃**（性能 + 可读性），用默认实色 Card。
 - BottomNav：悬浮胶囊（离底 12px、左右 12px、最大宽 480px），选中项为白色玻璃小胶囊 `bg-liquid-pill` + 内高光 + 小阴影。
