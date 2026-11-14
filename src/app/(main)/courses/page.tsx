@@ -49,8 +49,8 @@ async function CourseList() {
       {courses.map((course) => (
         <li key={course.id}>
           <Link
-            href={`/courses/${course.id}/edit`}
-            aria-label={`Edit ${course.code}`}
+            href={course.source === "school" ? "/courses/sync" : `/courses/${course.id}/edit`}
+            aria-label={`${course.source === "school" ? "View school" : "Edit"} ${course.code}`}
             className={cardStyles({ interactive: true })}
           >
             <ListItem
@@ -105,6 +105,12 @@ export default function CoursesPage() {
         }
       />
       <PageContainer>
+        <Link
+          href="/courses/sync"
+          className={buttonStyles({ variant: "secondary", className: "mb-4" })}
+        >
+          Connect school timetable
+        </Link>
         <Suspense fallback={<CourseListSkeleton />}>
           <CourseList />
         </Suspense>

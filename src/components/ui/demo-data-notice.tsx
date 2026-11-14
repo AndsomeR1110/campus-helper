@@ -5,7 +5,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export const ACADEMIC_PROJECT_DISCLAIMER =
-  "CAMPUS HELPER is an academic project. Bookings are not recorded in any official university system.";
+  "CAMPUS HELPER is an academic project. Office hour and study space bookings use demo data. Connected school services use official university records.";
 
 export interface DemoDataNoticeProps {
   /**

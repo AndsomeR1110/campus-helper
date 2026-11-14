@@ -22,6 +22,9 @@ export interface ReminderRule {
 }
 
 export interface Course {
+  /** Exact school week set; absent for manual courses. */
+  schoolWeeks?: number[];
+  source?: "school";
   id: string;
   /** Owner (student) identifier. */
   ownerId: string;

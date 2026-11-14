@@ -68,7 +68,7 @@ function toEvent(course: Course, occurrence: CourseOccurrence): ScheduleEvent {
     endsAt: occurrence.endsAt,
     location: occurrence.location,
     status: "CONFIRMED",
-    href: `/courses/${course.id}/edit`,
+    href: course.source === "school" ? "/courses/sync" : `/courses/${course.id}/edit`,
   });
 }
 
