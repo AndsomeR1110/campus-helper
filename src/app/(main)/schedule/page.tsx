@@ -197,6 +197,9 @@ export default async function SchedulePage({
 }: {
   searchParams: Promise<{ week?: string }>;
 }) {
+  // The fallback week depends on the request-time date, so opt the shell out
+  // of prerendering before touching `new Date()` (Next.js unstable value).
+  await connection();
   const { week: rawWeek } = await searchParams;
   const requested = Number(rawWeek);
   const current = currentTeachingWeek(new Date());
