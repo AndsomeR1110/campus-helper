@@ -6,7 +6,7 @@ import { createRateLimiter, enforceRateLimit } from "@/lib/rate-limit";
 import { LostFoundError } from "../rules";
 import { matchPostIdSchema } from "../schemas";
 import { getLostFoundRuntime } from "./container";
-import { createOpenAiRanker } from "./match-provider";
+import { createMatchRanker, readMatchConfig } from "./match-provider";
 import { findMatches, type MatchSuggestion } from "./matching";
 import { getCurrentViewer } from "./viewer";
 
@@ -18,13 +18,13 @@ export async function requestLostFoundMatches(
 ): Promise<{ matches: MatchSuggestion[] } | { error: string }> {
   const id = matchPostIdSchema.safeParse(postId);
   if (!id.success) return { error: "This lost post is not available for matching." };
-  const key = process.env.LOST_FOUND_AI_API_KEY?.trim();
-  if (!key) return { error: "AI matching is currently unavailable." };
+  const config = readMatchConfig();
+  if (!config) return { error: "AI matching is currently unavailable." };
 
   try {
     const viewer = await getCurrentViewer();
     if (!viewer) return { error: "Sign in to find possible matches." };
-    const rank = createOpenAiRanker(key, process.env.LOST_FOUND_AI_MODEL?.trim() || "gpt-4o-mini");
+    const rank = createMatchRanker(config);
     const matches = await findMatches(
       getLostFoundRuntime().repository,
       viewer,

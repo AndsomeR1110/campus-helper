@@ -29,6 +29,7 @@ import {
   canFindMatches,
   getCurrentViewer,
   getLostFoundRuntime,
+  readMatchConfig,
 } from "@/features/lost-found/server";
 import { formatDate, formatTime } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -151,7 +152,7 @@ async function PostDetailBody({ params }: { params: Params }) {
         </div>
       </section>
 
-      {process.env.LOST_FOUND_AI_API_KEY?.trim() && canFindMatches(post, viewer) && (
+      {canFindMatches(post, viewer) && readMatchConfig() && (
         <PossibleMatches key={post.id} postId={post.id} />
       )}
 
