@@ -274,7 +274,13 @@ function Body({
           <ProgressLine done text="Signed in to your university account" />
           <ProgressLine
             done
-            text={service === "timetable" ? "Timetable connection ready" : "Shuttle booking ready"}
+            text={
+              service === "timetable"
+                ? "Timetable connection ready"
+                : service === "rooms"
+                  ? "Discussion rooms ready"
+                  : "Shuttle booking ready"
+            }
           />
           {service === "timetable" && (
             <p className="text-body-sm text-text-muted">

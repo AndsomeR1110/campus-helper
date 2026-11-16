@@ -30,7 +30,7 @@ public class SchoolTimetablePlugin extends Plugin {
     private PluginCall pending;
     private String script,nonce,term,scope; private TimetableCredentialStore credentials; private boolean usingCached;
     private boolean busy,fetching,foreground=true,silent; private int recoveries;
-    private final Set<String> hosts=new HashSet<>(Arrays.asList("ebridge.xjtlu.edu.cn","timetableplus.xjtlu.edu.cn","uim.xjtlu.edu.cn","trust.xjtlu.edu.cn"));
+    private final Set<String> hosts=new HashSet<>(Arrays.asList("ebridge.xjtlu.edu.cn","timetableplus.xjtlu.edu.cn","uim.xjtlu.edu.cn","sso.xjtlu.edu.cn","sso-xjtlu-edu-cn-s.xjtlu.edu.cn","trust.xjtlu.edu.cn"));
     private boolean allowedCaller(){
         String configured=getBridge().getConfig().getServerUrl();if(configured==null)return false;
         Uri expected=Uri.parse(configured),actual=Uri.parse(getBridge().getWebView().getUrl());
@@ -94,7 +94,7 @@ public class SchoolTimetablePlugin extends Plugin {
     private void step(){
         if(pending==null||school==null||busy||fetching||!foreground)return;
         String url=school.getUrl();
-        if(silent&&origin(url,"https://uim.xjtlu.edu.cn")){fail("AUTH_REQUIRED");return;}
+        if(silent&&(origin(url,"https://uim.xjtlu.edu.cn")||origin(url,"https://sso.xjtlu.edu.cn")||origin(url,"https://sso-xjtlu-edu-cn-s.xjtlu.edu.cn"))){fail("AUTH_REQUIRED");return;}
         if(origin(url,TIMETABLE)){
             if(!"2026/27 S1".equals(term)){fail("UNSUPPORTED_TERM");return;}
             fetching=true;

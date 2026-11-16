@@ -1,5 +1,7 @@
 # Android 自定义学校登录桥：Claude 接口交接
 
+2026-11-16 后续：service 新增 rooms；正式 SSO 与网关代理域名、45 秒提交超时和本机安全诊断见 [太仓讨论室与认证复验](TAICANG-ROOMS.md)。当前 service 是 timetable / shuttle / rooms，下方保留原始整合记录。
+
 2026-11-14。依赖 [PR #65](https://github.com/AndsomeR1110/campus-helper/pull/65) 的 Android 壳、课表与区间车插件。原生桥来自 #71；当前 `feat/school-signin-integration` 已接入 Claude #70 的真实弹层与两个业务入口，见 [SCHOOL-SIGNIN-UI.md](SCHOOL-SIGNIN-UI.md)。下面保留原生 facade 契约及其独立验证记录。
 
 ## Claude 应调用的接口

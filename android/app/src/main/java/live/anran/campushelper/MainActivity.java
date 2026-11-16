@@ -8,6 +8,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ShuttlePlugin.class);
         registerPlugin(SchoolTimetablePlugin.class);
         registerPlugin(SchoolAuthPlugin.class);
+        registerPlugin(SchoolRoomsPlugin.class);
         super.onCreate(state);
     }
 }

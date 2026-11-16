@@ -4,6 +4,7 @@ for (const [sourcePath, asset] of [
   ["src/features/shuttle/school-adapter.ts", "shuttle-adapter.js"],
   ["src/features/school-timetable/school-adapter.ts", "school-timetable.js"],
   ["src/features/school-auth/school-adapter.ts", "school-auth.js"],
+  ["src/features/school-rooms/school-adapter.ts", "school-rooms.js"],
 ]) {
   const source = readFileSync(sourcePath, "utf8");
   const output = ts

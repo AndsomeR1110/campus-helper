@@ -46,16 +46,28 @@ export function sliderRatio(offsetPx: number, trackPx: number) {
 export const SERVICE_LABEL: Record<SchoolService, string> = {
   timetable: "School timetable",
   shuttle: "Shuttle bus",
+  rooms: "Discussion rooms",
 };
 
 export const SERVICE_CONTINUING: Record<SchoolService, string> = {
   timetable: "Fetching your timetable…",
   shuttle: "Opening shuttle booking…",
+  rooms: "Opening discussion rooms…",
 };
 
 /** Plain-language copy for each failure; never invents school error details. */
 export function errorCopy(error: SchoolAuthError): { title: string; text: string } {
   switch (error.kind) {
+    case "unsupported-redirect":
+      return {
+        title: "University sign-in route not supported",
+        text: "The university sent this connection to a page this app does not support yet. Update the Android app before trying again. Your password has been cleared.",
+      };
+    case "timeout":
+      return {
+        title: "Sign-in timed out",
+        text: "The university didn’t finish this sign-in request. Check your network and try again. Your password has been cleared.",
+      };
     case "account-switch":
       return {
         title: "Another app account is connected",

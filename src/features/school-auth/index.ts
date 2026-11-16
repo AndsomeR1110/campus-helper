@@ -1,5 +1,6 @@
 export {
   schoolAuthAvailable,
+  readSchoolAuthDiagnostics,
   schoolAuthError,
   onSchoolAuthActivity,
   onSchoolAuthEnd,

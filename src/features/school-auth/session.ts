@@ -31,6 +31,9 @@ function failure(error: unknown): SchoolAuthError {
     case "CHALLENGE_EXPIRED":
       return { kind: "challenge-expired" };
     case "TIMED_OUT":
+      return { kind: "timeout" };
+    case "INVALID_SCHOOL_PAGE":
+      return { kind: "unsupported-redirect" };
     case "STALE_OPERATION":
     case "AUTH_REQUIRED":
       return { kind: "session-expired" };

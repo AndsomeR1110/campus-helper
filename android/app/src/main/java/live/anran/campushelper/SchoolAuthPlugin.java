@@ -22,13 +22,18 @@ public class SchoolAuthPlugin extends Plugin {
     static boolean isActive(){return active;}
     private static final String UIM="https://uim.xjtlu.edu.cn";
     private final Handler handler=new Handler(Looper.getMainLooper());
-    private final Set<String> hosts=new HashSet<>(Arrays.asList("uim.xjtlu.edu.cn","trust.xjtlu.edu.cn","ebridge.xjtlu.edu.cn","shuttlebus.xjtlu.edu.cn"));
+    private final Set<String> hosts=new HashSet<>(Arrays.asList("uim.xjtlu.edu.cn","sso.xjtlu.edu.cn","sso-xjtlu-edu-cn-s.xjtlu.edu.cn","trust.xjtlu.edu.cn","ebridge.xjtlu.edu.cn","shuttlebus.xjtlu.edu.cn","roombookings.xjtlu.edu.cn"));
     private WebView school; private FrameLayout parking; private Dialog challenge;
     private PluginCall pending;
     private String operationId,actorId,service,script,status;
     private int revision,afterRevision=-1,pageVersion;
     private boolean evaluating,foreground=true,secureBefore,disconnecting,silent;
     private long lastSubmit;
+    private String lastCode="",blockedHost="",blockedScheme="";
+    @PluginMethod public void getDiagnostics(PluginCall call){getActivity().runOnUiThread(()->{
+        if(!caller()){call.reject("UNTRUSTED_ORIGIN","UNTRUSTED_ORIGIN");return;}
+        JSObject result=new JSObject();result.put("code",lastCode);result.put("blockedHost",blockedHost);result.put("blockedScheme",blockedScheme);call.resolve(result);
+    });}
 
     private boolean caller(){
         String configured=getBridge().getConfig().getServerUrl(), actual=getBridge().getWebView().getUrl();
@@ -52,11 +57,11 @@ public class SchoolAuthPlugin extends Plugin {
     });}
     @PluginMethod public void begin(PluginCall call){getActivity().runOnUiThread(()->{
         if(!caller()){call.reject("UNTRUSTED_ORIGIN","UNTRUSTED_ORIGIN");return;}
-        if(active||!foreground||SchoolTimetablePlugin.isConnecting()||ShuttlePlugin.isWorking()){call.reject("BUSY","BUSY");return;}
+        if(active||!foreground||SchoolTimetablePlugin.isConnecting()||ShuttlePlugin.isWorking()||SchoolRoomsPlugin.isWorking()){call.reject("BUSY","BUSY");return;}
         String actor=call.getString("actorId",""),target=call.getString("service","");
         String requestedId=call.getString("operationId","");
         try{if(!UUID.fromString(requestedId).toString().equalsIgnoreCase(requestedId))throw new Exception();}catch(Exception e){call.reject("INVALID_INPUT","INVALID_INPUT");return;}
-        if(!actor.matches("[A-Za-z0-9_-]{1,128}")||!(target.equals("timetable")||target.equals("shuttle"))){call.reject("INVALID_INPUT","INVALID_INPUT");return;}
+        if(!actor.matches("[A-Za-z0-9_-]{1,128}")||!Set.of("timetable","shuttle","rooms").contains(target)){call.reject("INVALID_INPUT","INVALID_INPUT");return;}
         boolean quiet=call.getBoolean("silent",false);
         String owner=getContext().getSharedPreferences("school_auth_scope",0).getString("actor",null);
         if(quiet&&owner==null){call.reject("AUTH_REQUIRED","AUTH_REQUIRED");return;}
@@ -70,7 +75,7 @@ public class SchoolAuthPlugin extends Plugin {
         if(!getContext().getSharedPreferences("school_auth_scope",0).edit().putString("actor",actor).commit()){
             call.reject("SCHOOL_UNAVAILABLE","SCHOOL_UNAVAILABLE");return;
         }
-        actorId=actor;service=target;operationId=requestedId;silent=quiet;active=true;pending=call;afterRevision=-1;revision=0;lastSubmit=0;status="preparing";
+        actorId=actor;service=target;operationId=requestedId;lastCode="";blockedHost="";blockedScheme="";silent=quiet;active=true;pending=call;afterRevision=-1;revision=0;lastSubmit=0;status="preparing";
         school=new WebView(getActivity());WebSettings settings=school.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setSaveFormData(false);
         if(android.os.Build.VERSION.SDK_INT>=26)school.setImportantForAutofill(android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
@@ -81,7 +86,7 @@ public class SchoolAuthPlugin extends Plugin {
         ((ViewGroup)getActivity().findViewById(android.R.id.content)).addView(parking,new ViewGroup.LayoutParams(1,1));parking.addView(school,new FrameLayout.LayoutParams(1,1));
         school.setWebViewClient(new WebViewClient(){
             @Override public void onPageStarted(WebView v,String url,android.graphics.Bitmap icon){pageVersion++;evaluating=false;}
-            @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if(r.isForMainFrame()&&!("https".equals(u.getScheme())&&hosts.contains(u.getHost())&&(u.getPort()==-1||u.getPort()==443))){fail("INVALID_SCHOOL_PAGE");return true;}return false;}
+            @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if(r.isForMainFrame()&&!("https".equals(u.getScheme())&&hosts.contains(u.getHost())&&(u.getPort()==-1||u.getPort()==443))){blockedHost=u.getHost();blockedScheme=u.getScheme();fail("INVALID_SCHOOL_PAGE");return true;}return false;}
             @Override public void onPageFinished(WebView v,String url){step();}
             @Override public void onReceivedSslError(WebView v,SslErrorHandler h,android.net.http.SslError e){h.cancel();fail("SCHOOL_UNAVAILABLE");}
             @Override public void onReceivedError(WebView v,WebResourceRequest r,WebResourceError e){if(r.isForMainFrame())fail("SCHOOL_UNAVAILABLE");}
@@ -90,7 +95,7 @@ public class SchoolAuthPlugin extends Plugin {
         secureBefore=(getActivity().getWindow().getAttributes().flags&WindowManager.LayoutParams.FLAG_SECURE)!=0;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         final String id=operationId;handler.postDelayed(()->{if(id.equals(operationId))fail("TIMED_OUT");},300000);
-        school.loadUrl(target.equals("timetable")?"https://ebridge.xjtlu.edu.cn/":"https://shuttlebus.xjtlu.edu.cn/");
+        school.loadUrl(target.equals("timetable")?"https://ebridge.xjtlu.edu.cn/":target.equals("rooms")?"https://roombookings.xjtlu.edu.cn/#/ic/home":"https://shuttlebus.xjtlu.edu.cn/");
         handler.post(tick);
     });}
     @PluginMethod public void submitCredentials(PluginCall call){getActivity().runOnUiThread(()->{
@@ -126,11 +131,11 @@ public class SchoolAuthPlugin extends Plugin {
         if(!caller()){call.reject("UNTRUSTED_ORIGIN","UNTRUSTED_ORIGIN");return;}
         String actor=call.getString("actorId","");
         if(!actor.matches("[A-Za-z0-9_-]{1,128}")||!call.getBoolean("confirmed",false)){call.reject("CONFIRMATION_REQUIRED","CONFIRMATION_REQUIRED");return;}
-        if(active||SchoolTimetablePlugin.isConnecting()||ShuttlePlugin.isWorking()){call.reject("BUSY","BUSY");return;}
-        active=true;disconnecting=true;ShuttlePlugin.invalidateSession();
+        if(active||SchoolTimetablePlugin.isConnecting()||ShuttlePlugin.isWorking()||SchoolRoomsPlugin.isWorking()){call.reject("BUSY","BUSY");return;}
+        active=true;disconnecting=true;ShuttlePlugin.invalidateSession();SchoolRoomsPlugin.invalidate();
         CookieManager cookies=CookieManager.getInstance();List<String[]> expirations=new ArrayList<>();
         String[] paths={"/","/esc-sso","/esc-sso/","/urd","/urd/","/urd/sits.urd","/urd/sits.urd/","/pt","/pt/"};
-        for(String host:Arrays.asList("uim.xjtlu.edu.cn","trust.xjtlu.edu.cn","ebridge.xjtlu.edu.cn","shuttlebus.xjtlu.edu.cn","timetableplus.xjtlu.edu.cn")){
+        for(String host:Arrays.asList("uim.xjtlu.edu.cn","sso.xjtlu.edu.cn","sso-xjtlu-edu-cn-s.xjtlu.edu.cn","trust.xjtlu.edu.cn","ebridge.xjtlu.edu.cn","shuttlebus.xjtlu.edu.cn","timetableplus.xjtlu.edu.cn","roombookings.xjtlu.edu.cn")){
             for(String path:paths){String raw=cookies.getCookie("https://"+host+path);if(raw==null)continue;
                 for(String part:raw.split(";")){int i=part.indexOf('=');if(i<1)continue;String name=part.substring(0,i).trim();if(!name.matches("[A-Za-z0-9_!#$%&'*+.^`|~-]+"))continue;
                     for(String domain:new String[]{"","; Domain="+host,"; Domain=.xjtlu.edu.cn"})expirations.add(new String[]{"https://"+host+path,name+"=; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path="+path+domain+"; Secure"});
@@ -143,8 +148,11 @@ public class SchoolAuthPlugin extends Plugin {
         for(String[] item:expirations)cookies.setCookie(item[0],item[1],ok->{if(remaining.decrementAndGet()==0)done.run();});
     });}
     private void action(PluginCall call,String action,JSONObject input){
-        if(!origin(school.getUrl(),"uim.xjtlu.edu.cn")){call.reject("STALE_OPERATION","STALE_OPERATION");return;}
+        if(!origin(school.getUrl(),"uim.xjtlu.edu.cn")&&!origin(school.getUrl(),"sso.xjtlu.edu.cn")&&!origin(school.getUrl(),"sso-xjtlu-edu-cn-s.xjtlu.edu.cn")){call.reject("STALE_OPERATION","STALE_OPERATION");return;}
         pending=call;afterRevision=revision;String id=operationId;int version=pageVersion;
+        // A submitted credential/challenge request must not spin for the full input idle timeout.
+        final PluginCall submitted=call;
+        handler.postDelayed(()->{if(pending==submitted&&id.equals(operationId))fail("TIMED_OUT");},45000);
         if(action.equals("refreshImage"))afterRevision=-1;
         evaluating=true;
         school.evaluateJavascript("(()=>{"+script+"\nreturn JSON.stringify((()=>{try{return schoolAuthAction("+JSONObject.quote(action)+","+input+")}catch(e){return {error:String(e.message)}}})())})()",encoded->{
@@ -157,7 +165,7 @@ public class SchoolAuthPlugin extends Plugin {
     private void step(){
         if(school==null||operationId==null||evaluating||!foreground||pending==null)return;
         String url=school.getUrl(),id=operationId;int version=pageVersion;
-        if(origin(url,"uim.xjtlu.edu.cn")){
+        if(origin(url,"uim.xjtlu.edu.cn")||origin(url,"sso.xjtlu.edu.cn")||origin(url,"sso-xjtlu-edu-cn-s.xjtlu.edu.cn")){
             String path=Uri.parse(url).getPath();if(path==null||!path.matches("/esc-sso/login(?:/.*)?"))return;
             evaluating=true;
             school.evaluateJavascript("(()=>{"+script+"\nreturn JSON.stringify((()=>{try{return schoolAuthState()}catch(e){return {status:String(e.message)==='NOT_READY'?'preparing':'error'}}})())})()",encoded->{
@@ -174,6 +182,15 @@ public class SchoolAuthPlugin extends Plugin {
             });return;
         }
         boolean timetable=service.equals("timetable")&&origin(url,"ebridge.xjtlu.edu.cn"),shuttle=service.equals("shuttle")&&origin(url,"shuttlebus.xjtlu.edu.cn");
+        if(service.equals("rooms")&&origin(url,"roombookings.xjtlu.edu.cn")){
+            evaluating=true;
+            school.evaluateJavascript("(()=>{const vm=document.querySelector('#app')?.__vue__;if(vm?.$store?.state?.userInfo?.accNo)return true;const b=[...document.querySelectorAll('button,a,span')].find(e=>e.children.length===0&&/^(Sign in|Login|登录)$/i.test(e.textContent.trim()));if(b&&!window.__campusAuthNavigating){window.__campusAuthNavigating=true;b.click()}return false})()",result->{
+                if(!id.equals(operationId)||version!=pageVersion)return;evaluating=false;if("true".equals(result)){
+                    SchoolRoomsPlugin.adopt(school,actorId);school=null;
+                    CookieManager.getInstance().flush();resolve(state("authenticated"));cleanup();
+                }
+            });return;
+        }
         if(!timetable&&!shuttle)return;evaluating=true;
         String probe=timetable?
           "(()=>{const b=[...document.querySelectorAll('button,input[type=button],input[type=submit]')].find(e=>(e.textContent||e.value||'').trim()==='XJTLU Account');if(b){if(!window.__campusAuthNavigating){window.__campusAuthNavigating=true;b.click()}return false}return [...document.querySelectorAll('a,[role=menuitem]')].some(e=>e.textContent.trim()==='Timetables')})()":
@@ -186,7 +203,7 @@ public class SchoolAuthPlugin extends Plugin {
     private JSObject state(String next){JSObject r=new JSObject();r.put("operationId",operationId);r.put("actorId",actorId);r.put("service",service);r.put("status",next);return r;}
     private void resolve(JSObject dto){if(pending!=null){PluginCall done=pending;pending=null;afterRevision=-1;done.resolve(dto);}}
     private void rejectAction(String code){if(pending!=null){PluginCall done=pending;pending=null;done.reject(code,code);}}
-    private void fail(String code){if(operationId!=null){JSObject ended=new JSObject();ended.put("operationId",operationId);ended.put("actorId",actorId);ended.put("code",code);notifyListeners("operationEnded",ended);}rejectAction(code);cleanup();}
+    private void fail(String code){lastCode=code;if(operationId!=null){JSObject ended=new JSObject();ended.put("operationId",operationId);ended.put("actorId",actorId);ended.put("code",code);notifyListeners("operationEnded",ended);}rejectAction(code);cleanup();}
     private void detach(){if(school!=null&&school.getParent() instanceof ViewGroup p)p.removeView(school);}
     private void cleanup(){boolean wasActive=active&&!disconnecting;handler.removeCallbacksAndMessages(null);if(challenge!=null){challenge.setOnCancelListener(null);challenge.dismiss();challenge=null;}if(school!=null){detach();school.stopLoading();school.destroy();school=null;}if(parking!=null){if(parking.getParent() instanceof ViewGroup p)p.removeView(parking);parking=null;}operationId=null;actorId=null;status=null;evaluating=false;active=disconnecting;if(wasActive&&!secureBefore)getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);}
     @Override protected void handleOnPause(){foreground=false;JSObject state=new JSObject();state.put("active",false);notifyListeners("stateChanged",state);fail("CANCELLED");}
