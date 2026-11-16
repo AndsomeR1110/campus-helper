@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bus } from "lucide-react";
+import { Bus, CalendarSync, DoorOpen } from "lucide-react";
 import { PageContainer, SERVICES, TopBar } from "@/components/layout";
 import { DemoDataNotice, cardStyles } from "@/components/ui";
 import { ServiceTile } from "../_components/service-tile";
@@ -18,6 +18,39 @@ export default function ServicesPage() {
           {SERVICES.map((service) => (
             <li key={service.href}>
               <ServiceTile service={service} />
+            </li>
+          ))}
+          {[
+            {
+              href: "/courses/sync",
+              label: "School timetable",
+              description: "Connect your school account and sync classes",
+              Icon: CalendarSync,
+            },
+            {
+              href: "/services/rooms",
+              label: "Discussion rooms",
+              description: "Check Taicang rooms and prepare a reservation",
+              Icon: DoorOpen,
+            },
+          ].map(({ href, label, description, Icon }) => (
+            <li key={href}>
+              <Link
+                href={href}
+                className={cardStyles({
+                  variant: "widget",
+                  interactive: true,
+                  className: "flex h-full flex-col gap-3",
+                })}
+              >
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-sm bg-primary-subtle text-primary">
+                  <Icon className="size-6" aria-hidden />
+                </span>
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-subtitle">{label}</span>
+                  <span className="text-body-sm text-text-muted">{description}</span>
+                </span>
+              </Link>
             </li>
           ))}
           <li>

@@ -24,6 +24,17 @@ function fixture() {
   return { port, view, connected, session };
 }
 describe("school UI and native session integration", () => {
+  it("ends a stalled credential request as a retryable timeout", async () => {
+    const { session, port, view } = fixture();
+    await session.start();
+    port.credentials.mockRejectedValue(
+      Object.assign(new Error("timed out"), { code: "TIMED_OUT" }),
+    );
+    await session.submitCredentials("fictional.student", "temporary password");
+    expect(view).toHaveBeenLastCalledWith({ step: "failed", error: { kind: "timeout" } });
+    await session.start();
+    expect(port.begin).toHaveBeenCalledTimes(2);
+  });
   it("resumes an existing connection before asking native to authenticate", async () => {
     const { session, port, connected, view } = fixture();
     Object.assign(port, {

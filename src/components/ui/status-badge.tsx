@@ -51,6 +51,12 @@ export const STATUS_MAP = {
     NEEDS_ATTENTION: { label: "Needs attention", tone: "warning" },
     ANDROID_ONLY: { label: "Android app only", tone: "neutral" },
   },
+  /** School-managed reservations (e.g. Taicang discussion rooms) — UI state from the school. */
+  reservation: {
+    AWAITING: { label: "Awaiting school", tone: "warning" },
+    CONFIRMED: { label: "Confirmed", tone: "success" },
+    CANCELLED: { label: "Cancelled", tone: "neutral" },
+  },
 } as const satisfies Record<string, Record<string, { label: string; tone: Tone }>>;
 
 export type StatusKind = keyof typeof STATUS_MAP;

@@ -25,7 +25,11 @@ const authWindow = () =>
   };
 function authRuntime() {
   if (
-    location.origin !== "https://uim.xjtlu.edu.cn" ||
+    ![
+      "https://uim.xjtlu.edu.cn",
+      "https://sso.xjtlu.edu.cn",
+      "https://sso-xjtlu-edu-cn-s.xjtlu.edu.cn",
+    ].includes(location.origin) ||
     !/^\/esc-sso\/login(?:\/|$)/.test(location.pathname)
   )
     throw Error("INVALID_SCHOOL_PAGE");

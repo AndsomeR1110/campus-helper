@@ -3,12 +3,13 @@ import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor
 import { z } from "zod";
 import { syncSchoolTimetable, type SyncState } from "@/features/school-timetable";
 import { resumeShuttleSession } from "@/features/shuttle";
+import { resumeRoomsSession } from "@/features/school-rooms";
 
 const stateSchema = z
   .object({
     operationId: z.string().uuid(),
     actorId: z.string().regex(/^[A-Za-z0-9_-]{1,128}$/),
-    service: z.enum(["timetable", "shuttle"]),
+    service: z.enum(["timetable", "shuttle", "rooms"]),
     status: z.enum([
       "credentialsRequired",
       "imageRequired",
@@ -36,6 +37,7 @@ export type SchoolAuthOperation = Pick<SchoolAuthState, "operationId" | "actorId
 export type SchoolAuthEnd = SchoolAuthOperation & { code: string };
 type Operation = SchoolAuthOperation;
 const native = registerPlugin<{
+  getDiagnostics(): Promise<unknown>;
   checkSessionScope(options: { actorId: string }): Promise<void>;
   begin(options: Operation & { service: SchoolService; silent?: boolean }): Promise<unknown>;
   submitCredentials(options: Operation & { username: string; password: string }): Promise<unknown>;
@@ -63,6 +65,29 @@ export function onSchoolAuthActivity(listener: (state: { active: boolean }) => v
 }
 export const schoolAuthAvailable = () =>
   Capacitor.getPlatform() === "android" && Capacitor.isPluginAvailable("SchoolAuth");
+/** Local, bounded support metadata only: no URLs, account names, cookies or tickets. */
+export async function readSchoolAuthDiagnostics() {
+  check();
+  return z
+    .object({
+      code: z
+        .string()
+        .max(80)
+        .regex(/^[A-Z_]*$/),
+      blockedHost: z
+        .string()
+        .max(253)
+        .regex(/^[A-Za-z0-9.-]*$/)
+        .nullish(),
+      blockedScheme: z
+        .string()
+        .max(20)
+        .regex(/^[A-Za-z0-9+-]*$/)
+        .nullish(),
+    })
+    .strict()
+    .parse(await native.getDiagnostics());
+}
 export function schoolAuthError(error: unknown) {
   const code =
     typeof error === "string"
@@ -177,6 +202,11 @@ export async function completeSchoolConnection(
     if (!stillActive()) throw Error("STALE_OPERATION");
     return { service: "timetable", synced };
   }
+  if (state.service === "rooms") {
+    await resumeRoomsSession(state.actorId);
+    if (!stillActive()) throw Error("STALE_OPERATION");
+    return { service: "rooms" as const };
+  }
   await resumeShuttleSession(state.actorId);
   if (!stillActive()) throw Error("STALE_OPERATION");
   return { service: "shuttle" };
@@ -203,6 +233,11 @@ export async function resumeExistingSchoolConnection(
     if (!active()) throw Error("CANCELLED");
     return { service, synced };
   }
+  if (service === "rooms") {
+    await resumeRoomsSession(actorId);
+    if (!active()) throw Error("CANCELLED");
+    return { service };
+  }
   await resumeShuttleSession(actorId);
   if (!active()) throw Error("CANCELLED");
   return { service };
@@ -224,7 +259,11 @@ export async function restoreSchoolConnection(
         : error instanceof Error
           ? error.message
           : "";
-    if (code !== "AUTH_REQUIRED" || !live()) throw error;
+    if (
+      (code !== "AUTH_REQUIRED" && !(service === "rooms" && code === "GATEWAY_BLOCKED")) ||
+      !live()
+    )
+      throw error;
   }
   check();
   const operation = { actorId, operationId: crypto.randomUUID() };

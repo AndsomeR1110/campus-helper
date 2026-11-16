@@ -11,7 +11,7 @@
  */
 
 /** Which service the sign-in continues into. */
-export type SchoolService = "timetable" | "shuttle";
+export type SchoolService = "timetable" | "shuttle" | "rooms";
 
 export type SchoolAuthError =
   /** The university did not accept the account or password. */
@@ -25,6 +25,8 @@ export type SchoolAuthError =
   /** The sign-in took too long or the school session ended. */
   | { kind: "session-expired" }
   | { kind: "network" }
+  | { kind: "timeout" }
+  | { kind: "unsupported-redirect" }
   | { kind: "offline" }
   | { kind: "account-switch" }
   | { kind: "unavailable" };

@@ -23,6 +23,14 @@ afterEach(() => {
   vi.useRealTimers();
 });
 describe("AUTH native page boundary", () => {
+  it.each(["sso.xjtlu.edu.cn", "sso-xjtlu-edu-cn-s.xjtlu.edu.cn"])(
+    "recognizes the official SSO gateway origin %s",
+    (host) => {
+      fixture();
+      vi.stubGlobal("location", new URL(`https://${host}/esc-sso/login/page`));
+      expect(schoolAuthState()).toMatchObject({ status: "credentialsRequired" });
+    },
+  );
   it("rejects credential submission on another origin without touching inputs", () => {
     fixture();
     vi.stubGlobal("location", new URL("https://example.org/"));

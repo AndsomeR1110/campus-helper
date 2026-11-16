@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, Inbox } from "lucide-react";
+import { Bell, CalendarDays, CalendarSync, Inbox } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -64,10 +64,10 @@ async function NextClass() {
           description="Add your timetable to see your next class here."
           action={
             <Link
-              href="/courses/new"
+              href="/courses/sync"
               className={buttonStyles({ variant: "secondary", size: "sm" })}
             >
-              Add a course
+              Connect school timetable
             </Link>
           }
           className="py-6"
@@ -185,6 +185,13 @@ export default function HomePage() {
           <Suspense fallback={<Skeleton className="h-20 w-full" aria-hidden />}>
             <NextClass />
           </Suspense>
+          <Link
+            href="/courses/sync"
+            className={buttonStyles({ variant: "secondary", size: "sm", className: "self-start" })}
+          >
+            <CalendarSync className="size-4" aria-hidden />
+            Connect or refresh school timetable
+          </Link>
         </HomeSection>
 
         <HomeSection title="Quick access">
