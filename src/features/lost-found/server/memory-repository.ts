@@ -1,5 +1,5 @@
 import type { LostFoundClaim, LostFoundPost } from "../types";
-import { LostFoundError } from "../rules";
+import { acceptsClaims, LostFoundError } from "../rules";
 import type { ClaimPatch, LostFoundRepository, PostPatch } from "./repository";
 
 /**
@@ -17,6 +17,36 @@ export function createMemoryRepository(seed: { posts: LostFoundPost[] }): LostFo
   const repository: LostFoundRepository = {
     async listPosts() {
       return [...posts.values()].map(clonePost);
+    },
+
+    async listMatchCandidates({ category, excludeAuthorId, from, through, limit }) {
+      const approved = new Set(
+        [...claims.values()]
+          .filter((claim) => claim.status === "APPROVED")
+          .map((claim) => claim.postId),
+      );
+      return [...posts.values()]
+        .filter((post) => {
+          const occurredAt = Date.parse(post.occurredAt);
+          return (
+            post.kind === "FOUND" &&
+            post.category === category &&
+            post.authorId !== excludeAuthorId &&
+            acceptsClaims(post) &&
+            !approved.has(post.id) &&
+            occurredAt >= from.getTime() &&
+            occurredAt <= through.getTime()
+          );
+        })
+        .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt) || a.id.localeCompare(b.id))
+        .slice(0, limit)
+        .map(({ id, title, description, location, occurredAt }) => ({
+          id,
+          title,
+          description,
+          location,
+          occurredAt,
+        }));
     },
 
     async getPost(id) {

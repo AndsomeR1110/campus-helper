@@ -77,3 +77,25 @@ The service checks the same rules first so callers get `CONFLICT` instead of a r
   warning at build time. It is harmless, but a static key layout would silence it.
 - No Playwright coverage yet; the end-to-end paths were checked by hand (see the PR
   screenshots).
+
+## AI text matches (PG-16)
+
+Set `LOST_FOUND_AI_API_KEY` in `.env.local` or in the deployment environment and
+restart the app. The key is for the OpenAI API. Optionally set
+`LOST_FOUND_AI_MODEL` to an OpenAI Chat Completions model with Structured Outputs
+(default `gpt-4o-mini`). An empty key hides the feature.
+
+- **LF-AI-AC-01:** The author of an active Lost post can request a match on its
+  detail page. Candidates are active Found posts from other users, in the
+  same category, reported from one day before to fourteen days after the loss.
+  Already accepted claims are excluded. Matching locations and nearby times
+  take priority when choosing up to 12 candidates for the model.
+- **LF-AI-AC-02:** Show up to three unique links to eligible Found posts, each with
+  a short reason. The user opens the Found post to use the existing claim form.
+- **LF-AI-AC-03:** Show separate empty and retry states. User-triggered requests
+  have a 12-second provider timeout and per-process limits of 5 calls per user
+  per 10 minutes and 30 calls across the app per minute.
+- **LF-AI-AC-04:** Send only public item text and occurrence time to OpenAI after
+  masking common email, phone, long numeric ID and URL patterns. Request-local
+  candidate numbers replace post IDs. Photos, author fields and private claim
+  text are excluded.
