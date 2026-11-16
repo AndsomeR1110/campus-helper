@@ -6,6 +6,11 @@ const api = vi.hoisted(() => ({
   availability: vi.fn(),
   reservations: vi.fn(),
   prepare: vi.fn(),
+  capabilities: vi.fn(),
+  pending: vi.fn(),
+  reconcile: vi.fn(),
+  book: vi.fn(),
+  cancel: vi.fn(),
 }));
 vi.mock("@/features/school-auth", () => ({
   restoreSchoolConnection: api.restore,
@@ -17,10 +22,17 @@ vi.mock("./bridge", () => ({
   readRoomAvailability: api.availability,
   readRoomReservations: api.reservations,
   prepareRoomBooking: api.prepare,
+  readRoomsCapabilities: api.capabilities,
+  readPendingRoomWrite: api.pending,
+  reconcileRoomWrite: api.reconcile,
+  bookRoom: api.book,
+  cancelRoom: api.cancel,
 }));
 import { SchoolRoomsConnection } from "./connection";
 beforeEach(() => {
   vi.resetAllMocks();
+  api.capabilities.mockResolvedValue({ writesEnabled: false });
+  api.pending.mockResolvedValue({ pending: false });
   api.floors.mockResolvedValue({ floors: [{ id: "2", label: "1F" }], selfId: "student.ab24" });
   api.availability.mockResolvedValue({
     rules: {
@@ -38,6 +50,16 @@ beforeEach(() => {
     selfId: "student.ab24",
   });
   api.reservations.mockResolvedValue({ reservations: [] });
+});
+it("reconciles a pending write with reads before allowing another action", async () => {
+  api.restore.mockResolvedValue({ service: "rooms" });
+  api.pending.mockResolvedValue({ pending: true });
+  api.reconcile.mockResolvedValue({ kind: "unknown" });
+  render(<SchoolRoomsConnection actorId="owner" today="2026-11-16" />);
+  await screen.findByText(/A previous school request is still unconfirmed/);
+  expect(api.reconcile).toHaveBeenCalledOnce();
+  expect(api.book).not.toHaveBeenCalled();
+  expect(api.cancel).not.toHaveBeenCalled();
 });
 it("does not read rooms until the scoped connection is confirmed", async () => {
   let confirm!: (result: unknown) => void;

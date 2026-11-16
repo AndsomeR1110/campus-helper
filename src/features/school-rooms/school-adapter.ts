@@ -1,8 +1,11 @@
 // Runs only in the private official room-system WebView. Never returns tokens or raw responses.
 type RoomRecord = Record<string, unknown>;
 type RoomVm = {
-  $axios: { get(path: string, options?: unknown): Promise<unknown> };
-  $store: { state: { userInfo?: RoomRecord } };
+  $axios: {
+    get(path: string, options?: unknown): Promise<unknown>;
+    post(path: string, body: unknown): Promise<unknown>;
+  };
+  $store: { state: { userInfo?: RoomRecord; sysConfig?: RoomRecord } };
 };
 function roomRuntime() {
   if (location.origin !== "https://roombookings.xjtlu.edu.cn") throw Error("INVALID_SCHOOL_PAGE");
@@ -147,9 +150,11 @@ export function normalizeRoomAvailability(
 }
 async function roomSession() {
   const data = await roomGet("/auth/userInfo");
-  const info = (
-    data && typeof data === "object" ? data : roomRuntime().$store.state.userInfo
-  ) as RoomRecord;
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw Error("INVALID_SCHOOL_DATA");
+  const info = data as RoomRecord,
+    own = roomRuntime().$store.state.userInfo?.accNo;
+  if (own == null || own === "" || (info.accNo != null && String(info.accNo) !== String(own)))
+    throw Error("AUTH_REQUIRED");
   const selfId = info?.logonName;
   if (typeof selfId !== "string" || !/^[A-Za-z0-9._-]{1,64}$/.test(selfId))
     throw Error("AUTH_REQUIRED");
@@ -169,8 +174,39 @@ async function roomFloors() {
 export async function roomsSchoolRequest(operation: string, input: RoomRecord) {
   if (operation === "session") return roomSession();
   const { selfId } = await roomSession();
+  if (operation === "reconcileBook" || operation === "reconcileCancel") {
+    const rows = await roomRecords(typeof input.date === "string" ? input.date : undefined);
+    if (operation === "reconcileCancel") {
+      const row = rows.find(
+        (r) =>
+          r.uuid === input.reservationId &&
+          String(r.appAccNo) === String(roomRuntime().$store.state.userInfo?.accNo),
+      );
+      return !row || (Number(row.resvStatus) & 128) > 0
+        ? { kind: "not-active" }
+        : { kind: "unknown" };
+    }
+    const members: unknown[] = [roomRuntime().$store.state.userInfo?.accNo];
+    if (!Array.isArray(input.memberIds)) throw Error("INVALID_INPUT");
+    for (const id of input.memberIds) {
+      const matches = roomRows(
+        await roomGet("/account/getMembers", { key: roomText(id, 64), page: 1, pageNum: 10 }),
+      ).filter((r) => String(r.logonName).toLowerCase() === String(id).toLowerCase());
+      if (matches.length !== 1) return { kind: "unknown" };
+      members.push(matches[0].accNo);
+    }
+    const begin = `${roomText(input.date, 10)} ${roomText(input.start, 5)}:00`,
+      end = `${input.date} ${roomTime(roomMinutes(input.start) + roomNumber(input.minutes, 1, 1440))}:00`;
+    if (Date.parse(end.replace(" ", "T") + "+08:00") <= Date.now()) return { kind: "not-active" };
+    const matches = rows.filter((r) => roomMatches(r, input.roomId, begin, end, members));
+    if (matches.length !== 1) return { kind: "unknown" };
+    const reservation = normalizeRoomReservation(matches[0], await roomFloors());
+    return reservation
+      ? { kind: reservation.status === "AWAITING" ? "awaiting" : "confirmed", reservation }
+      : { kind: "unknown" };
+  }
   if (operation === "floors") return { floors: await roomFloors(), selfId };
-  if (operation === "availability" || operation === "prepare") {
+  if (operation === "availability" || operation === "prepare" || operation === "book") {
     const date = roomText(input.date, 10),
       floorId = String(roomNumber(input.floorId, 1, 2147483647));
     const dayStamp = Date.parse(`${date}T12:00:00+08:00`);
@@ -221,6 +257,7 @@ export async function roomsSchoolRequest(operation: string, input: RoomRecord) {
     const ownAccount = roomRuntime().$store.state.userInfo?.accNo;
     if (ownAccount == null) throw Error("AUTH_REQUIRED");
     const resolvedMembers = new Set([String(ownAccount)]);
+    const memberAccounts: unknown[] = [ownAccount];
     for (const member of members) {
       if (
         typeof member !== "string" ||
@@ -242,33 +279,202 @@ export async function roomsSchoolRequest(operation: string, input: RoomRecord) {
         throw Error("INVALID_GROUP");
       seen.add(member.toLowerCase());
       resolvedMembers.add(String(exact[0].accNo));
+      memberAccounts.push(exact[0].accNo);
     }
-    // Deliberately no POST in this integration: user authorized preflight, not a real reservation.
+    if (operation === "book") {
+      const config = roomRuntime().$store.state.sysConfig;
+      const rawRoom = roomRows(raw).find((r) => String(r.devId) === input.roomId)!;
+      if (!config || config.resvCode == null) throw Error("NOT_READY");
+      if (
+        String(config.resvCode) !== "0" ||
+        Number(config.resvthememust) > 0 ||
+        Number(config.resvthemefix) > 0 ||
+        (Number(config.resvmemo) & 1) > 0 ||
+        (Number((rawRoom.resvRule as RoomRecord).limit) & (256 | 8192 | 262144)) > 0 ||
+        (Number(rawRoom.devProp) & 32) > 0
+      )
+        throw Error("UNSUPPORTED_ROOM_RULES");
+      const beginTime = `${date} ${start}:00`,
+        endTime = `${date} ${roomTime(begin + minutes)}:00`;
+      const matches = (rows: RoomRecord[]) =>
+        rows.filter((r) => roomMatches(r, input.roomId, beginTime, endTime, memberAccounts));
+      if (matches(await roomRecords(date)).length) throw Error("ALREADY_BOOKED");
+      try {
+        await roomPost("/reserve", {
+          sysKind: 1,
+          appAccNo: ownAccount,
+          memberKind: 2,
+          resvBeginTime: beginTime,
+          resvEndTime: endTime,
+          resvDev: [Number(input.roomId)],
+          resvMember: memberAccounts,
+          resvKind: 2,
+          resvProperty: 0,
+          captcha: "",
+          appUrl: "",
+          memo: "",
+          testName: "",
+          addServices: [],
+        });
+        const saved = matches(await roomRecords(date));
+        if (saved.length !== 1) return { kind: "unknown" };
+        const reservation = normalizeRoomReservation(saved[0], floors);
+        if (!reservation) return { kind: "unknown" };
+        return { kind: reservation.status === "AWAITING" ? "awaiting" : "confirmed", reservation };
+      } catch (error) {
+        if (error instanceof Error && error.message === "SCHOOL_REJECTED")
+          return {
+            kind: "rejected",
+            message:
+              "The school rejected this request. Refresh availability and check the booking rules.",
+          };
+        return { kind: "unknown" };
+      }
+    }
     return {
       kind: "prepared",
       message: "Room, time and group checked. No reservation was submitted.",
     };
   }
-  if (operation === "reservations") {
-    const date = new Date();
-    const beginDate = date.toLocaleDateString("sv-SE", { timeZone: "Asia/Shanghai" });
-    const endDate = new Date(date.getTime() + 7 * 86400000).toLocaleDateString("sv-SE", {
-      timeZone: "Asia/Shanghai",
-    });
-    const rows = roomRows(
-      await roomGet("/reserve/resvInfo", {
-        beginDate,
-        endDate,
-        needStatus: 8582,
-        page: 1,
-        pageNum: 100,
-        orderKey: "gmt_create",
-        orderModel: "desc",
-      }),
-    );
-    // Nonempty status bitmasks require verified mapping before presenting a confirmed/cancellable booking.
-    if (rows.length) throw Error("UNSUPPORTED_RESERVATION_STATE");
-    return { reservations: [] };
+  if (operation === "reservations" || operation === "cancel") {
+    const rows = await roomRecords(),
+      floors = await roomFloors();
+    if (operation === "cancel") {
+      const id = roomText(input.reservationId, 128),
+        own = roomRuntime().$store.state.userInfo?.accNo;
+      const matches = rows.filter((r) => r.uuid === id);
+      const row = matches.length === 1 ? matches[0] : null;
+      const reservation = row ? normalizeRoomReservation(row, floors) : null;
+      if (!row || String(row.appAccNo) !== String(own) || !reservation?.cancellable)
+        throw Error("NOT_CANCELLABLE");
+      try {
+        await roomPost("/reserve/delete", { uuid: id });
+        return { kind: "cancelled" };
+      } catch (error) {
+        return error instanceof Error && error.message === "SCHOOL_REJECTED"
+          ? { kind: "rejected" }
+          : { kind: "unknown" };
+      }
+    }
+    const reservations = [];
+    let unsupportedCount = 0;
+    for (const row of rows) {
+      if (
+        Number(row.classKind) !== 1 ||
+        !Array.isArray(row.resvDevInfoList) ||
+        !row.resvDevInfoList.some((d: RoomRecord) =>
+          floors.some((f) => f.id === String(d.labId)),
+        ) ||
+        (Number(row.resvStatus) & 128) > 0
+      )
+        continue;
+      const result = normalizeRoomReservation(row, floors);
+      if (result) reservations.push(result);
+      else unsupportedCount++;
+    }
+    return { reservations, unsupportedCount };
   }
   throw Error("INVALID_OPERATION");
+}
+
+async function roomRecords(date?: string): Promise<RoomRecord[]> {
+  const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Shanghai" });
+  const end = new Date(Date.now() + 7 * 86400000).toLocaleDateString("sv-SE", {
+    timeZone: "Asia/Shanghai",
+  });
+  const rows = roomRows(
+    await roomGet("/reserve/resvInfo", {
+      beginDate: date ?? today,
+      endDate: date ?? end,
+      needStatus: 8582,
+      page: 1,
+      pageNum: 100,
+      orderKey: "gmt_create",
+      orderModel: "desc",
+    }),
+  );
+  if (rows.length >= 100) throw Error("INCOMPLETE_RESERVATIONS"); // Do not infer absence from a truncated page.
+  return rows;
+}
+function roomMatches(
+  row: RoomRecord,
+  roomId: unknown,
+  begin: string,
+  end: string,
+  members: unknown[],
+): boolean {
+  const devs = row.resvDevInfoList as RoomRecord[] | undefined,
+    group = row.resvMemberInfoList as RoomRecord[] | undefined;
+  return (
+    Number(row.classKind) === 1 &&
+    String(row.appAccNo) === String(roomRuntime().$store.state.userInfo?.accNo) &&
+    (Number(row.resvStatus) & (16 | 128 | 512)) === 0 &&
+    row.resvBeginTime === begin &&
+    row.resvEndTime === end &&
+    Array.isArray(devs) &&
+    devs.length === 1 &&
+    String(devs[0].devId) === roomId &&
+    Array.isArray(group) &&
+    group.length === members.length &&
+    members.every((id) => group.some((m) => String(m.accNo) === String(id)))
+  );
+}
+export function normalizeRoomReservation(row: RoomRecord, floors: { id: string; label: string }[]) {
+  const status = Number(row.resvStatus),
+    devs = row.resvDevInfoList as RoomRecord[] | undefined;
+  if (
+    !Number.isInteger(status) ||
+    status < 0 ||
+    (status & ~(1 | 2 | 4 | 256 | 1024 | 8192)) !== 0 ||
+    !(status & (2 | 4 | 256 | 1024 | 8192)) ||
+    !Array.isArray(devs) ||
+    devs.length !== 1 ||
+    Number(row.classKind) !== 1
+  )
+    return null;
+  const floor = floors.find((f) => f.id === String(devs[0].labId));
+  if (!floor) return null;
+  const begin = String(row.resvBeginTime),
+    end = String(row.resvEndTime),
+    id = String(row.uuid ?? "");
+  if (
+    !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||
+    !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:00$/.test(begin) ||
+    !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:00$/.test(end) ||
+    begin.slice(0, 10) !== end.slice(0, 10)
+  )
+    return null;
+  const awaiting = (status & (256 | 8192)) > 0;
+  return {
+    id,
+    roomName: roomText(devs[0].devName),
+    floorLabel: floor.label,
+    date: begin.slice(0, 10),
+    start: begin.slice(11, 16),
+    end: end.slice(11, 16),
+    members: Array.isArray(row.resvMemberInfoList)
+      ? row.resvMemberInfoList
+          .slice(0, 5)
+          .map((member: RoomRecord, index: number) =>
+            String(member.accNo) === String(roomRuntime().$store.state.userInfo?.accNo)
+              ? "You"
+              : `Group member ${index + 1}`,
+          )
+      : [],
+    status: awaiting ? ("AWAITING" as const) : ("CONFIRMED" as const),
+    cancellable:
+      (status & 4) === 0 &&
+      String(row.appAccNo) === String(roomRuntime().$store.state.userInfo?.accNo),
+  };
+}
+async function roomPost(path: "/reserve" | "/reserve/delete", body: RoomRecord) {
+  // No retry: a transport failure after dispatch is an unknown write result.
+  const response = await roomRuntime().$axios.post(path, body);
+  const envelope =
+    response && typeof response === "object" && "code" in response
+      ? response
+      : (response as { data?: unknown })?.data;
+  if (!envelope || typeof envelope !== "object" || !("code" in envelope))
+    throw Error("RESULT_UNKNOWN");
+  if (envelope.code !== 0) throw Error("SCHOOL_REJECTED");
 }

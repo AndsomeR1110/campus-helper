@@ -9,6 +9,11 @@ import {
   readRoomFloors,
   readRoomReservations,
   schoolRoomsAvailable,
+  bookRoom,
+  cancelRoom,
+  readRoomsCapabilities,
+  readPendingRoomWrite,
+  reconcileRoomWrite,
 } from "./bridge";
 import type {
   BookingDraft,
@@ -34,6 +39,8 @@ export function SchoolRoomsConnection({ actorId, today }: { actorId: string; tod
   const [reservations, setReservations] = useState<Reservation[] | null>(null),
     [selfId, setSelfId] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState("");
+  const [writesEnabled, setWritesEnabled] = useState(false),
+    [writeBlocked, setWriteBlocked] = useState(false);
   const live = useRef(false),
     running = useRef(false);
   function fail(e: unknown) {
@@ -58,6 +65,18 @@ export function SchoolRoomsConnection({ actorId, today }: { actorId: string; tod
     try {
       if (restore) await restoreSchoolConnection(actorId, "rooms", () => live.current, signal);
       if (!live.current) return;
+      const capabilities = await readRoomsCapabilities().catch(() => ({ writesEnabled: false }));
+      if (!live.current) return;
+      setWritesEnabled(capabilities.writesEnabled);
+      const pending = await readPendingRoomWrite(actorId);
+      if (!live.current) return;
+      let unresolved = pending.pending;
+      if (unresolved) {
+        const result = await reconcileRoomWrite(actorId);
+        unresolved = result.kind === "unknown";
+      }
+      if (!live.current) return;
+      setWriteBlocked(unresolved);
       const menu = await readRoomFloors(actorId);
       if (!live.current) return;
       const id = menu.floors.some((f) => f.id === selectedFloor)
@@ -77,7 +96,13 @@ export function SchoolRoomsConnection({ actorId, today }: { actorId: string; tod
         const saved = await readRoomReservations(actorId);
         if (live.current) {
           setReservations(saved.reservations);
-          setBookingError("");
+          setBookingError(
+            unresolved
+              ? "A previous school request is still unconfirmed. Refresh reservation records before making another booking."
+              : saved.unsupportedCount
+                ? "Some school reservation statuses could not be displayed. No status has been assumed."
+                : "",
+          );
         }
       } catch {
         if (live.current)
@@ -120,10 +145,20 @@ export function SchoolRoomsConnection({ actorId, today }: { actorId: string; tod
       return { kind: "rejected", message: "Wait for the school query to finish." };
     running.current = true;
     try {
+      if (writeBlocked) return { kind: "unknown" };
+      if (writesEnabled) {
+        const result = await bookRoom(actorId, { ...draft, floorId }, { confirmed: true });
+        if (result.kind === "unknown") setWriteBlocked(true);
+        return result;
+      }
       return await prepareRoomBooking(actorId, { ...draft, floorId });
     } catch (e) {
       const code = codeOf(e);
       if (code === "AUTH_REQUIRED") return { kind: "auth" };
+      if (["RESULT_UNKNOWN", "TIMED_OUT", "CANCELLED"].includes(code)) {
+        setWriteBlocked(true);
+        return { kind: "unknown" };
+      }
       return {
         kind: code === "CONFLICT" ? "conflict" : "rejected",
         message:
@@ -133,6 +168,24 @@ export function SchoolRoomsConnection({ actorId, today }: { actorId: string; tod
       };
     } finally {
       running.current = false;
+    }
+  }
+  async function cancel(reservation: Reservation): Promise<"cancelled" | "unknown" | "rejected"> {
+    if (running.current || offline || !writesEnabled) return "rejected";
+    if (writeBlocked) return "unknown";
+    running.current = true;
+    try {
+      const result = await cancelRoom(actorId, reservation.id, { confirmed: true });
+      if (result.kind === "unknown") setWriteBlocked(true);
+      return result.kind;
+    } catch (e) {
+      if (["NOT_CANCELLABLE", "WRITES_DISABLED", "AUTH_REQUIRED"].includes(codeOf(e)))
+        return "rejected";
+      setWriteBlocked(true);
+      return "unknown";
+    } finally {
+      running.current = false;
+      if (live.current) void load();
     }
   }
   return (
@@ -151,7 +204,7 @@ export function SchoolRoomsConnection({ actorId, today }: { actorId: string; tod
           onConnected={() => void load()}
         />
       )}
-      {available && (
+      {available && !writesEnabled && (
         <Card>
           <p className="text-body-sm text-text-muted">
             Booking review only. Check live availability and booking details; no reservation or
@@ -160,7 +213,7 @@ export function SchoolRoomsConnection({ actorId, today }: { actorId: string; tod
         </Card>
       )}
       <RoomsView
-        verificationOnly
+        verificationOnly={!writesEnabled}
         status={status}
         rules={rules}
         floors={floors}
@@ -175,7 +228,7 @@ export function SchoolRoomsConnection({ actorId, today }: { actorId: string; tod
         onRetry={() => void load(floorId, date, true)}
         onSignIn={() => setSignIn(true)}
         onSubmit={prepare}
-        onCancel={async () => "rejected"}
+        onCancel={cancel}
         onRefreshReservations={() => void load()}
       />
       {bookingError && <ErrorState description={bookingError} onRetry={() => void load()} />}

@@ -1,9 +1,9 @@
 /**
- * UI contract for Taicang discussion rooms. Live adapter exposes read/preflight only.
+ * UI contract for Taicang discussion rooms, including explicitly enabled native writes.
  *
- * The real facade currently supports authenticated queries and booking preflight.
- * Confirmed/awaiting/cancelled outcomes remain for the development preview until
- * real writes and status mapping are verified. Rules come from the school.
+ * Queries and preflight work in the default review build. Book/cancel require a
+ * native build opt-in and explicit confirmation. Unknown results are reconciled
+ * through server reads, never retried. Rules come from the school.
  */
 
 /** Booking rules as the school reports them for the current student. */

@@ -134,7 +134,7 @@ public class SchoolAuthPlugin extends Plugin {
         if(active||SchoolTimetablePlugin.isConnecting()||ShuttlePlugin.isWorking()||SchoolRoomsPlugin.isWorking()){call.reject("BUSY","BUSY");return;}
         active=true;disconnecting=true;ShuttlePlugin.invalidateSession();SchoolRoomsPlugin.invalidate();
         CookieManager cookies=CookieManager.getInstance();List<String[]> expirations=new ArrayList<>();
-        String[] paths={"/","/esc-sso","/esc-sso/","/urd","/urd/","/urd/sits.urd","/urd/sits.urd/","/pt","/pt/"};
+        String[] paths={"/","/ic-web","/ic-web/","/esc-sso","/esc-sso/","/urd","/urd/","/urd/sits.urd","/urd/sits.urd/","/pt","/pt/"};
         for(String host:Arrays.asList("uim.xjtlu.edu.cn","sso.xjtlu.edu.cn","sso-xjtlu-edu-cn-s.xjtlu.edu.cn","trust.xjtlu.edu.cn","ebridge.xjtlu.edu.cn","shuttlebus.xjtlu.edu.cn","timetableplus.xjtlu.edu.cn","roombookings.xjtlu.edu.cn")){
             for(String path:paths){String raw=cookies.getCookie("https://"+host+path);if(raw==null)continue;
                 for(String part:raw.split(";")){int i=part.indexOf('=');if(i<1)continue;String name=part.substring(0,i).trim();if(!name.matches("[A-Za-z0-9_!#$%&'*+.^`|~-]+"))continue;
@@ -142,7 +142,7 @@ public class SchoolAuthPlugin extends Plugin {
                 }
             }
         }
-        Runnable done=()->{cookies.flush();String old=getContext().getSharedPreferences("school_auth_scope",0).getString("actor",actor);TimetableCredentialStore store=new TimetableCredentialStore(getContext());store.forget(old);store.forget(actor);getContext().getSharedPreferences("school_auth_scope",0).edit().remove("actor").apply();disconnecting=false;active=false;call.resolve();};
+        Runnable done=()->{cookies.flush();String old=getContext().getSharedPreferences("school_auth_scope",0).getString("actor",actor);TimetableCredentialStore store=new TimetableCredentialStore(getContext());store.forget(old);store.forget(actor);RoomsCredentialStore rooms=new RoomsCredentialStore(getContext());rooms.forget(old);rooms.forget(actor);getContext().getSharedPreferences("school_auth_scope",0).edit().remove("actor").apply();disconnecting=false;active=false;call.resolve();};
         if(expirations.isEmpty()){done.run();return;}
         java.util.concurrent.atomic.AtomicInteger remaining=new java.util.concurrent.atomic.AtomicInteger(expirations.size());
         for(String[] item:expirations)cookies.setCookie(item[0],item[1],ok->{if(remaining.decrementAndGet()==0)done.run();});

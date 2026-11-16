@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   cancel: vi.fn(),
   sync: vi.fn(),
   resume: vi.fn(),
+  rooms: vi.fn(),
 }));
 vi.mock("@capacitor/core", () => ({
   Capacitor: { getPlatform: () => "android", isPluginAvailable: () => true },
@@ -16,6 +17,7 @@ vi.mock("@capacitor/core", () => ({
 }));
 vi.mock("@/features/school-timetable", () => ({ syncSchoolTimetable: mocks.sync }));
 vi.mock("@/features/shuttle", () => ({ resumeShuttleSession: mocks.resume }));
+vi.mock("@/features/school-rooms", () => ({ resumeRoomsSession: mocks.rooms }));
 import {
   beginSchoolAuth,
   completeSchoolConnection,
@@ -118,6 +120,18 @@ describe("AUTH public facade", () => {
     mocks.resume.mockRejectedValue(new Error("SCHOOL_UNAVAILABLE"));
     await expect(restoreSchoolConnection("owner", "shuttle")).rejects.toThrow("SCHOOL_UNAVAILABLE");
     expect(mocks.begin).not.toHaveBeenCalled();
+  });
+  it("tries federation once for an expired rooms gateway without prompting for a password", async () => {
+    mocks.rooms.mockRejectedValueOnce(new Error("GATEWAY_BLOCKED")).mockResolvedValue(undefined);
+    mocks.begin.mockImplementation(async ({ actorId, service, operationId }) => ({
+      actorId,
+      service,
+      operationId,
+      status: "authenticated",
+    }));
+    await expect(restoreSchoolConnection("owner", "rooms")).resolves.toEqual({ service: "rooms" });
+    expect(mocks.begin).toHaveBeenCalledOnce();
+    expect(mocks.begin).toHaveBeenCalledWith(expect.objectContaining({ silent: true }));
   });
   it("does not reuse another actor's session", async () => {
     mocks.resume.mockRejectedValue(new Error("ACCOUNT_SWITCH_REQUIRED"));

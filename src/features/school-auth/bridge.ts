@@ -259,7 +259,11 @@ export async function restoreSchoolConnection(
         : error instanceof Error
           ? error.message
           : "";
-    if (code !== "AUTH_REQUIRED" || !live()) throw error;
+    if (
+      (code !== "AUTH_REQUIRED" && !(service === "rooms" && code === "GATEWAY_BLOCKED")) ||
+      !live()
+    )
+      throw error;
   }
   check();
   const operation = { actorId, operationId: crypto.randomUUID() };

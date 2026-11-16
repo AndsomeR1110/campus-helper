@@ -1,8 +1,16 @@
 "use client";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { z } from "zod";
+import { roomBookingSchema, roomReservationSchema, roomWriteResultSchema } from "./schemas";
 const native = registerPlugin<{
-  invoke(options: { actorId: string; operation: string; input: unknown }): Promise<unknown>;
+  invoke(options: {
+    actorId: string;
+    operation: string;
+    input: unknown;
+    confirmed?: boolean;
+    operationId?: string;
+  }): Promise<unknown>;
+  getCapabilities(): Promise<unknown>;
 }>("SchoolRooms");
 export const schoolRoomsAvailable = () =>
   Capacitor.getPlatform() === "android" && Capacitor.isPluginAvailable("SchoolRooms");
@@ -54,9 +62,77 @@ export const readRoomAvailability = async (actorId: string, date: string, floorI
     .parse(await roomInvoke(actorId, "availability", { date, floorId }));
 export const readRoomReservations = async (actorId: string) =>
   z
-    .object({ reservations: z.array(z.never()).max(0) })
+    .object({
+      reservations: z.array(roomReservationSchema).max(100),
+      unsupportedCount: z.number().int().min(0).default(0),
+    })
     .parse(await roomInvoke(actorId, "reservations"));
 export const prepareRoomBooking = async (actorId: string, input: unknown) =>
   z
     .object({ kind: z.literal("prepared"), message: z.string().max(150) })
     .parse(await roomInvoke(actorId, "prepare", input));
+
+export async function readRoomsCapabilities() {
+  if (!schoolRoomsAvailable()) return { writesEnabled: false };
+  return z
+    .object({ writesEnabled: z.boolean() })
+    .strict()
+    .parse(await native.getCapabilities());
+}
+export async function readPendingRoomWrite(actorId: string) {
+  try {
+    return z
+      .object({ pending: z.boolean() })
+      .strict()
+      .parse(await roomInvoke(actorId, "pending"));
+  } catch (error) {
+    const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
+    if (["UNIMPLEMENTED", "INVALID_OPERATION"].includes(code)) return { pending: false };
+    throw error;
+  }
+}
+export async function reconcileRoomWrite(actorId: string) {
+  return z
+    .union([roomWriteResultSchema, z.object({ kind: z.enum(["none", "not-active"]) }).strict()])
+    .parse(await roomInvoke(actorId, "reconcile"));
+}
+/** Caller must have obtained explicit confirmation; never replay automatically. */
+export async function bookRoom(
+  actorId: string,
+  input: unknown,
+  confirmation: { confirmed: boolean },
+) {
+  if (!confirmation.confirmed) throw Error("CONFIRMATION_REQUIRED");
+  if (!schoolRoomsAvailable()) throw Error("NATIVE_UNAVAILABLE");
+  const data = roomBookingSchema.parse(input);
+  return roomWriteResultSchema.parse(
+    await native.invoke({
+      actorId,
+      operation: "book",
+      input: data,
+      confirmed: true,
+      operationId: crypto.randomUUID(),
+    }),
+  );
+}
+export async function cancelRoom(
+  actorId: string,
+  reservationId: string,
+  confirmation: { confirmed: boolean },
+) {
+  if (!confirmation.confirmed) throw Error("CONFIRMATION_REQUIRED");
+  if (!schoolRoomsAvailable()) throw Error("NATIVE_UNAVAILABLE");
+  const id = roomReservationSchema.shape.id.parse(reservationId);
+  return z
+    .object({ kind: z.enum(["cancelled", "unknown", "rejected"]) })
+    .strict()
+    .parse(
+      await native.invoke({
+        actorId,
+        operation: "cancel",
+        input: { reservationId: id },
+        confirmed: true,
+        operationId: crypto.randomUUID(),
+      }),
+    );
+}

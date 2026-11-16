@@ -5,6 +5,8 @@ android {
     namespace = "live.anran.campushelper"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
+        // Explicit opt-in for a reviewed build; local testing defaults to no school writes.
+        buildConfigField "boolean", "SCHOOL_ROOMS_WRITES_ENABLED", (project.findProperty('roomsWritesEnabled') == 'true' ? 'true' : 'false')
         applicationId "live.anran.campushelper"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
