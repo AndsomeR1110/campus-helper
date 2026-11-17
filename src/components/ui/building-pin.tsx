@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/client";
 import { MapPin } from "lucide-react";
 import { buildingFromLocation, type BuildingKind } from "@/lib/campus";
 import { cn } from "@/lib/utils";
@@ -51,6 +54,7 @@ export function LocationText({
   /** Let long places wrap instead of truncating. */
   wrap?: boolean;
 }) {
+  const t = useTranslations();
   const building = buildingFromLocation(location);
   return (
     <span className={cn("inline-flex min-w-0 items-center gap-1.5", className)}>
@@ -60,7 +64,11 @@ export function LocationText({
         <MapPin className="size-4 shrink-0 text-text-muted" aria-hidden />
       ) : null}
       <span className={wrap ? "break-words" : "truncate"}>
-        {building && <span className="sr-only">Building {building.code}: </span>}
+        {building && (
+          <span className="sr-only">
+            {t("Building")} {building.code}:{" "}
+          </span>
+        )}
         {location}
       </span>
     </span>

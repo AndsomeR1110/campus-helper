@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import { Search } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -37,15 +38,16 @@ export default async function OfficeHoursPage({
 }: {
   searchParams: Promise<{ q?: string; department?: string }>;
 }) {
+  const t = await getTranslations();
   await requireUserOrLogout();
   const { q, department } = await searchParams;
 
   return (
     <>
-      <TopBar title="Office Hours" backHref="/services" />
+      <TopBar title={t("Office Hours")} backHref="/services" />
       <PageContainer>
         <p className="text-body-sm text-text-muted">
-          Search a teacher, pick a slot, and tell them what you need help with.
+          {t("Search a teacher, pick a slot, and tell them what you need help with.")}
         </p>
 
         <DemoDataNotice />
@@ -66,8 +68,8 @@ export default async function OfficeHoursPage({
               type="search"
               name="q"
               defaultValue={q ?? ""}
-              placeholder="Search by name, department or course…"
-              aria-label="Search teachers"
+              placeholder={t("Search by name, department or course…")}
+              aria-label={t("Search teachers")}
               className="rounded-full pl-11"
             />
           </div>
@@ -75,10 +77,10 @@ export default async function OfficeHoursPage({
             <Select
               name="department"
               defaultValue={department ?? ""}
-              aria-label="Department"
+              aria-label={t("Department")}
               className="rounded-full"
             >
-              <option value="">All departments</option>
+              <option value="">{t("All departments")}</option>
               <Suspense fallback={null}>
                 <DepartmentOptions />
               </Suspense>
@@ -86,7 +88,7 @@ export default async function OfficeHoursPage({
           </div>
           <Button type="submit">
             <Search />
-            Search
+            {t("Search")}
           </Button>
         </form>
 
@@ -112,17 +114,18 @@ async function DepartmentOptions() {
 }
 
 async function TeacherList({ q, department }: { q?: string; department?: string }) {
+  const t = await getTranslations();
   const teachers = await listTeachers({ q, department });
 
   if (teachers.length === 0) {
     return (
       <EmptyState
         icon={Search}
-        title="No teachers found"
+        title={t("No teachers found")}
         description={OFFICE_HOURS_MESSAGES.emptyTeachers}
         action={
           <Link href="/office-hours" className={buttonStyles({ variant: "secondary", size: "sm" })}>
-            Clear search
+            {t("Clear search")}
           </Link>
         }
       />
@@ -144,7 +147,7 @@ async function TeacherList({ q, department }: { q?: string; department?: string 
                 <div className="truncate text-body-sm text-text-muted">{teacher.department}</div>
                 {teacher.office ? (
                   <LocationText
-                    location={`Office ${teacher.office}`}
+                    location={t("Office {location}", { location: teacher.office })}
                     className="text-body-sm text-text-muted"
                   />
                 ) : null}
@@ -158,7 +161,7 @@ async function TeacherList({ q, department }: { q?: string; department?: string 
               >
                 {teacher.openSlotCount > 0
                   ? `${teacher.openSlotCount} ${teacher.openSlotCount === 1 ? "slot" : "slots"}`
-                  : "No slots"}
+                  : t("No slots")}
               </span>
             </div>
           </Link>

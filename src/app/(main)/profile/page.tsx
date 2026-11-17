@@ -1,8 +1,10 @@
+import { getTranslations } from "@/lib/i18n/server";
 import { Bell, ChevronRight, ClipboardList, LogIn, Megaphone, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { PageContainer, ROLE_LABELS, TopBar, roleToolsFor } from "@/components/layout";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { InstallAppCard } from "@/components/pwa";
 import { ThemeSwitcher } from "@/components/theme";
 import { DemoDataNotice, Skeleton, buttonStyles } from "@/components/ui";
@@ -66,6 +68,7 @@ function AccountSkeleton() {
  * /login; the signed-out card covers an invalid session reaching the page.
  */
 async function Account() {
+  const t = await getTranslations();
   const user = await getCurrentUser();
 
   if (!user) {
@@ -78,12 +81,14 @@ async function Account() {
           ?
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <p className="text-subtitle">You’re not signed in</p>
-          <p className="text-body-sm text-text-muted">Sign in to see your bookings and posts.</p>
+          <p className="text-subtitle">{t("You’re not signed in")}</p>
+          <p className="text-body-sm text-text-muted">
+            {t("Sign in to see your bookings and posts.")}
+          </p>
         </div>
         <Link href="/login?next=/profile" className={buttonStyles({ size: "sm" })}>
           <LogIn />
-          Log in
+          {t("Log in")}
         </Link>
       </section>
     );
@@ -92,7 +97,7 @@ async function Account() {
   const tools = roleToolsFor(user.role);
   return (
     <>
-      <section className={cardClasses} aria-label="Your account">
+      <section className={cardClasses} aria-label={t("Your account")}>
         <span
           aria-hidden
           className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-title text-primary"
@@ -104,15 +109,15 @@ async function Account() {
           <p className="truncate text-body-sm text-text-muted">{user.email}</p>
         </div>
         <span className="inline-flex h-6 shrink-0 items-center rounded-full bg-primary-subtle px-2.5 text-caption text-primary">
-          {ROLE_LABELS[user.role]}
+          {t(ROLE_LABELS[user.role])}
         </span>
       </section>
 
       {tools.length > 0 && (
-        <MenuGroup label="Role tools">
+        <MenuGroup label={t("Role tools")}>
           {tools.map((tool) => (
             <MenuLink key={tool.href} href={tool.href} icon={tool.icon}>
-              {tool.label}
+              {t(tool.label)}
             </MenuLink>
           ))}
         </MenuGroup>
@@ -132,24 +137,25 @@ async function AccountActions() {
 }
 
 // PG-18
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const t = await getTranslations();
   return (
     <>
-      <TopBar title="Profile" variant="large" />
+      <TopBar title={t("Profile")} variant="large" />
       <PageContainer width="content">
         <Suspense fallback={<AccountSkeleton />}>
           <Account />
         </Suspense>
 
-        <MenuGroup label="My activity">
+        <MenuGroup label={t("My activity")}>
           <MenuLink href="/bookings" icon={ClipboardList}>
-            My bookings
+            {t("My bookings")}
           </MenuLink>
           <MenuLink href="/my/posts" icon={Megaphone}>
-            My posts
+            {t("My posts")}
           </MenuLink>
           <MenuLink href="/notifications" icon={Bell}>
-            Notifications
+            {t("Notifications")}
           </MenuLink>
         </MenuGroup>
 
@@ -158,16 +164,27 @@ export default function ProfilePage() {
             id="appearance-heading"
             className="px-1 text-caption tracking-wide text-text-muted uppercase"
           >
-            Appearance
+            {t("Appearance")}
           </h2>
           <div className="flex flex-col gap-3 rounded-md border border-border bg-surface p-4 shadow-card">
             <ThemeSwitcher />
             <p className="text-body-sm text-text-muted">
-              Dark mode is easier on the eyes at night. Saved on this device.
+              {t("Dark mode is easier on the eyes at night. Saved on this device.")}
             </p>
           </div>
         </section>
 
+        <section className="flex flex-col gap-2" aria-labelledby="language-heading">
+          <h2
+            id="language-heading"
+            className="px-1 text-caption tracking-wide text-text-muted uppercase"
+          >
+            {t("Language")}
+          </h2>
+          <div className="rounded-md border border-border bg-surface p-4 shadow-card">
+            <LanguageSwitcher />
+          </div>
+        </section>
         <InstallAppCard />
 
         <Suspense fallback={null}>

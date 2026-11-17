@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
@@ -30,10 +31,11 @@ async function AdminGate({ children }: { children: ReactNode }) {
   );
 }
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const t = await getTranslations();
   return (
     <AppFrame>
-      <TopBar title="Admin dashboard" backHref="/profile" />
+      <TopBar title={t("Admin dashboard")} backHref="/profile" />
       <PageContainer>
         <Suspense fallback={<Skeleton className="h-40 w-full" aria-hidden />}>
           <AdminGate>{children}</AdminGate>

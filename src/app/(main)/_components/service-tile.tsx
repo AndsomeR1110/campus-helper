@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/client";
 import Link from "next/link";
 import type { ServiceEntry } from "@/components/layout";
 import { TypeIcon, cardStyles, typeColorClasses } from "@/components/ui";
@@ -15,6 +18,7 @@ export function ServiceTile({
   service: ServiceEntry;
   compact?: boolean;
 }) {
+  const t = useTranslations();
   if (compact) {
     return (
       <Link
@@ -36,11 +40,11 @@ export function ServiceTile({
         <span className="w-full truncate text-caption text-text md:text-body-sm md:font-medium">
           {service.shortLabel ? (
             <>
-              <span className="md:hidden">{service.shortLabel}</span>
-              <span className="hidden md:inline">{service.label}</span>
+              <span className="md:hidden">{t(service.shortLabel)}</span>
+              <span className="hidden md:inline">{t(service.label)}</span>
             </>
           ) : (
-            service.label
+            t(service.label)
           )}
         </span>
       </Link>
@@ -65,8 +69,8 @@ export function ServiceTile({
         <TypeIcon type={service.type} className="size-6" />
       </span>
       <span className="flex flex-col gap-0.5">
-        <span className="text-subtitle">{service.label}</span>
-        <span className="text-body-sm text-text-muted">{service.description}</span>
+        <span className="text-subtitle">{t(service.label)}</span>
+        <span className="text-body-sm text-text-muted">{t(service.description)}</span>
       </span>
     </Link>
   );

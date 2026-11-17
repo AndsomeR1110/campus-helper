@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -18,6 +19,7 @@ export function PostOwnerActions({
   postId: string;
   status: LostFoundPost["status"];
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const [next, setNext] = useState<Next | null>(null);
   const [pending, setPending] = useState(false);
@@ -32,10 +34,10 @@ export function PostOwnerActions({
       });
       const payload = (await response.json()) as { error?: { message: string } };
       if (!response.ok) {
-        toast.error(payload.error?.message ?? "The post could not be updated.");
+        toast.error(payload.error?.message ?? t("The post could not be updated."));
         return;
       }
-      toast.success(value === "RESOLVED" ? "Marked as resolved." : "Post closed.");
+      toast.success(value === "RESOLVED" ? t("Marked as resolved.") : t("Post closed."));
       router.refresh();
     } finally {
       setPending(false);
@@ -52,33 +54,36 @@ export function PostOwnerActions({
     >
       <div className="flex flex-col gap-0.5">
         <h2 id="owner-actions" className="text-subtitle">
-          Manage your post
+          {t("Manage your post")}
         </h2>
         <p className="text-body-sm text-text-muted">
-          Mark it resolved once the item is back with its owner, or close it if it no longer
-          matters.
+          {t(
+            "Mark it resolved once the item is back with its owner, or close it if it no longer matters.",
+          )}
         </p>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         <Button onClick={() => setNext("RESOLVED")} loading={pending}>
           <CircleCheck />
-          Mark as resolved
+          {t("Mark as resolved")}
         </Button>
         <Button variant="secondary" onClick={() => setNext("CLOSED")} loading={pending}>
           <Archive />
-          Close this post
+          {t("Close this post")}
         </Button>
       </div>
 
       <ConfirmDialog
         open={next !== null}
-        title={next === "RESOLVED" ? "Mark as resolved?" : "Close this post?"}
+        title={next === "RESOLVED" ? t("Mark as resolved?") : t("Close this post?")}
         description={
           next === "RESOLVED"
-            ? "Use this after the item is back with its owner. No further claims will be accepted."
-            : "The post stops taking claims. You can still read it from My posts."
+            ? t(
+                "Use this after the item is back with its owner. No further claims will be accepted.",
+              )
+            : t("The post stops taking claims. You can still read it from My posts.")
         }
-        confirmLabel={next === "RESOLVED" ? "Mark resolved" : "Close post"}
+        confirmLabel={next === "RESOLVED" ? t("Mark resolved") : t("Close post")}
         tone={next === "RESOLVED" ? "primary" : "danger"}
         onClose={() => setNext(null)}
         onConfirm={async () => {

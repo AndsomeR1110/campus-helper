@@ -1,5 +1,7 @@
 "use client";
 
+import { createTranslator, type Translate } from "@/lib/i18n/messages";
+import { useLocale, useTranslations } from "@/lib/i18n/client";
 import { useState, type ReactNode } from "react";
 import { PageContainer, StickyActionBar, TopBar } from "@/components/layout";
 import {
@@ -16,24 +18,28 @@ import { SeatSummary } from "./seat-summary";
 import { SpaceFilterForm } from "./space-filter-form";
 import type { Space, TimeRange } from "../types";
 
-export function bookingFailureMessage(error: unknown) {
+export function bookingFailureMessage(error: unknown, t: Translate = createTranslator("en")) {
   if (typeof error === "object" && error !== null) {
     if (
       ("status" in error && error.status === 409) ||
       ("code" in error && error.code === "BOOKING_CONFLICT")
     )
-      return "This seat or your time is already booked. Your selection has been kept. Refresh availability and choose another seat or time.";
+      return t(
+        "This seat or your time is already booked. Your selection has been kept. Refresh availability and choose another seat or time.",
+      );
     if (
       "status" in error &&
       [400, 401, 403, 404].includes(Number(error.status)) &&
       "message" in error &&
       typeof error.message === "string"
     )
-      return error.message;
+      return t(error.message);
     if (error instanceof TypeError || ("code" in error && error.code === "OFFLINE"))
-      return "We couldn’t connect. Check your connection and try again. Your selection has been kept.";
+      return t(
+        "We couldn’t connect. Check your connection and try again. Your selection has been kept.",
+      );
   }
-  return "We couldn’t confirm this booking. Please try again. Your selection has been kept.";
+  return t("We couldn’t confirm this booking. Please try again. Your selection has been kept.");
 }
 
 /** Body only. The route supplies its header/container and a real server action. */
@@ -58,6 +64,8 @@ export function SpacePicker({
   filterAction?: string;
   children?: ReactNode;
 }) {
+  const locale = useLocale();
+  const t = useTranslations();
   const [selected, setSelected] = useState<string>();
   const offline = useOffline();
   const [pending, setPending] = useState(false);
@@ -70,7 +78,7 @@ export function SpacePicker({
     try {
       await onBook(seat.id, range);
     } catch (error) {
-      setFailure(bookingFailureMessage(error));
+      setFailure(bookingFailureMessage(error, t));
     } finally {
       setPending(false);
     }
@@ -85,13 +93,13 @@ export function SpacePicker({
         <ErrorState description={error} onRetry={onRetry} />
       ) : spaces.length === 0 ? (
         <EmptyState
-          title="No matching seats"
-          description="Try another building, floor or seat type."
+          title={t("No matching seats")}
+          description={t("Try another building, floor or seat type.")}
         />
       ) : (
         <div
           role="group"
-          aria-label="Choose a seat"
+          aria-label={t("Choose a seat")}
           className="grid gap-3 md:grid-cols-2 lg:grid-cols-3"
         >
           {spaces.map((s) => (
@@ -117,9 +125,9 @@ export function SpacePicker({
       {filterAction && <SpaceFilterForm query={query} action={filterAction} />}
       {children}
       <StickyActionBar
-        summary={`${formatDate(range.startsAt)} · ${formatTimeRange(range.startsAt, range.endsAt)}`}
+        summary={`${formatDate(range.startsAt, locale)} · ${formatTimeRange(range.startsAt, range.endsAt)}`}
       >
-        {offline && <p className="text-body-sm text-text-muted">Unavailable offline</p>}
+        {offline && <p className="text-body-sm text-text-muted">{t("Unavailable offline")}</p>}
         {failure && (
           <p role="alert" className="text-body-sm text-danger">
             {failure}
@@ -132,7 +140,7 @@ export function SpacePicker({
           loading={pending}
           onClick={book}
         >
-          Book selected seat
+          {t("Book selected seat")}
         </Button>
       </StickyActionBar>
     </>
@@ -141,9 +149,10 @@ export function SpacePicker({
 
 /** For PG-09 (focused detail route). PG-08 uses the list without a sticky action. */
 export function SpaceSelectionView(props: Parameters<typeof SpacePicker>[0]) {
+  const t = useTranslations();
   return (
     <>
-      <TopBar title="Choose a study seat" backHref="/spaces" />
+      <TopBar title={t("Choose a study seat")} backHref="/spaces" />
       <PageContainer width="content">
         <SpacePicker key={props.query} {...props} />
       </PageContainer>

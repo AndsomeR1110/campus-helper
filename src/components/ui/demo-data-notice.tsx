@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { Info, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ export interface DemoDataNoticeProps {
 
 /** Academic-project / demo-data disclosure (ui-ux-spec §4.14, SP-AC-07). */
 export function DemoDataNotice({ variant = "banner", className }: DemoDataNoticeProps) {
+  const t = useTranslations();
   const [dismissed, setDismissed] = useState(false);
 
   if (variant === "footer") {
@@ -39,11 +41,11 @@ export function DemoDataNotice({ variant = "banner", className }: DemoDataNotice
       )}
     >
       <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-      <p className="flex-1">Demo data — not official real-time availability.</p>
+      <p className="flex-1">{t("Demo data — not official real-time availability.")}</p>
       <button
         type="button"
         onClick={() => setDismissed(true)}
-        aria-label="Hide demo data notice"
+        aria-label={t("Hide demo data notice")}
         className="-my-1 rounded-sm p-1 hover:bg-primary-subtle"
       >
         <X className="size-4" aria-hidden />

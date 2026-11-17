@@ -1,3 +1,4 @@
+import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { Check, Clock, Lock, MapPin, Tag, UserRound, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -46,16 +47,17 @@ function DetailSkeleton() {
  * A hidden post answers the same way a missing one does, so a reporter cannot
  * learn whether the author really took it down.
  */
-function Unavailable() {
+async function Unavailable() {
+  const t = await getTranslations();
   return (
     <EmptyState
       className="rounded-lg border border-border bg-surface"
       icon={Lock}
-      title="This post is not available"
-      description="It may have been removed, hidden after a report, or the link may be wrong."
+      title={t("This post is not available")}
+      description={t("It may have been removed, hidden after a report, or the link may be wrong.")}
       action={
         <Link href="/lost-found" className={buttonStyles({ size: "sm" })}>
-          Back to Lost & Found
+          {t("Back to Lost & Found")}
         </Link>
       }
     />
@@ -63,6 +65,8 @@ function Unavailable() {
 }
 
 async function PostDetailBody({ params }: { params: Params }) {
+  const t = await getTranslations();
+  const locale = await getLocale();
   await connection();
   const { id } = await params;
   const { service } = getLostFoundRuntime();
@@ -106,7 +110,7 @@ async function PostDetailBody({ params }: { params: Params }) {
         <PostProgress status={post.status} kind={post.kind} />
 
         <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-translucent px-4">
-          <InfoRow icon={MapPin} label="Where">
+          <InfoRow icon={MapPin} label={t("Where")}>
             <LocationText
               location={post.location}
               fallbackIcon={false}
@@ -114,23 +118,23 @@ async function PostDetailBody({ params }: { params: Params }) {
               className="justify-end text-right"
             />
           </InfoRow>
-          <InfoRow icon={Clock} label="When">
+          <InfoRow icon={Clock} label={t("When")}>
             <span className="tabular-nums">
-              {formatDate(occurred)} · {formatTime(occurred)}
+              {formatDate(occurred, locale)} · {formatTime(occurred)}
             </span>
           </InfoRow>
-          <InfoRow icon={Tag} label="Category">
-            {CATEGORY_LABELS[post.category]}
+          <InfoRow icon={Tag} label={t("Category")}>
+            {t(CATEGORY_LABELS[post.category])}
           </InfoRow>
-          <InfoRow icon={UserRound} label="Posted by">
-            {isAuthor ? "You" : formatDisplayName(post.authorName)}
+          <InfoRow icon={UserRound} label={t("Posted by")}>
+            {isAuthor ? t("You") : formatDisplayName(post.authorName)}
           </InfoRow>
         </dl>
       </header>
 
       <section aria-labelledby="post-description" className="flex flex-col gap-2">
         <h3 id="post-description" className="text-caption tracking-wide text-text-muted uppercase">
-          Description
+          {t("Description")}
         </h3>
         <div className={cardStyles({ className: "flex flex-col gap-4" })}>
           <p className="text-body whitespace-pre-line">{post.description}</p>
@@ -139,7 +143,7 @@ async function PostDetailBody({ params }: { params: Params }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={post.image.url}
-              alt={`Photo attached to ${post.title}`}
+              alt={t("Photo attached to {title}", { title: post.title })}
               className="w-full rounded-md border border-border object-cover shadow-card"
             />
           ) : null}
@@ -187,27 +191,32 @@ function InfoRow({
 const STEPS = ["OPEN", "CLAIM_PENDING", "RESOLVED"] as const;
 
 /** Where the post is in its life: Posted → Claim pending → Back with owner (PRD 7.4). */
-function PostProgress({
+async function PostProgress({
   status,
   kind,
 }: {
   status: LostFoundPost["status"];
   kind: LostFoundPost["kind"];
 }) {
+  const t = await getTranslations();
   if (status === "CLOSED" || status === "HIDDEN") {
     return (
       <p className="flex items-center gap-2 rounded-md bg-neutral-subtle px-3 py-2 text-body-sm text-neutral">
         <Lock className="size-4 shrink-0" aria-hidden />
         {status === "CLOSED"
-          ? "The author closed this post. It no longer takes claims."
-          : "This post is hidden after a report."}
+          ? t("The author closed this post. It no longer takes claims.")
+          : t("This post is hidden after a report.")}
       </p>
     );
   }
   const current = STEPS.indexOf(status);
-  const labels = ["Posted", "Claim pending", kind === "LOST" ? "Found its owner" : "Returned"];
+  const labels = [
+    t("Posted"),
+    t("Claim pending"),
+    kind === "LOST" ? t("Found its owner") : t("Returned"),
+  ];
   return (
-    <ol className="flex items-center gap-1" aria-label="Progress">
+    <ol className="flex items-center gap-1" aria-label={t("Progress")}>
       {labels.map((label, index) => {
         const done = index <= current;
         return (
@@ -240,10 +249,11 @@ function PostProgress({
 }
 
 /** PG-16. */
-export default function PostDetailPage({ params }: { params: Params }) {
+export default async function PostDetailPage({ params }: { params: Params }) {
+  const t = await getTranslations();
   return (
     <>
-      <TopBar title="Post" backHref="/lost-found" />
+      <TopBar title={t("Post")} backHref="/lost-found" />
       <PageContainer width="content" className="py-4">
         <Suspense fallback={<DetailSkeleton />}>
           <PostDetailBody params={params} />

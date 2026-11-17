@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -22,6 +23,7 @@ function ListSkeleton() {
 }
 
 async function MyPostsList() {
+  const t = await getTranslations();
   await connection();
   const { service } = getLostFoundRuntime();
   const posts = await service.listMyPosts();
@@ -31,11 +33,13 @@ async function MyPostsList() {
       <EmptyState
         className="rounded-lg border border-border bg-surface"
         icon={Megaphone}
-        title="You have not posted anything yet"
-        description="Items you report as lost or found show up here, together with their claims."
+        title={t("You have not posted anything yet")}
+        description={t(
+          "Items you report as lost or found show up here, together with their claims.",
+        )}
         action={
           <Link href="/lost-found/new" className={buttonStyles({ size: "sm" })}>
-            New post
+            {t("New post")}
           </Link>
         }
       />
@@ -45,9 +49,9 @@ async function MyPostsList() {
   const open = posts.filter((p) => p.status === "OPEN" || p.status === "CLAIM_PENDING").length;
   const claims = posts.reduce((sum, p) => sum + p.claimCount, 0);
   const stats = [
-    { label: "Posts", value: posts.length },
-    { label: "Still open", value: open },
-    { label: "Claims received", value: claims },
+    { label: t("Posts"), value: posts.length },
+    { label: t("Still open"), value: open },
+    { label: t("Claims received"), value: claims },
   ];
 
   return (
@@ -72,10 +76,11 @@ async function MyPostsList() {
 }
 
 /** PG-17. */
-export default function MyPostsPage() {
+export default async function MyPostsPage() {
+  const t = await getTranslations();
   return (
     <>
-      <TopBar title="My posts" backHref="/lost-found" />
+      <TopBar title={t("My posts")} backHref="/lost-found" />
       <PageContainer width="list" className="py-4">
         <Suspense fallback={<ListSkeleton />}>
           <MyPostsList />

@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
@@ -31,6 +32,7 @@ function ListSkeleton() {
 }
 
 async function PostList({ searchParams }: { searchParams: SearchParams }) {
+  const t = await getTranslations();
   await connection();
   const filters = parsePostFilters(await searchParams);
   const { service, demo } = getLostFoundRuntime();
@@ -44,11 +46,15 @@ async function PostList({ searchParams }: { searchParams: SearchParams }) {
       {posts.length === 0 ? (
         <EmptyState
           icon={undefined}
-          title={hasActiveFilters(filters) ? "No posts match these filters" : "Nothing here yet"}
+          title={
+            hasActiveFilters(filters) ? t("No posts match these filters") : t("Nothing here yet")
+          }
           description={
             hasActiveFilters(filters)
-              ? `Nothing matches ${describeFilters(filters)}. Try a broader search.`
-              : "Lost something on campus? Post it and let people help you find it."
+              ? t("Nothing matches {filters}. Try a broader search.", {
+                  filters: describeFilters(filters),
+                })
+              : t("Lost something on campus? Post it and let people help you find it.")
           }
           action={
             hasActiveFilters(filters) ? (
@@ -56,11 +62,11 @@ async function PostList({ searchParams }: { searchParams: SearchParams }) {
                 href="/lost-found"
                 className={buttonStyles({ variant: "secondary", size: "sm" })}
               >
-                Clear filters
+                {t("Clear filters")}
               </Link>
             ) : (
               <Link href="/lost-found/new" className={buttonStyles({ size: "sm" })}>
-                New post
+                {t("New post")}
               </Link>
             )
           }
@@ -79,14 +85,15 @@ async function PostList({ searchParams }: { searchParams: SearchParams }) {
 }
 
 /** PG-14. The filter bar and the list read from the URL, so the page is shareable. */
-export default function LostFoundPage({ searchParams }: { searchParams: SearchParams }) {
+export default async function LostFoundPage({ searchParams }: { searchParams: SearchParams }) {
+  const t = await getTranslations();
   return (
     <>
       <TopBar
-        title="Lost & Found"
+        title={t("Lost & Found")}
         actions={
           <Link href="/lost-found/new" className={buttonStyles({ size: "sm" })}>
-            New post
+            {t("New post")}
           </Link>
         }
       />
