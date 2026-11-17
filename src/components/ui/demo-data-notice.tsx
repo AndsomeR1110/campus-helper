@@ -25,7 +25,7 @@ export function DemoDataNotice({ variant = "banner", className }: DemoDataNotice
   if (variant === "footer") {
     return (
       <p className={cn("text-center text-caption text-text-muted", className)}>
-        {ACADEMIC_PROJECT_DISCLAIMER}
+        {t(ACADEMIC_PROJECT_DISCLAIMER)}
       </p>
     );
   }
