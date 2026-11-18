@@ -7,6 +7,7 @@ public class MainActivity extends BridgeActivity {
     @Override public void onCreate(Bundle state) {
         registerPlugin(ShuttlePlugin.class);
         registerPlugin(SchoolTimetablePlugin.class);
+        registerPlugin(SchoolAuthPlugin.class);
         super.onCreate(state);
     }
 }

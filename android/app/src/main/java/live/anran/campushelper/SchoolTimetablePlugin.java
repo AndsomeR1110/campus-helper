@@ -20,6 +20,8 @@ import java.nio.charset.StandardCharsets;
 /** Fixed, read-only school timetable workflow. Never exposes URL/JS/cookie APIs. */
 @CapacitorPlugin(name="SchoolTimetable")
 public class SchoolTimetablePlugin extends Plugin {
+    private static boolean connecting;
+    static boolean isConnecting(){return connecting;}
     private static final String EBRIDGE="https://ebridge.xjtlu.edu.cn";
     private static final String TIMETABLE="https://timetableplus.xjtlu.edu.cn";
     private final Handler handler=new Handler(Looper.getMainLooper());
@@ -27,7 +29,7 @@ public class SchoolTimetablePlugin extends Plugin {
     private Dialog dialog;
     private PluginCall pending;
     private String script,nonce,term,scope; private TimetableCredentialStore credentials; private boolean usingCached;
-    private boolean busy,fetching,foreground=true; private int recoveries;
+    private boolean busy,fetching,foreground=true,silent; private int recoveries;
     private final Set<String> hosts=new HashSet<>(Arrays.asList("ebridge.xjtlu.edu.cn","timetableplus.xjtlu.edu.cn","uim.xjtlu.edu.cn","trust.xjtlu.edu.cn"));
     private boolean allowedCaller(){
         String configured=getBridge().getConfig().getServerUrl();if(configured==null)return false;
@@ -37,7 +39,7 @@ public class SchoolTimetablePlugin extends Plugin {
     private boolean origin(String url,String expected){if(url==null)return false;Uri u=Uri.parse(url);return "https".equals(u.getScheme())&&expected.equals("https://"+u.getHost())&&(u.getPort()==-1||u.getPort()==443);}
     @PluginMethod public void connect(PluginCall call){getActivity().runOnUiThread(()->{
         if(!allowedCaller()){call.reject("UNTRUSTED_ORIGIN","UNTRUSTED_ORIGIN");return;}
-        if(pending!=null||!foreground){call.reject("BUSY","BUSY");return;}
+        if(pending!=null||!foreground||SchoolAuthPlugin.isActive()){call.reject("BUSY","BUSY");return;}
         if(!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)){call.reject("UPDATE_WEBVIEW","UPDATE_WEBVIEW");return;}
         try(var input=getContext().getAssets().open("school-timetable.js");var output=new ByteArrayOutputStream()){
             byte[] bytes=new byte[4096];int count;while((count=input.read(bytes))!=-1)output.write(bytes,0,count);script=output.toString(StandardCharsets.UTF_8.name());
@@ -45,7 +47,7 @@ public class SchoolTimetablePlugin extends Plugin {
                 scope=call.getString("actorId", "");
         if(!scope.matches("[A-Za-z0-9_-]{1,128}")){call.reject("INVALID_INPUT","INVALID_INPUT");return;}
         credentials=new TimetableCredentialStore(getContext());
-        pending=call;nonce=UUID.randomUUID().toString();term=null;busy=false;fetching=false;recoveries=0;usingCached=false;
+        pending=call;connecting=true;silent=call.getBoolean("silent",false);nonce=UUID.randomUUID().toString();term=null;busy=false;fetching=false;recoveries=0;usingCached=false;
         school=new WebView(getActivity());WebSettings settings=school.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         CookieManager.getInstance().setAcceptCookie(true);
         WebViewCompat.addWebMessageListener(school,"CampusTimetableReply",Collections.singleton(TIMETABLE),(view,message,sourceOrigin,isMainFrame,reply)->{
@@ -67,10 +69,14 @@ public class SchoolTimetablePlugin extends Plugin {
             @Override public void onPageFinished(WebView view,String url){if(pending!=null)step();}
             @Override public void onReceivedSslError(WebView view,SslErrorHandler h,android.net.http.SslError e){h.cancel();fail("SCHOOL_UNAVAILABLE");}
         });
+        if(!silent){
         dialog=new Dialog(getActivity(),android.R.style.Theme_Material_Light_NoActionBar);
         LinearLayout layout=new LinearLayout(getActivity());layout.setOrientation(LinearLayout.VERTICAL);
         Button cancel=new Button(getActivity());cancel.setText("Cancel timetable connection");cancel.setOnClickListener(v->fail("CANCELLED"));layout.addView(cancel);layout.addView(school,new LinearLayout.LayoutParams(-1,0,1));
         dialog.setContentView(layout);dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);dialog.setOnCancelListener(d->fail("CANCELLED"));dialog.show();dialog.getWindow().setLayout(-1,-1);
+        }else{
+            FrameLayout parking=new FrameLayout(getActivity());parking.setAlpha(0);parking.setTag("timetable-auth-parking");parking.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);((ViewGroup)getActivity().findViewById(android.R.id.content)).addView(parking,new ViewGroup.LayoutParams(1,1));parking.addView(school,new FrameLayout.LayoutParams(1,1));
+        }
         final String expected=nonce;handler.postDelayed(()->{if(pending!=null&&expected.equals(nonce))fail("TIMED_OUT");},300000);
                 JSONObject cached=credentials.read(scope);
         String first=EBRIDGE+"/";
@@ -85,6 +91,7 @@ public class SchoolTimetablePlugin extends Plugin {
     private void step(){
         if(pending==null||school==null||busy||fetching||!foreground)return;
         String url=school.getUrl();
+        if(silent&&origin(url,"https://uim.xjtlu.edu.cn")){fail("AUTH_REQUIRED");return;}
         if(origin(url,TIMETABLE)){
             if(!"2026/27 S1".equals(term)){fail("UNSUPPORTED_TERM");return;}
             fetching=true;
@@ -110,7 +117,7 @@ public class SchoolTimetablePlugin extends Plugin {
         new TimetableCredentialStore(getContext()).forget(actor);call.resolve();
     });}
     private void fail(String code){if(pending==null)return;PluginCall done=pending;pending=null;cleanup();done.reject(code,code);}
-    private void cleanup(){handler.removeCallbacks(tick);if(dialog!=null){dialog.setOnCancelListener(null);dialog.dismiss();dialog=null;}if(school!=null){if(school.getParent() instanceof ViewGroup p)p.removeView(school);school.stopLoading();school.destroy();school=null;}nonce=null;term=null;busy=false;fetching=false;recoveries=0;}
+    private void cleanup(){handler.removeCallbacks(tick);if(dialog!=null){dialog.setOnCancelListener(null);dialog.dismiss();dialog=null;}if(school!=null){if(school.getParent() instanceof ViewGroup p){p.removeView(school);if("timetable-auth-parking".equals(p.getTag())&&p.getParent() instanceof ViewGroup root)root.removeView(p);}school.stopLoading();school.destroy();school=null;}nonce=null;term=null;busy=false;fetching=false;recoveries=0;connecting=false;}
     @Override protected void handleOnPause(){foreground=false;}
     @Override protected void handleOnResume(){foreground=true;if(pending!=null){handler.removeCallbacks(tick);handler.post(tick);}}
     @Override protected void handleOnDestroy(){fail("CANCELLED");}

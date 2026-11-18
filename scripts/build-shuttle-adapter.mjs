@@ -3,6 +3,7 @@ import ts from "typescript";
 for (const [sourcePath, asset] of [
   ["src/features/shuttle/school-adapter.ts", "shuttle-adapter.js"],
   ["src/features/school-timetable/school-adapter.ts", "school-timetable.js"],
+  ["src/features/school-auth/school-adapter.ts", "school-auth.js"],
 ]) {
   const source = readFileSync(sourcePath, "utf8");
   const output = ts

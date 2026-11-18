@@ -35,6 +35,10 @@ import org.json.JSONObject;
  */
 @CapacitorPlugin(name = "Shuttle")
 public class ShuttlePlugin extends Plugin {
+    private static ShuttlePlugin live;
+    static boolean isWorking(){return live!=null&&(live.pending!=null||live.loginDialog!=null);}
+    static void invalidateSession(){if(live!=null&&live.school!=null){live.ready=false;live.school.stopLoading();live.school.loadUrl("about:blank");}}
+    private boolean resuming;
     private static final String SCHOOL = "https://shuttlebus.xjtlu.edu.cn";
     private static final Set<String> LOGIN_HOSTS = new HashSet<>(Arrays.asList("shuttlebus.xjtlu.edu.cn", "uim.xjtlu.edu.cn", "trust.xjtlu.edu.cn"));
     private static final Set<String> OPS = new HashSet<>(Arrays.asList("session", "schedules", "trips", "book", "cancel", "pass", "scan"));
@@ -63,8 +67,8 @@ public class ShuttlePlugin extends Plugin {
     @PluginMethod public void login(PluginCall call) {
         getActivity().runOnUiThread(() -> {
             if (!allowedCaller()) { call.reject("UNTRUSTED_ORIGIN", "UNTRUSTED_ORIGIN"); return; }
-            if (!foreground || pending != null || loginDialog != null) { call.reject("BUSY", "BUSY"); return; }
-            if (!ensureSchool(call)) return;
+            if (!foreground || pending != null || loginDialog != null || SchoolAuthPlugin.isActive()) { call.reject("BUSY", "BUSY"); return; }
+            if (!ensureSchool(call, false)) return;
             detach(school);
             Dialog dialog = new Dialog(getActivity(), android.R.style.Theme_Material_Light_NoActionBar);
             loginDialog = dialog;
@@ -98,7 +102,7 @@ public class ShuttlePlugin extends Plugin {
             if ((op.equals("book") || op.equals("cancel")) && !input.optBoolean("confirmed", false)) {
                 call.reject("CONFIRMATION_REQUIRED", "CONFIRMATION_REQUIRED"); return;
             }
-            if (!foreground || pending != null || loginDialog != null) { call.reject("BUSY", "BUSY"); return; }
+            if (!foreground || pending != null || loginDialog != null || SchoolAuthPlugin.isActive()) { call.reject("BUSY", "BUSY"); return; }
             if (!ensureSchool(call)) return;
             if (!ready || !isSchoolOrigin(school.getUrl())) { call.reject("AUTH_REQUIRED", "AUTH_REQUIRED"); return; }
             writing = op.equals("book") || op.equals("cancel");
@@ -117,6 +121,10 @@ public class ShuttlePlugin extends Plugin {
     }
 
     private boolean ensureSchool(PluginCall call) {
+        return ensureSchool(call,true);
+    }
+    private boolean ensureSchool(PluginCall call, boolean initialLoad) {
+        live=this;
         if (school != null) return true;
         if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
             call.reject("UPDATE_WEBVIEW", "UPDATE_WEBVIEW"); return false;
@@ -147,6 +155,7 @@ public class ShuttlePlugin extends Plugin {
                         String code = response.optString("error");
                         finishError(ERRORS.contains(code) ? code : writing ? "RESULT_UNKNOWN" : "SCHOOL_UNAVAILABLE");
                     } else {
+                        resuming=false;
                         PluginCall done = pending;
                         pending = null;
                         requestId = null;
@@ -160,14 +169,22 @@ public class ShuttlePlugin extends Plugin {
                 return request.isForMainFrame() && !("https".equals(url.getScheme()) && LOGIN_HOSTS.contains(url.getHost()));
             }
             @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap icon) { ready = false; }
-            @Override public void onPageFinished(WebView view, String url) { ready = isSchoolOrigin(url); }
+            @Override public void onPageFinished(WebView view, String url) {
+                ready = isSchoolOrigin(url);
+                if(resuming&&pending!=null){
+                    if(!ready){finishError("AUTH_REQUIRED");return;}
+                    resuming=false;
+                    school.evaluateJavascript(adapter+"\nshuttleSchoolRequest('session',{}).then(data=>CampusShuttleReply.postMessage(JSON.stringify({id:"+JSONObject.quote(requestId)+",data}))).catch(()=>CampusShuttleReply.postMessage(JSON.stringify({id:"+JSONObject.quote(requestId)+",error:'AUTH_REQUIRED'})))",null);
+                }
+            }
+            @Override public void onReceivedSslError(WebView view,android.webkit.SslErrorHandler h,android.net.http.SslError e){h.cancel();finishError("SCHOOL_UNAVAILABLE");}
         });
         parking = new FrameLayout(getActivity());
         parking.setAlpha(0);
         parking.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         ((ViewGroup)getActivity().findViewById(android.R.id.content)).addView(parking, new ViewGroup.LayoutParams(1, 1));
         parking.addView(school, new FrameLayout.LayoutParams(1, 1));
-        school.loadUrl(SCHOOL + "/");
+        if(initialLoad)school.loadUrl(SCHOOL + "/");
         return true;
     }
 
@@ -178,12 +195,20 @@ public class ShuttlePlugin extends Plugin {
     }
     private void detach(WebView view) { if (view.getParent() instanceof ViewGroup parent) parent.removeView(view); }
     private void finishError(String code) {
+        resuming=false;
         if (pending != null) { PluginCall call = pending; pending = null; requestId = null; call.reject(code, code); }
     }
+    @PluginMethod public void resumeSession(PluginCall call){getActivity().runOnUiThread(()->{
+        if(!allowedCaller()){call.reject("UNTRUSTED_ORIGIN","UNTRUSTED_ORIGIN");return;}
+        if(!foreground||pending!=null||loginDialog!=null||SchoolAuthPlugin.isActive()){call.reject("BUSY","BUSY");return;}
+        if(!ensureSchool(call,false))return;
+        pending=call;writing=false;resuming=true;requestId=UUID.randomUUID().toString();final String id=requestId;
+        school.loadUrl(SCHOOL+"/");handler.postDelayed(()->{if(pending!=null&&id.equals(requestId))finishError("SCHOOL_UNAVAILABLE");},30000);
+    });}
     @PluginMethod public void closePass(PluginCall call) {
         getActivity().runOnUiThread(() -> {
             if (!allowedCaller()) { call.reject("UNTRUSTED_ORIGIN", "UNTRUSTED_ORIGIN"); return; }
-            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | (SchoolAuthPlugin.isActive()?0:WindowManager.LayoutParams.FLAG_SECURE));
             if (school != null && ready) school.evaluateJavascript("delete window.__campusShuttleVerification", null);
             call.resolve();
         });
@@ -198,6 +223,7 @@ public class ShuttlePlugin extends Plugin {
         JSObject data = new JSObject(); data.put("active", true); notifyListeners("stateChanged", data);
     }
     @Override protected void handleOnDestroy() {
+        if(live==this)live=null;
         finishError("RESULT_UNKNOWN");
         if (loginDialog != null) loginDialog.dismiss();
         if (school != null) { detach(school); school.destroy(); school = null; }
