@@ -64,6 +64,7 @@ model User {
   officeBookings OfficeBooking[]
   spaceBookings  SpaceBooking[]
   courses        Course[]
+  schoolTimetable SchoolTimetable?
   notifications  Notification[]
   pushSubscriptions PushSubscription[]
 
@@ -74,6 +75,15 @@ model User {
   moderationAudits AuditLog[]       @relation("AuditActor")
 
   @@index([role])
+}
+
+/// Device-fetched, validated school data. Separate from user-authored Course rows.
+model SchoolTimetable {
+  ownerId String @id
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  payload Json
+  version Int @default(1)
+  syncedAt DateTime @default(now()) @db.Timestamptz(3)
 }
 
 // ---------------------------------------------------------- office hours

@@ -3,3 +3,7 @@ node_modules
 coverage
 package-lock.json
 next-env.d.ts
+android/**/build/
+android/.gradle/
+android/capacitor-cordova-android-plugins/
+android/app/src/main/assets/
