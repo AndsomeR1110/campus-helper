@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -26,11 +27,12 @@ export function SlotActions({
   takenByOthers,
   disabled: slotDisabled,
 }: SlotActionsProps) {
+  const t = useTranslations();
   const router = useRouter();
   // PWA-AC-04: no booking or cancelling while offline (the title says why).
   const offline = useOffline();
   const disabled = slotDisabled || offline;
-  const offlineTitle = offline ? "Unavailable offline" : undefined;
+  const offlineTitle = offline ? t("Unavailable offline") : undefined;
   const [pending, setPending] = useState(false);
   const [reason, setReason] = useState("");
   const [showReason, setShowReason] = useState(false);
@@ -46,7 +48,7 @@ export function SlotActions({
       { data: unknown } | { error: { code: string; message: string } };
 
     if (!response.ok || "error" in payload) {
-      throw new Error("error" in payload ? payload.error.message : "Something went wrong.");
+      throw new Error("error" in payload ? payload.error.message : t("Something went wrong."));
     }
     return payload;
   }
@@ -92,15 +94,17 @@ export function SlotActions({
           title={offlineTitle}
           onClick={() => setConfirmCancel(true)}
         >
-          Cancel booking
+          {t("Cancel booking")}
         </Button>
         <ConfirmDialog
           open={confirmCancel}
           onClose={() => setConfirmCancel(false)}
-          title="Cancel this booking?"
-          description="The slot goes back to the teacher's open list and another student can take it. You can book again while it is still free."
-          confirmLabel="Cancel booking"
-          cancelLabel="Keep booking"
+          title={t("Cancel this booking?")}
+          description={t(
+            "The slot goes back to the teacher's open list and another student can take it. You can book again while it is still free.",
+          )}
+          confirmLabel={t("Cancel booking")}
+          cancelLabel={t("Keep booking")}
           onConfirm={cancel}
         />
       </>
@@ -116,8 +120,8 @@ export function SlotActions({
           type="text"
           value={reason}
           onChange={(event) => setReason(event.target.value)}
-          placeholder="What do you need help with? (optional)"
-          aria-label="Reason for booking (optional)"
+          placeholder={t("What do you need help with? (optional)")}
+          aria-label={t("Reason for booking (optional)")}
           maxLength={300}
           className="sm:w-64"
         />
@@ -129,10 +133,10 @@ export function SlotActions({
             title={offlineTitle}
             onClick={book}
           >
-            Confirm booking
+            {t("Confirm booking")}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setShowReason(false)}>
-            Skip note
+            {t("Skip note")}
           </Button>
         </div>
       </div>
@@ -141,7 +145,7 @@ export function SlotActions({
 
   return (
     <Button size="sm" disabled={disabled} title={offlineTitle} onClick={() => setShowReason(true)}>
-      Book
+      {t("Book")}
     </Button>
   );
 }

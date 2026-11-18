@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -10,12 +11,15 @@ import { roleToolsFor, type UserRole } from "./nav-config";
  * Uses usePathname to highlight the current tool, so render it inside <Suspense>.
  */
 export function SideNavRoleTools({ role }: { role: UserRole | null | undefined }) {
+  const t = useTranslations();
   const pathname = usePathname();
   const tools = roleToolsFor(role);
   if (tools.length === 0) return null;
   return (
-    <nav aria-label="Role tools" className="border-t border-border pt-4">
-      <p className="px-3 pb-2 text-caption tracking-wide text-text-muted uppercase">Role tools</p>
+    <nav aria-label={t("Role tools")} className="border-t border-border pt-4">
+      <p className="px-3 pb-2 text-caption tracking-wide text-text-muted uppercase">
+        {t("Role tools")}
+      </p>
       <ul className="flex flex-col gap-1">
         {tools.map(({ label, href, icon: Icon }) => {
           const section = `/${href.split("/")[1]}`;
@@ -33,7 +37,7 @@ export function SideNavRoleTools({ role }: { role: UserRole | null | undefined }
                 )}
               >
                 <Icon className="size-5" strokeWidth={current ? 2.25 : 1.75} aria-hidden />
-                {label}
+                {t(label)}
               </Link>
             </li>
           );

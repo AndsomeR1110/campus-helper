@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { CircleAlert } from "lucide-react";
 import { createContext, useContext, useId, type AriaAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -43,6 +44,7 @@ export function FormField({
   className,
   children,
 }: FormFieldProps) {
+  const t = useTranslations();
   const generatedId = useId();
   const controlId = id ?? generatedId;
   const hintId = hint ? `${controlId}-hint` : undefined;
@@ -53,7 +55,7 @@ export function FormField({
     <FormFieldContext.Provider value={{ id: controlId, describedBy, invalid: !!error, required }}>
       <div className={cn("flex flex-col gap-1.5", className)}>
         <label htmlFor={controlId} className="text-body-sm font-medium text-text">
-          {label}
+          {typeof label === "string" ? t(label) : label}
           {required && (
             <span className="text-danger" aria-hidden>
               {" "}
@@ -65,12 +67,12 @@ export function FormField({
         {error && (
           <p id={errorId} className="flex items-start gap-1.5 text-body-sm text-danger">
             <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-            {error}
+            {t(error)}
           </p>
         )}
         {hint && (
           <p id={hintId} className="text-body-sm text-text-muted">
-            {hint}
+            {typeof hint === "string" ? t(hint) : hint}
           </p>
         )}
       </div>

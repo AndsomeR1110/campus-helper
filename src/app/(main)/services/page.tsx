@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bus } from "lucide-react";
@@ -9,10 +10,11 @@ import { CampusGuide, ServiceTips } from "./campus-guide";
 export const metadata: Metadata = { title: "Services" };
 
 // PG-03
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const t = await getTranslations();
   return (
     <>
-      <TopBar title="Services" variant="large" />
+      <TopBar title={t("Services")} variant="large" />
       <PageContainer>
         <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {SERVICES.map((service) => (

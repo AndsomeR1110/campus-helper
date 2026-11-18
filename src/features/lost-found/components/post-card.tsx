@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale, useTranslations } from "@/lib/i18n/client";
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
 
@@ -17,6 +20,8 @@ import type { PostListItem } from "../types";
 
 /** One row of PG-14 and PG-17. */
 export function PostCard({ post }: { post: PostListItem }) {
+  const locale = useLocale();
+  const t = useTranslations();
   const occurred = new Date(post.occurredAt);
   return (
     <Link
@@ -39,7 +44,9 @@ export function PostCard({ post }: { post: PostListItem }) {
           {post.claimCount > 0 && (
             <span className="ml-auto inline-flex items-center gap-1 text-caption text-text-muted">
               <MessageSquare className="size-3.5" aria-hidden />
-              {post.claimCount} {post.claimCount === 1 ? "claim" : "claims"}
+              {t(post.claimCount === 1 ? "{count} claim" : "{count} claims", {
+                count: post.claimCount,
+              })}
             </span>
           )}
         </div>
@@ -51,11 +58,11 @@ export function PostCard({ post }: { post: PostListItem }) {
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-text-muted">
           <span className="rounded-full bg-surface-muted px-2 py-0.5">
-            {CATEGORY_LABELS[post.category]}
+            {t(CATEGORY_LABELS[post.category])}
           </span>
           <LocationText location={post.location} className="max-w-full" />
           <span>
-            {formatDate(occurred)} · {formatTime(occurred)}
+            {formatDate(occurred, locale)} · {formatTime(occurred)}
           </span>
         </div>
       </div>

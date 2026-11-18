@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import { BookOpen, CalendarDays, CalendarPlus, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -23,6 +24,7 @@ export const instant = false;
 
 /** PG-12 course list — the timetable is edited from here. */
 async function CourseList() {
+  const t = await getTranslations();
   await connection();
   const user = await getCurrentUser();
   const courses = await listCourses(user.id);
@@ -32,11 +34,13 @@ async function CourseList() {
       <Card className="p-0">
         <EmptyState
           icon={CalendarDays}
-          title="No courses yet"
-          description="Add your timetable once and Campus Helper will remind you before every class."
+          title={t("No courses yet")}
+          description={t(
+            "Add your timetable once and Campus Helper will remind you before every class.",
+          )}
           action={
             <Link href="/courses/new" className={buttonStyles({ size: "sm" })}>
-              Add a course
+              {t("Add a course")}
             </Link>
           }
         />
@@ -50,7 +54,9 @@ async function CourseList() {
         <li key={course.id}>
           <Link
             href={course.source === "school" ? "/courses/sync" : `/courses/${course.id}/edit`}
-            aria-label={`${course.source === "school" ? "View school" : "Edit"} ${course.code}`}
+            aria-label={t(course.source === "school" ? "View school {name}" : "Edit {name}", {
+              name: course.code,
+            })}
             className={cardStyles({ interactive: true })}
           >
             <ListItem
@@ -62,7 +68,7 @@ async function CourseList() {
               title={`${course.code} ${course.name}`}
               description={
                 <span className="flex flex-wrap items-center gap-x-2 tabular-nums">
-                  {WEEKDAY_LABELS[course.weekday]} {course.startTime}–{course.endTime}
+                  {t(WEEKDAY_LABELS[course.weekday])} {course.startTime}–{course.endTime}
                   {course.location ? <LocationText location={course.location} /> : null}
                 </span>
               }
@@ -88,16 +94,17 @@ function CourseListSkeleton() {
   );
 }
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const t = await getTranslations();
   return (
     <>
       <TopBar
-        title="My courses"
+        title={t("My courses")}
         variant="large"
         actions={
           <Link
             href="/courses/new"
-            aria-label="Add course"
+            aria-label={t("Add course")}
             className={buttonStyles({ variant: "ghost", size: "sm" })}
           >
             <CalendarPlus className="size-5" aria-hidden />
@@ -109,7 +116,7 @@ export default function CoursesPage() {
           href="/courses/sync"
           className={buttonStyles({ variant: "secondary", className: "mb-4" })}
         >
-          Connect school timetable
+          {t("Connect school timetable")}
         </Link>
         <Suspense fallback={<CourseListSkeleton />}>
           <CourseList />

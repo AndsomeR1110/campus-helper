@@ -1,3 +1,4 @@
+import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { Bell, CalendarDays, Inbox } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -24,6 +25,8 @@ export const metadata: Metadata = { title: "Home" };
 
 /** Depends on the current time and the session, so it renders per request inside <Suspense>. */
 async function Greeting() {
+  const t = await getTranslations();
+  const locale = await getLocale();
   await connection();
   const now = new Date();
   const user = await getCurrentUser();
@@ -31,10 +34,10 @@ async function Greeting() {
   return (
     <div className="flex flex-col gap-1">
       <h1 className="text-display">
-        {formatGreeting(now)}
+        {t(formatGreeting(now))}
         {firstName ? `, ${firstName}` : ""}
       </h1>
-      <p className="text-text-muted">{formatDate(now)}</p>
+      <p className="text-text-muted">{formatDate(now, locale)}</p>
     </div>
   );
 }
@@ -50,6 +53,7 @@ function GreetingSkeleton() {
 
 /** Next class card (HOME-AC-01). */
 async function NextClass() {
+  const t = await getTranslations();
   await connection();
   const user = await getCurrentUser();
   if (!user) return null;
@@ -60,14 +64,14 @@ async function NextClass() {
       <Card variant="widget" className="p-0">
         <EmptyState
           icon={CalendarDays}
-          title="No upcoming classes"
-          description="Add your timetable to see your next class here."
+          title={t("No upcoming classes")}
+          description={t("Add your timetable to see your next class here.")}
           action={
             <Link
               href="/courses/new"
               className={buttonStyles({ variant: "secondary", size: "sm" })}
             >
-              Add a course
+              {t("Add a course")}
             </Link>
           }
           className="py-6"
@@ -95,6 +99,8 @@ async function NextClass() {
 
 /** Recent notifications plus the unread count (HOME-AC-02). */
 async function RecentNotifications() {
+  const t = await getTranslations();
+  const locale = await getLocale();
   await connection();
   const user = await getCurrentUser();
   if (!user) return null;
@@ -104,7 +110,7 @@ async function RecentNotifications() {
   if (recent.length === 0) {
     return (
       <Card variant="widget" className="p-0">
-        <EmptyState icon={Bell} title="You’re all caught up" className="py-6" />
+        <EmptyState icon={Bell} title={t("You’re all caught up")} className="py-6" />
       </Card>
     );
   }
@@ -117,7 +123,7 @@ async function RecentNotifications() {
             <Link href={item.href} className="block px-4 py-3">
               <ListItem
                 title={item.title}
-                description={`${item.body} · ${formatRelativeTime(item.createdAt)}`}
+                description={`${item.body} · ${formatRelativeTime(item.createdAt, undefined, locale)}`}
               />
             </Link>
           </li>
@@ -125,7 +131,7 @@ async function RecentNotifications() {
       </ul>
       {unread > 0 && (
         <p className="border-t border-liquid-edge px-4 py-2 text-body-sm text-text-muted">
-          {unread} unread
+          {t("{count} unread", { count: unread })}
         </p>
       )}
     </Card>
@@ -151,14 +157,19 @@ async function UnreadBadge() {
 }
 
 // PG-02. Data wiring for task #29.
-export default function HomePage() {
+export default async function HomePage() {
+  const t = await getTranslations();
   return (
     <>
       {/* Home has no TopBar, so it renders the connectivity banner itself. */}
       <OfflineBanner className="sticky top-0 z-30 pt-[max(8px,env(safe-area-inset-top))]" />
       <PageContainer className="pt-[max(24px,env(safe-area-inset-top))] md:pt-8">
         {/* Hero: greeting over a flat campus-map illustration. */}
-        <section className="relative isolate min-h-48 overflow-hidden rounded-lg border border-glass-border bg-linear-to-br from-primary-subtle via-surface/70 to-surface/40 p-5 shadow-card md:min-h-52 md:p-6">
+        <section className="relative isolate min-h-48 overflow-hidden rounded-lg border liquid-glass p-5 md:min-h-52 md:p-6">
+          <span
+            aria-hidden
+            className="absolute inset-0 -z-20 bg-linear-to-br from-primary-subtle to-transparent"
+          />
           <CampusIllustration className="absolute -right-14 -bottom-14 -z-10 w-80 [mask-image:radial-gradient(closest-side,black_55%,transparent)] md:top-1/2 md:right-0 md:bottom-auto md:w-[28rem] md:-translate-y-1/2" />
           <div className="flex items-start justify-between gap-4">
             <Suspense fallback={<GreetingSkeleton />}>
@@ -166,7 +177,7 @@ export default function HomePage() {
             </Suspense>
             <Link
               href="/notifications"
-              aria-label="Notifications"
+              aria-label={t("Notifications")}
               className="relative -mt-1 -mr-1 flex size-11 shrink-0 items-center justify-center rounded-full border glass text-text shadow-card transition-transform duration-150 active:scale-95"
             >
               <Bell className="size-5.5" aria-hidden />
@@ -177,13 +188,13 @@ export default function HomePage() {
           </div>
         </section>
 
-        <HomeSection title="Next class" seeAllHref="/schedule">
+        <HomeSection title={t("Next class")} seeAllHref="/schedule">
           <Suspense fallback={<Skeleton className="h-20 w-full" aria-hidden />}>
             <NextClass />
           </Suspense>
         </HomeSection>
 
-        <HomeSection title="Quick access">
+        <HomeSection title={t("Quick access")}>
           <ul className="grid grid-cols-4 gap-2 md:gap-3">
             {SERVICES.map((service) => (
               <li key={service.href}>
@@ -194,18 +205,18 @@ export default function HomePage() {
         </HomeSection>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <HomeSection title="Upcoming bookings" seeAllHref="/bookings">
+          <HomeSection title={t("Upcoming bookings")} seeAllHref="/bookings">
             <Card variant="widget" className="p-0">
               <EmptyState
                 icon={Inbox}
-                title="No upcoming bookings"
-                description="Office hour and study space bookings will appear here."
+                title={t("No upcoming bookings")}
+                description={t("Office hour and study space bookings will appear here.")}
                 className="py-6"
               />
             </Card>
           </HomeSection>
 
-          <HomeSection title="Recent notifications" seeAllHref="/notifications">
+          <HomeSection title={t("Recent notifications")} seeAllHref="/notifications">
             <Suspense fallback={<Skeleton className="h-24 w-full" aria-hidden />}>
               <RecentNotifications />
             </Suspense>

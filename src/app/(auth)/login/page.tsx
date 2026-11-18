@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 
 import { DemoDataNotice } from "@/components/ui";
@@ -19,6 +20,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
+  const t = await getTranslations();
   const { next } = await searchParams;
   // 只接受站内路径，防止开放重定向；默认进入 Home（AUTH-AC-01）
   const safeNext = safeRedirectPath(next);
@@ -26,21 +28,21 @@ export default async function LoginPage({
   return (
     <>
       <header className="flex flex-col gap-1.5">
-        <h1 className="text-title-lg text-text">Welcome back</h1>
+        <h1 className="text-title-lg text-text">{t("Welcome back")}</h1>
         <p className="text-body-sm text-text-muted">
-          Sign in to book teacher office hours, reserve study spaces and track your schedule.
+          {t("Sign in to book teacher office hours, reserve study spaces and track your schedule.")}
         </p>
       </header>
 
       <LoginForm nextPath={safeNext} />
 
-      <dl className="rounded-md border border-dashed border-border-strong bg-surface/60 px-4 py-3 text-body-sm text-text-muted">
-        <dt className="font-medium text-text">Demo accounts</dt>
+      <dl className="rounded-md border border-dashed border-border-strong bg-surface-translucent px-4 py-3 text-body-sm text-text-muted">
+        <dt className="font-medium text-text">{t("Demo accounts")}</dt>
         <dd className="mt-1">
           student.mia@campus-helper.demo · teacher.smith@campus-helper.demo ·
           admin@campus-helper.demo
           <br />
-          Password: <code className="font-mono">Password123!</code>
+          {t("Password:")} <code className="font-mono">Password123!</code>
         </dd>
       </dl>
 
