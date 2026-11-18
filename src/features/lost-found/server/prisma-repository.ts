@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 
+import { CLAIMABLE_STATUSES } from "../constants";
 import type { ImageMeta, LostFoundClaim, LostFoundPost } from "../types";
 import type { ClaimPatch, LostFoundRepository, PostPatch } from "./repository";
 
@@ -28,6 +29,23 @@ export function createPrismaLostFoundRepository(client: Client): LostFoundReposi
     async listPosts() {
       const rows = await client.lostFoundPost.findMany(postShape);
       return rows.map(toPost);
+    },
+
+    async listMatchCandidates({ category, excludeAuthorId, from, through, limit }) {
+      const rows = await client.lostFoundPost.findMany({
+        where: {
+          kind: "FOUND",
+          category,
+          authorId: { not: excludeAuthorId },
+          status: { in: [...CLAIMABLE_STATUSES] },
+          occurredAt: { gte: from, lte: through },
+          claims: { none: { status: "APPROVED" } },
+        },
+        orderBy: [{ occurredAt: "asc" }, { id: "asc" }],
+        take: limit,
+        select: { id: true, title: true, description: true, location: true, occurredAt: true },
+      });
+      return rows.map((row) => ({ ...row, occurredAt: row.occurredAt.toISOString() }));
     },
 
     async getPost(id) {

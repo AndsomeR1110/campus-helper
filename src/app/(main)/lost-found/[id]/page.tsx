@@ -21,10 +21,16 @@ import {
   CATEGORY_LABELS,
   ClaimPanel,
   PostOwnerActions,
+  PossibleMatches,
   formatDisplayName,
   type LostFoundPost,
 } from "@/features/lost-found";
-import { getCurrentViewer, getLostFoundRuntime } from "@/features/lost-found/server";
+import {
+  canFindMatches,
+  getCurrentViewer,
+  getLostFoundRuntime,
+  readMatchConfig,
+} from "@/features/lost-found/server";
 import { formatDate, formatTime } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
@@ -145,6 +151,10 @@ async function PostDetailBody({ params }: { params: Params }) {
           ) : null}
         </div>
       </section>
+
+      {canFindMatches(post, viewer) && readMatchConfig() && (
+        <PossibleMatches key={post.id} postId={post.id} />
+      )}
 
       <ClaimPanel
         post={post}
