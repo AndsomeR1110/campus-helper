@@ -70,6 +70,29 @@ describe.skipIf(!process.env.DATABASE_URL)("AUTO-04 PostgreSQL snapshot isolatio
     expect((await readSchoolSync(ownerId)).version).toBe(1);
     expect(await listSchoolCourses(ownerId)).toHaveLength(1);
   });
+  it("treats a snapshot from an earlier term as absent instead of failing the courses page", async () => {
+    await prisma.schoolTimetable.create({
+      data: { ownerId, payload: { ...payload, term: "2025/26 S2" }, version: 3 },
+    });
+    expect(await listSchoolCourses(ownerId)).toEqual([]);
+    expect(await readSchoolSync(ownerId)).toEqual({
+      version: 3,
+      syncedAt: null,
+      term: null,
+      count: 0,
+    });
+    await saveSchoolSync(ownerId, payload, 3);
+    expect(await listSchoolCourses(ownerId)).toHaveLength(1);
+  });
+  it("reports unsupported school data as a validation error", async () => {
+    await expect(
+      saveSchoolSync(
+        ownerId,
+        { ...payload, activities: [{ ...activity, weekPattern: "1-25" }] },
+        0,
+      ),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+  });
   it("allows only one writer with the same baseline revision", async () => {
     const results = await Promise.allSettled([
       saveSchoolSync(ownerId, payload, 0),
