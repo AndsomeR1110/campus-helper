@@ -60,9 +60,11 @@ export function createMemoryRepository(seed: { posts: LostFoundPost[] }): LostFo
       return clonePost(post);
     },
 
-    async updatePost(id, patch: PostPatch) {
+    async updatePost(id, patch: PostPatch, options) {
       const current = posts.get(id);
-      if (!current) throw new LostFoundError("NOT_FOUND", "Post not found.");
+      if (!current || (options?.activeOnly && !acceptsClaims(current))) {
+        throw new LostFoundError("NOT_FOUND", "This post is not available.");
+      }
       const next: LostFoundPost = { ...current, ...patch };
       posts.set(id, next);
       return clonePost(next);

@@ -22,7 +22,7 @@ describe("browsing (LF-AC-01, LF-AC-04)", () => {
   it("lists every public post, newest first, with a claim count", async () => {
     const { service } = makeHarness();
     const posts = await service.listPosts({});
-    expect(posts.map((post) => post.id)).toEqual(["post-01", "post-02", "post-03", "post-04"]);
+    expect(posts.map((post) => post.id)).toEqual(["post-01", "post-02", "post-03"]);
     expect(posts[0]).toMatchObject({ title: "Blue water bottle", claimCount: 0 });
   });
 
@@ -43,13 +43,8 @@ describe("browsing (LF-AC-01, LF-AC-04)", () => {
     expect((await service.listPosts({ query: "bottle" })).map((post) => post.id)).toEqual([
       "post-01",
     ]);
-    expect((await service.listPosts({ kind: "LOST" })).map((post) => post.id)).toEqual([
-      "post-02",
-      "post-04",
-    ]);
-    expect((await service.listPosts({ kind: "LOST", category: "BOOKS" })).map((p) => p.id)).toEqual(
-      ["post-04"],
-    );
+    expect((await service.listPosts({ kind: "LOST" })).map((post) => post.id)).toEqual(["post-02"]);
+    expect(await service.listPosts({ kind: "LOST", category: "BOOKS" })).toEqual([]);
     expect(await service.listPosts({ query: "no such item" })).toEqual([]);
   });
 
@@ -138,11 +133,11 @@ describe("claims (LF-AC-05, LF-AC-06, LF-AC-07)", () => {
     );
   });
 
-  it("refuses claims on a resolved post", async () => {
+  it("does not disclose a resolved lost post to a claimant", async () => {
     const harness = makeHarness();
     await expectError(
       () => harness.service.submitClaim("post-04", { message: "This book is mine, I lost it." }),
-      "FORBIDDEN",
+      "NOT_FOUND",
     );
   });
 
@@ -211,8 +206,50 @@ describe("finishing a post (LF-AC-07, LF-AC-08)", () => {
         harness.service.submitClaim("post-02", {
           message: "The card is mine, name starts with A.",
         }),
-      "FORBIDDEN",
+      "NOT_FOUND",
     );
+  });
+
+  it.each(["CLOSED", "RESOLVED"] as const)(
+    "keeps a %s lost post out of browse and preserves it for its author and admins",
+    async (status) => {
+      const { service, as } = makeHarness();
+      as(mei);
+      const claim = await service.submitClaim("post-02", {
+        message: "I can return the card to the study room.",
+      });
+
+      as(wei);
+      await service.setPostStatus("post-02", status);
+      expect(await service.listPosts({ kind: "LOST" })).toEqual([]);
+      expect(await service.listMyPosts()).toContainEqual(
+        expect.objectContaining({ id: "post-02", status }),
+      );
+      expect((await service.getPost("post-02")).claims).toContainEqual(
+        expect.objectContaining({ id: claim.id, status: "PENDING" }),
+      );
+      await expectError(() => service.decideClaim(claim.id, "REJECT"), "FORBIDDEN");
+      expect((await service.getPost("post-02")).post.status).toBe(status);
+
+      as(admin);
+      expect((await service.getPost("post-02")).post.status).toBe(status);
+      as(mei);
+      expect(await service.listPosts({ kind: "LOST" })).toEqual([]);
+      await expectError(() => service.getPost("post-02"), "NOT_FOUND");
+      as(null);
+      await expectError(() => service.getPost("post-02"), "NOT_FOUND");
+    },
+  );
+
+  it("continues to list finished found posts", async () => {
+    const { service, as } = makeHarness();
+    as(mei);
+    await service.setPostStatus("post-01", "RESOLVED");
+    as(wei);
+    expect(await service.listPosts({ kind: "FOUND" })).toContainEqual(
+      expect.objectContaining({ id: "post-01", status: "RESOLVED" }),
+    );
+    expect((await service.getPost("post-01")).post.status).toBe("RESOLVED");
   });
 
   it("refuses edits from anyone but the author and from a finished post", async () => {
