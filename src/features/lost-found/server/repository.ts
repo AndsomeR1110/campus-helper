@@ -37,7 +37,8 @@ export interface LostFoundRepository {
   listPosts(): Promise<LostFoundPost[]>;
   getPost(id: string): Promise<LostFoundPost | null>;
   createPost(post: LostFoundPost): Promise<LostFoundPost>;
-  updatePost(id: string, patch: PostPatch): Promise<LostFoundPost>;
+  /** An active-only update must reject if the post has ended since the caller read it. */
+  updatePost(id: string, patch: PostPatch, options?: { activeOnly: true }): Promise<LostFoundPost>;
 
   listClaimsForPost(postId: string): Promise<LostFoundClaim[]>;
   getClaim(id: string): Promise<LostFoundClaim | null>;
