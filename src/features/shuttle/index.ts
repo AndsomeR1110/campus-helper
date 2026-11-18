@@ -1,1 +1,1 @@
-export { ShuttlePage } from "./shuttle-page";
+export { ShuttlePage, ShuttleSkeleton } from "./shuttle-page";
