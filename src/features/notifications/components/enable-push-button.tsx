@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { BellRing } from "lucide-react";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Button, toast } from "@/components/ui";
 
 /** Chrome/Edge expose the Push API only in a service-worker scope. */
@@ -12,6 +13,16 @@ function isSupported() {
     "PushManager" in window &&
     "Notification" in window
   );
+}
+
+type PushState = "idle" | "unsupported" | "denied" | "enabled" | "pending";
+
+const subscribe = () => () => {};
+const getServerState = () => "idle" as const;
+
+function getBrowserState(): PushState {
+  if (!isSupported()) return "unsupported";
+  return Notification.permission === "denied" ? "denied" : "idle";
 }
 
 function urlBase64ToUint8Array(base64url: string) {
@@ -30,18 +41,17 @@ function urlBase64ToUint8Array(base64url: string) {
 /**
  * Enables browser notifications (task #30, FR-PWA-03).
  *
- * Permission is requested **only after the user presses the button** 鈥?never on
+ * Permission is requested **only after the user presses the button** — never on
  * page load. If they decline, in-app notifications keep working, so the copy
  * says so instead of nagging.
  */
 export function EnablePushButton() {
-  // Derived once on the client: no setState inside an effect (react-hooks rule).
-  const [state, setState] = useState<"idle" | "unsupported" | "denied" | "enabled" | "pending">(
-    () => {
-      if (!isSupported()) return "unsupported";
-      return Notification.permission === "denied" ? "denied" : "idle";
-    },
-  );
+  const t = useTranslations();
+  // The server cannot see browser permissions. Use the same initial render
+  // during hydration, then read the actual push capability in the browser.
+  const initial = useSyncExternalStore(subscribe, getBrowserState, getServerState);
+  const [result, setState] = useState<PushState | null>(null);
+  const state = result ?? initial;
 
   async function handleEnable() {
     setState("pending");
@@ -50,7 +60,7 @@ export function EnablePushButton() {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         setState(permission === "denied" ? "denied" : "idle");
-        toast.info("Notifications stay off. You will still see them in the app.");
+        toast.info(t("Notifications stay off. You will still see them in the app."));
         return;
       }
 
@@ -82,25 +92,29 @@ export function EnablePushButton() {
       }
 
       setState("enabled");
-      toast.success("Notifications enabled on this device");
+      toast.success(t("Notifications enabled on this device"));
     } catch (error) {
       setState("idle");
-      toast.error(error instanceof Error ? error.message : "Could not enable notifications.");
+      toast.error(t(error instanceof Error ? error.message : "Could not enable notifications."));
     }
   }
 
   if (state === "unsupported") {
-    return <p className="text-body-sm text-text-muted">This browser does not support push.</p>;
+    return (
+      <p className="text-body-sm text-text-muted">{t("This browser does not support push.")}</p>
+    );
   }
 
   if (state === "enabled") {
-    return <p className="text-body-sm text-text-muted">Notifications are on for this device.</p>;
+    return (
+      <p className="text-body-sm text-text-muted">{t("Notifications are on for this device.")}</p>
+    );
   }
 
   if (state === "denied") {
     return (
       <p className="text-body-sm text-text-muted">
-        Notifications are blocked in your browser settings. In-app reminders still work.
+        {t("Notifications are blocked in your browser settings. In-app reminders still work.")}
       </p>
     );
   }
@@ -108,7 +122,7 @@ export function EnablePushButton() {
   return (
     <Button variant="secondary" size="sm" onClick={handleEnable} loading={state === "pending"}>
       <BellRing className="size-4" aria-hidden />
-      Enable notifications
+      {t("Enable notifications")}
     </Button>
   );
 }

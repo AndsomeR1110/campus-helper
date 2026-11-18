@@ -1,3 +1,4 @@
+import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { EyeOff, Flag, History, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
@@ -32,6 +33,8 @@ function QueueSkeleton() {
 }
 
 async function ModerationQueue() {
+  const t = await getTranslations();
+  const locale = await getLocale();
   await connection();
   const { service } = getModerationRuntime();
   const { pending, history, audit } = await service.listModeration();
@@ -39,14 +42,14 @@ async function ModerationQueue() {
   const hidden = history.filter((r) => r.status === "RESOLVED").length;
   const stats = [
     {
-      label: "Waiting for review",
+      label: t("Waiting for review"),
       value: pending.length,
       tone: "bg-warning-subtle text-warning",
       icon: Flag,
     },
-    { label: "Posts hidden", value: hidden, tone: "bg-danger-subtle text-danger", icon: EyeOff },
+    { label: t("Posts hidden"), value: hidden, tone: "bg-danger-subtle text-danger", icon: EyeOff },
     {
-      label: "Admin actions",
+      label: t("Admin actions"),
       value: audit.length,
       tone: "bg-info-subtle text-info",
       icon: History,
@@ -74,14 +77,14 @@ async function ModerationQueue() {
       </dl>
 
       <section className="flex flex-col gap-3" aria-labelledby="admin-reported">
-        <SectionTitle id="admin-reported">Reported posts</SectionTitle>
+        <SectionTitle id="admin-reported">{t("Reported posts")}</SectionTitle>
 
         {pending.length === 0 ? (
           <Card variant="widget" className="p-0">
             <EmptyState
               icon={ShieldCheck}
-              title="All clear"
-              description="Reported posts show up here. Nothing is waiting right now."
+              title={t("All clear")}
+              description={t("Reported posts show up here. Nothing is waiting right now.")}
             />
           </Card>
         ) : (
@@ -109,8 +112,8 @@ async function ModerationQueue() {
                       </div>
                       <h3 className="text-subtitle">{report.postTitle}</h3>
                       <p className="text-caption text-text-muted">
-                        Reported by {formatDisplayName(report.reporterName)} ·{" "}
-                        {formatDate(new Date(report.createdAt))}{" "}
+                        {t("Reported by")} {formatDisplayName(report.reporterName)} ·{" "}
+                        {formatDate(new Date(report.createdAt), locale)}{" "}
                         {formatTime(new Date(report.createdAt))}
                       </p>
                     </div>
@@ -130,9 +133,9 @@ async function ModerationQueue() {
 
       <div className="grid gap-8 md:grid-cols-2">
         <section className="flex flex-col gap-3" aria-labelledby="admin-handled">
-          <SectionTitle id="admin-handled">Handled reports</SectionTitle>
+          <SectionTitle id="admin-handled">{t("Handled reports")}</SectionTitle>
           {history.length === 0 ? (
-            <p className="text-body-sm text-text-muted">No report has been handled yet.</p>
+            <p className="text-body-sm text-text-muted">{t("No report has been handled yet.")}</p>
           ) : (
             <ul className={cardStyles({ className: "divide-y divide-border p-0" })}>
               {history.map((report) => (
@@ -141,7 +144,7 @@ async function ModerationQueue() {
                     <span className="truncate text-body-sm font-medium">{report.postTitle}</span>
                     {report.handledByName ? (
                       <span className="text-caption text-text-muted">
-                        by {formatDisplayName(report.handledByName)}
+                        {t("by")} {formatDisplayName(report.handledByName)}
                       </span>
                     ) : null}
                   </span>
@@ -153,9 +156,11 @@ async function ModerationQueue() {
         </section>
 
         <section className="flex flex-col gap-3" aria-labelledby="admin-activity">
-          <SectionTitle id="admin-activity">Administrator activity</SectionTitle>
+          <SectionTitle id="admin-activity">{t("Administrator activity")}</SectionTitle>
           {audit.length === 0 ? (
-            <p className="text-body-sm text-text-muted">No administrative action recorded yet.</p>
+            <p className="text-body-sm text-text-muted">
+              {t("No administrative action recorded yet.")}
+            </p>
           ) : (
             <ol className="relative flex flex-col gap-3 pl-5 before:absolute before:top-1.5 before:bottom-1.5 before:left-1.5 before:w-px before:bg-border-strong">
               {audit.map((entry) => (
@@ -167,7 +172,8 @@ async function ModerationQueue() {
                   <p className="text-body-sm">{entry.note ?? entry.action}</p>
                   <p className="text-caption text-text-muted">
                     {formatDisplayName(entry.actorName)} · {humanizeAction(entry.action)} ·{" "}
-                    {formatDate(new Date(entry.createdAt))} {formatTime(new Date(entry.createdAt))}
+                    {formatDate(new Date(entry.createdAt), locale)}{" "}
+                    {formatTime(new Date(entry.createdAt))}
                   </p>
                 </li>
               ))}

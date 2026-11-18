@@ -1,3 +1,4 @@
+import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { Bell, BellRing, Smartphone } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -18,6 +19,8 @@ export const instant = false;
 
 /** PG-13 notification list (NT-AC-02, NT-AC-03). */
 async function NotificationList() {
+  const t = await getTranslations();
+  const locale = await getLocale();
   await connection();
   const user = await getCurrentUser();
   const { items } = await listForUser(user.id);
@@ -27,14 +30,14 @@ async function NotificationList() {
       <Card className="p-0">
         <EmptyState
           icon={Bell}
-          title="No notifications yet"
-          description="You will be reminded here before each class starts."
+          title={t("No notifications yet")}
+          description={t("You will be reminded here before each class starts.")}
           action={
             <Link
               href="/courses/new"
               className={buttonStyles({ size: "sm", variant: "secondary" })}
             >
-              Add a course
+              {t("Add a course")}
             </Link>
           }
         />
@@ -76,11 +79,11 @@ async function NotificationList() {
                     {item.title}
                   </span>
                   <span className="shrink-0 pt-0.5 text-caption text-text-muted">
-                    {formatRelativeTime(item.createdAt)}
+                    {formatRelativeTime(item.createdAt, undefined, locale)}
                   </span>
                 </span>
                 <span className="line-clamp-2 text-body-sm text-text-muted">{item.body}</span>
-                {unread && <span className="sr-only">Unread</span>}
+                {unread && <span className="sr-only">{t("Unread")}</span>}
               </span>
             </Link>
           </li>
@@ -116,11 +119,12 @@ async function HeaderActions() {
 }
 
 /** Push opt-in (task #30, FR-PWA-03): permission is only asked on press. */
-function PushSection() {
+async function PushSection() {
+  const t = await getTranslations();
   return (
     <section className="flex flex-col gap-2">
       <h2 className="text-caption tracking-wide text-text-muted uppercase">
-        Browser notifications
+        {t("Browser notifications")}
       </h2>
       <Card className="flex items-start gap-3">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-sm bg-primary-subtle text-primary">
@@ -134,11 +138,12 @@ function PushSection() {
   );
 }
 
-export default function NotificationsPage() {
+export default async function NotificationsPage() {
+  const t = await getTranslations();
   return (
     <>
       <TopBar
-        title="Notifications"
+        title={t("Notifications")}
         backHref="/home"
         actions={
           <Suspense fallback={null}>

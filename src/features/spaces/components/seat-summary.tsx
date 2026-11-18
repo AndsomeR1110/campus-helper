@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/client";
 import { Armchair, Monitor, PlugZap, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SEAT_TYPE_LABELS } from "../constants";
@@ -20,6 +23,7 @@ export function SeatSummary({
   availability?: string;
   selected?: boolean;
 }) {
+  const t = useTranslations();
   const Icon = SEAT_ICONS[space.type];
   return (
     <span className="flex items-start gap-3">
@@ -34,32 +38,32 @@ export function SeatSummary({
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="flex items-center justify-between gap-2">
-          <span className="truncate text-subtitle">Seat {space.seat}</span>
+          <span className="truncate text-subtitle">{t("Seat {seat}", { seat: space.seat })}</span>
           <span
             className={cn(
               "shrink-0 rounded-full px-2.5 py-0.5 text-caption",
               space.available ? "bg-success-subtle text-success" : "bg-neutral-subtle text-neutral",
             )}
           >
-            {availability ?? (space.available ? "Available" : "Booked")}
+            {t(availability ?? (space.available ? "Available" : "Booked"))}
             {selected ? " · Selected" : ""}
           </span>
         </span>
         <span className="truncate text-body-sm text-text-muted">
-          {space.building} · Floor {space.floor}
+          {t("{building} · Floor {floor}", { building: space.building, floor: space.floor })}
         </span>
         <span className="flex flex-wrap gap-1.5 pt-0.5 text-caption text-text-muted">
           <span className="rounded-full bg-surface-muted px-2 py-0.5">
-            {SEAT_TYPE_LABELS[space.type]}
+            {t(SEAT_TYPE_LABELS[space.type])}
           </span>
           {space.capacity > 1 && (
             <span className="rounded-full bg-surface-muted px-2 py-0.5">
-              Up to {space.capacity} people
+              {t("Up to {count} people", { count: space.capacity })}
             </span>
           )}
           <span className="inline-flex items-center gap-1 rounded-full bg-surface-muted px-2 py-0.5">
             <PlugZap className="size-3.5" aria-hidden />
-            {space.power ? "Power socket" : "No power socket"}
+            {space.power ? t("Power socket") : t("No power socket")}
           </span>
         </span>
       </span>

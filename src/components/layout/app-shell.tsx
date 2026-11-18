@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/client";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { AppLogo } from "@/components/ui";
@@ -22,13 +25,14 @@ export interface AppShellProps {
  * a 240px SideNav from 1024px. Pages render their own TopBar.
  */
 export function AppShell({ children, unreadCount, roleLinks }: AppShellProps) {
+  const t = useTranslations();
   return (
     <div className="flex min-h-full flex-1">
       <a
         href="#main"
         className="sr-only z-60 rounded-sm bg-surface px-4 py-2 text-primary shadow-overlay focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
       >
-        Skip to content
+        {t("Skip to content")}
       </a>
 
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-side-nav flex-col border-r glass px-3 py-4 lg:flex">
@@ -36,7 +40,7 @@ export function AppShell({ children, unreadCount, roleLinks }: AppShellProps) {
           <AppLogo className="size-9 drop-shadow-sm" />
           <span className="text-subtitle tracking-wide">CAMPUS HELPER</span>
         </Link>
-        <nav aria-label="Main">
+        <nav aria-label={t("Main")}>
           <Suspense fallback={<NavItems orientation="vertical" active={null} />}>
             <SideNavItems unreadCount={unreadCount} />
           </Suspense>

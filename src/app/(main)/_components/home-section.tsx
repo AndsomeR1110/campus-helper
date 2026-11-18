@@ -1,8 +1,9 @@
+import { getTranslations } from "@/lib/i18n/server";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 /** Titled block on Home with an optional "See all" link. */
-export function HomeSection({
+export async function HomeSection({
   title,
   seeAllHref,
   children,
@@ -11,6 +12,7 @@ export function HomeSection({
   seeAllHref?: string;
   children: ReactNode;
 }) {
+  const t = await getTranslations();
   const id = `home-${title.toLowerCase().replace(/\s+/g, "-")}`;
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3">
@@ -20,7 +22,8 @@ export function HomeSection({
         </h2>
         {seeAllHref && (
           <Link href={seeAllHref} className="text-body-sm font-medium text-primary hover:underline">
-            See all<span className="sr-only"> {title.toLowerCase()}</span>
+            {t("See all")}
+            <span className="sr-only"> {title.toLowerCase()}</span>
           </Link>
         )}
       </div>

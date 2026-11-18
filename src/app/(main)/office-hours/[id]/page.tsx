@@ -1,3 +1,4 @@
+import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { CalendarX, Clock } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
@@ -31,12 +32,13 @@ export const instant = false;
  * Shows the teacher's future slots with book / cancel actions.
  */
 export default async function TeacherDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = await getTranslations();
   const user = await requireUserOrLogout();
   const { id } = await params;
 
   return (
     <>
-      <TopBar title="Book an office hour" backHref="/office-hours" />
+      <TopBar title={t("Book an office hour")} backHref="/office-hours" />
       <PageContainer width="content">
         <Suspense fallback={<DetailSkeleton />}>
           <TeacherDetail id={id} userId={user.id} />
@@ -47,6 +49,8 @@ export default async function TeacherDetailPage({ params }: { params: Promise<{ 
 }
 
 async function TeacherDetail({ id, userId }: { id: string; userId: string }) {
+  const t = await getTranslations();
+  const locale = await getLocale();
   const [detail, myBookings] = await Promise.all([
     getTeacherDetail(id, userId),
     listMyBookings(userId),
@@ -80,12 +84,12 @@ async function TeacherDetail({ id, userId }: { id: string; userId: string }) {
         <div className="flex flex-wrap items-center justify-center gap-2">
           {teacher.office ? (
             <LocationText
-              location={`Office ${teacher.office}`}
+              location={t("Office {location}", { location: teacher.office })}
               className="rounded-full bg-surface-muted px-3 py-1 text-body-sm"
             />
           ) : null}
           <span className="rounded-full bg-success-subtle px-3 py-1 text-body-sm text-success">
-            {openCount} open {openCount === 1 ? "slot" : "slots"}
+            {openCount} {t("open")} {openCount === 1 ? "slot" : "slots"}
           </span>
         </div>
       </header>
@@ -95,18 +99,18 @@ async function TeacherDetail({ id, userId }: { id: string; userId: string }) {
       {slots.length === 0 ? (
         <EmptyState
           icon={CalendarX}
-          title="No upcoming office hours"
+          title={t("No upcoming office hours")}
           description={OFFICE_HOURS_MESSAGES.emptySlots}
         />
       ) : (
         [...days.entries()].map(([key, daySlots]) => (
           <section
             key={key}
-            aria-label={formatDate(daySlots[0].startsAt)}
+            aria-label={formatDate(daySlots[0].startsAt, locale)}
             className="flex flex-col gap-2"
           >
             <h2 className="text-caption tracking-wide text-text-muted uppercase">
-              {formatDate(daySlots[0].startsAt)}
+              {formatDate(daySlots[0].startsAt, locale)}
             </h2>
             <ul className="flex flex-col gap-2">
               {daySlots.map((slot) => {

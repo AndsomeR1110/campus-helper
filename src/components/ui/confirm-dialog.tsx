@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useState, type ReactNode } from "react";
 import { Button } from "./button";
 import { Modal } from "./modal";
@@ -36,6 +37,7 @@ export function ConfirmDialog({
   tone = "danger",
   onConfirm,
 }: ConfirmDialogProps) {
+  const t = useTranslations();
   const [pending, setPending] = useState(false);
 
   async function handleConfirm() {
@@ -66,7 +68,7 @@ export function ConfirmDialog({
             fullWidth
             className="md:w-auto"
           >
-            {cancelLabel}
+            {t(cancelLabel)}
           </Button>
           <Button
             variant={tone}
@@ -75,7 +77,7 @@ export function ConfirmDialog({
             fullWidth
             className="md:w-auto"
           >
-            {confirmLabel}
+            {t(confirmLabel)}
           </Button>
         </>
       }

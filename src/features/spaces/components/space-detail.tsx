@@ -1,4 +1,5 @@
 "use client";
+import { useLocale, useTranslations } from "@/lib/i18n/client";
 import { CalendarCheck } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -32,6 +33,7 @@ export function SpaceDetail({
   bookings: SpaceBooking[];
   now: string;
 }) {
+  const t = useTranslations();
   const router = useRouter();
   return (
     <>
@@ -55,7 +57,7 @@ export function SpaceDetail({
         <>
           <SpaceFilterForm query={query} action={`/spaces/${encodeURIComponent(space.id)}`} />
           <p role="alert" className="text-body-sm text-danger">
-            {error}
+            {error && t(error)}
           </p>
           <SeatBookings bookings={bookings} now={now} />
         </>
@@ -64,24 +66,30 @@ export function SpaceDetail({
   );
 }
 function SeatBookings({ bookings, now }: { bookings: SpaceBooking[]; now: string }) {
+  const locale = useLocale();
+  const t = useTranslations();
   const router = useRouter();
   const offline = useOffline();
   const [selected, setSelected] = useState<SpaceBooking>();
   const [failure, setFailure] = useState<string>();
   return (
-    <section className="flex flex-col gap-3" aria-label="Your bookings for this seat">
+    <section className="flex flex-col gap-3" aria-label={t("Your bookings for this seat")}>
       <h2 className="text-caption tracking-wide text-text-muted uppercase">
-        Your bookings for this seat
+        {t("Your bookings for this seat")}
       </h2>
       {bookings.length === 0 ? (
         <Card className="p-0">
-          <EmptyState icon={CalendarCheck} title="No bookings for this seat" className="py-6" />
+          <EmptyState
+            icon={CalendarCheck}
+            title={t("No bookings for this seat")}
+            className="py-6"
+          />
         </Card>
       ) : (
         bookings.map((b) => (
           <Card key={b.id} className="flex flex-wrap items-center gap-3">
             <p className="flex-1 text-subtitle tabular-nums">
-              {formatDate(b.startsAt)}, {formatTimeRange(b.startsAt, b.endsAt)}
+              {formatDate(b.startsAt, locale)}, {formatTimeRange(b.startsAt, b.endsAt)}
             </p>
             <StatusBadge kind="booking" status={b.status} />
             {b.status === "CONFIRMED" && Date.parse(b.startsAt) > Date.parse(now) && (
@@ -94,25 +102,27 @@ function SeatBookings({ bookings, now }: { bookings: SpaceBooking[]; now: string
                   setFailure(undefined);
                 }}
               >
-                Cancel booking
+                {t("Cancel booking")}
               </Button>
             )}
           </Card>
         ))
       )}
-      {offline && <p className="text-body-sm text-text-muted">Unavailable offline</p>}
+      {offline && <p className="text-body-sm text-text-muted">{t("Unavailable offline")}</p>}
       {failure && (
         <p role="alert" className="text-body-sm text-danger">
-          {failure}
+          {t(failure)}
         </p>
       )}
       <ConfirmDialog
         open={!!selected}
         onClose={() => setSelected(undefined)}
-        title="Cancel this booking?"
-        description="The seat will become available for this time. The cancelled record will be kept."
-        confirmLabel="Cancel booking"
-        cancelLabel="Keep booking"
+        title={t("Cancel this booking?")}
+        description={t(
+          "The seat will become available for this time. The cancelled record will be kept.",
+        )}
+        confirmLabel={t("Cancel booking")}
+        cancelLabel={t("Keep booking")}
         onConfirm={async () => {
           if (!selected) return;
           if (offline) {

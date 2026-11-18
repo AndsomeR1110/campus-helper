@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
@@ -26,6 +27,7 @@ function isoFromLocal(value: string): string {
 
 /** PG-15. Creates the post, then uploads the optional photo to the new id. */
 export function PostForm() {
+  const t = useTranslations();
   const router = useRouter();
   const [kind, setKind] = useState<PostKind>("LOST");
   const [category, setCategory] = useState<PostCategory>("ELECTRONICS");
@@ -61,7 +63,7 @@ export function PostForm() {
 
       if (!response.ok || !payload.data) {
         setErrors(payload.error?.fields ?? {});
-        toast.error(payload.error?.message ?? "The post could not be published.");
+        toast.error(payload.error?.message ?? t("The post could not be published."));
         return;
       }
 
@@ -72,14 +74,14 @@ export function PostForm() {
           method: "POST",
           body,
         });
-        if (!upload.ok) toast.error("Published, but the photo was not accepted.");
+        if (!upload.ok) toast.error(t("Published, but the photo was not accepted."));
       }
 
-      toast.success("Post published.");
+      toast.success(t("Post published."));
       router.push(`/lost-found/${payload.data.id}`);
       router.refresh();
     } catch {
-      toast.error("Network error. Try again when you are back online.");
+      toast.error(t("Network error. Try again when you are back online."));
     } finally {
       setPending(false);
     }
@@ -87,73 +89,73 @@ export function PostForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <FormField label="Type" required error={errors.kind}>
+      <FormField label={t("Type")} required error={errors.kind}>
         <Select value={kind} onChange={(event) => setKind(event.target.value as PostKind)}>
           {(Object.keys(POST_KIND_LABELS) as PostKind[]).map((value) => (
             <option key={value} value={value}>
-              {POST_KIND_LABELS[value]}
+              {t(POST_KIND_LABELS[value])}
             </option>
           ))}
         </Select>
       </FormField>
 
       <FormField
-        label="Title"
+        label={t("Title")}
         required
-        hint={`Up to ${TITLE_MAX_LENGTH} characters.`}
+        hint={t("Up to {count} characters.", { count: TITLE_MAX_LENGTH })}
         error={errors.title}
       >
-        <Input name="title" maxLength={TITLE_MAX_LENGTH} placeholder="Blue water bottle" />
+        <Input name="title" maxLength={TITLE_MAX_LENGTH} placeholder={t("Blue water bottle")} />
       </FormField>
 
-      <FormField label="Category" required error={errors.category}>
+      <FormField label={t("Category")} required error={errors.category}>
         <Select
           value={category}
           onChange={(event) => setCategory(event.target.value as PostCategory)}
         >
           {POST_CATEGORIES.map((value) => (
             <option key={value} value={value}>
-              {CATEGORY_LABELS[value]}
+              {t(CATEGORY_LABELS[value])}
             </option>
           ))}
         </Select>
       </FormField>
 
       <FormField
-        label="Location"
+        label={t("Location")}
         required
         error={errors.location}
-        hint="Building, floor or a nearby landmark."
+        hint={t("Building, floor or a nearby landmark.")}
       >
-        <Input name="location" placeholder="Library, 3rd floor" />
+        <Input name="location" placeholder={t("Library, 3rd floor")} />
       </FormField>
 
       <FormField
-        label="When did it happen?"
+        label={t("When did it happen?")}
         required
         error={errors.occurredAt}
-        hint="You cannot pick a time in the future."
+        hint={t("You cannot pick a time in the future.")}
       >
         <DateTimePicker value={occurredAt} onChange={setOccurredAt} max="today" />
       </FormField>
 
       <FormField
-        label="Description"
+        label={t("Description")}
         required
         error={errors.description}
-        hint="Do not include phone numbers, ID numbers or other private details."
+        hint={t("Do not include phone numbers, ID numbers or other private details.")}
       >
         <Textarea
           name="description"
           rows={5}
           maxLength={DESCRIPTION_MAX_LENGTH}
-          placeholder="Colour, brand, marks, or where you last saw it."
+          placeholder={t("Colour, brand, marks, or where you last saw it.")}
         />
       </FormField>
 
       <FormField
-        label="Photo (optional)"
-        hint="PNG, JPEG or WebP, up to 5 MB."
+        label={t("Photo (optional)")}
+        hint={t("PNG, JPEG or WebP, up to 5 MB.")}
         error={errors.image}
       >
         <Input
@@ -166,7 +168,7 @@ export function PostForm() {
       </FormField>
 
       <Button type="submit" size="lg" fullWidth loading={pending}>
-        Publish post
+        {t("Publish post")}
       </Button>
     </form>
   );

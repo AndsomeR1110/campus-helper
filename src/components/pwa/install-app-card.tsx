@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { Download, Share } from "lucide-react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui";
@@ -34,6 +35,7 @@ function isIos() {
  * and nothing when the app is already installed or installation isn't possible.
  */
 export function InstallAppCard() {
+  const t = useTranslations();
   const standalone = useSyncExternalStore(subscribeStandalone, isStandalone, () => true);
   const ios = useSyncExternalStore(
     () => () => {},
@@ -71,10 +73,10 @@ export function InstallAppCard() {
         </span>
         <div className="flex flex-col gap-0.5">
           <h2 id="install-app-title" className="text-subtitle">
-            Install the app
+            {t("Install the app")}
           </h2>
           <p className="text-body-sm text-text-muted">
-            Open CAMPUS HELPER from your home screen, full screen.
+            {t("Open CAMPUS HELPER from your home screen, full screen.")}
           </p>
         </div>
       </div>
@@ -87,12 +89,13 @@ export function InstallAppCard() {
             setPromptEvent(null);
           }}
         >
-          Install app
+          {t("Install app")}
         </Button>
       ) : (
         <p className="text-body-sm text-text">
-          In Safari, tap <Share className="inline size-4 align-text-bottom" aria-label="Share" />{" "}
-          then <span className="font-medium">Add to Home Screen</span>.
+          {t("In Safari, tap")}{" "}
+          <Share className="inline size-4 align-text-bottom" aria-label={t("Share")} /> {t("then")}{" "}
+          <span className="font-medium">{t("Add to Home Screen")}</span>.
         </p>
       )}
     </section>

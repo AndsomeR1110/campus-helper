@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { CircleCheck, WifiOff } from "lucide-react";
 import { useOffline } from "next/offline";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ const BACK_ONLINE_MS = 3000;
  * (Home) render it themselves.
  */
 export function OfflineBanner({ className }: { className?: string }) {
+  const t = useTranslations();
   const offline = useOffline();
   const [previousOffline, setPreviousOffline] = useState(offline);
   const [backOnline, setBackOnline] = useState(false);
@@ -44,12 +46,14 @@ export function OfflineBanner({ className }: { className?: string }) {
       {offline ? (
         <>
           <WifiOff className="size-4 shrink-0" aria-hidden />
-          <span>You’re offline. Bookings and posts are unavailable until you reconnect.</span>
+          <span>
+            {t("You’re offline. Bookings and posts are unavailable until you reconnect.")}
+          </span>
         </>
       ) : (
         <>
           <CircleCheck className="size-4 shrink-0" aria-hidden />
-          <span>Back online</span>
+          <span>{t("Back online")}</span>
         </>
       )}
     </div>

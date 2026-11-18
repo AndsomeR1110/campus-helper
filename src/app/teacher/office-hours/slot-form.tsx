@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -26,6 +27,7 @@ function plusMinutes(local: string, minutes: number) {
  * Times are entered in Asia/Shanghai and converted to UTC before submitting.
  */
 export function SlotForm() {
+  const t = useTranslations();
   const router = useRouter();
   const offline = useOffline();
   const [startsAt, setStartsAt] = useState("");
@@ -39,7 +41,7 @@ export function SlotForm() {
     setFieldErrors({});
 
     if (!startsAt || !endsAt) {
-      setFieldErrors({ startsAt: "Both start and end time are required." });
+      setFieldErrors({ startsAt: t("Both start and end time are required.") });
       return;
     }
 
@@ -74,18 +76,18 @@ export function SlotForm() {
           toast.error(payload.error.message);
           if (payload.error.fields) setFieldErrors(payload.error.fields);
         } else {
-          toast.error("Could not create the slot.");
+          toast.error(t("Could not create the slot."));
         }
         return;
       }
 
-      toast.success("Slot created.");
+      toast.success(t("Slot created."));
       setStartsAt("");
       setEndsAt("");
       setLocation("");
       router.refresh();
     } catch {
-      toast.error("Network error. Please try again.");
+      toast.error(t("Network error. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -97,10 +99,10 @@ export function SlotForm() {
       className={cardStyles({ variant: "widget", className: "flex flex-col gap-4" })}
       noValidate
     >
-      <h2 className="text-subtitle text-text">Add an office hour slot</h2>
+      <h2 className="text-subtitle text-text">{t("Add an office hour slot")}</h2>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <FormField label="Starts (Asia/Shanghai)" error={fieldErrors.startsAt}>
+        <FormField label={t("Starts (Asia/Shanghai)")} error={fieldErrors.startsAt}>
           <DateTimePicker
             value={startsAt}
             onChange={(value) => {
@@ -114,7 +116,7 @@ export function SlotForm() {
             timeStep={15}
           />
         </FormField>
-        <FormField label="Ends" error={fieldErrors.endsAt}>
+        <FormField label={t("Ends")} error={fieldErrors.endsAt}>
           <DateTimePicker
             value={endsAt}
             onChange={setEndsAt}
@@ -126,7 +128,7 @@ export function SlotForm() {
         </FormField>
       </div>
 
-      <FormField label="Location (optional)" hint="e.g. B-301">
+      <FormField label={t("Location (optional)")} hint={t("e.g. B-301")}>
         <Input
           type="text"
           value={location}
@@ -137,9 +139,9 @@ export function SlotForm() {
 
       <div className="flex flex-col gap-1">
         <Button type="submit" loading={submitting} disabled={offline} className="self-start">
-          {submitting ? "Creating…" : "Create slot"}
+          {submitting ? "Creating…" : t("Create slot")}
         </Button>
-        {offline && <p className="text-body-sm text-text-muted">Unavailable offline.</p>}
+        {offline && <p className="text-body-sm text-text-muted">{t("Unavailable offline.")}</p>}
       </div>
     </form>
   );
