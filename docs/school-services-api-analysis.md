@@ -17,11 +17,11 @@
 
 ## 0. 统一身份认证（uim / esc-sso）
 
-| 项 | 值 |
-| --- | --- |
-| 登录页 | `https://uim.xjtlu.edu.cn/esc-sso/login/page` |
+| 项         | 值                                                                                                                  |
+| ---------- | ------------------------------------------------------------------------------------------------------------------- |
+| 登录页     | `https://uim.xjtlu.edu.cn/esc-sso/login/page`                                                                       |
 | OAuth 授权 | `https://sso.xjtlu.edu.cn/esc-sso/oauth2.0/authorize?response_type=code&client_id=<per-app>&redirect_uri=<per-app>` |
-| 会话特征 | 登录一次后，各服务首次访问经 302 票据链路自动完成登录（WebCookie 有效期内） |
+| 会话特征   | 登录一次后，各服务首次访问经 302 票据链路自动完成登录（WebCookie 有效期内）                                         |
 
 要点：
 
@@ -36,16 +36,16 @@
 网关 `https://ams.xjtlu.edu.cn/xjtlu/`，请求头 `X-Token`（登录后由前端写入
 `localStorage.Token`，32 位十六进制）。响应统一为 `{ code: 0 | 401 | 1001, data, message }`。
 
-| 方法 | 端点 | 说明 |
-| --- | --- | --- |
-| GET | `/xjtlu/sys-maintenance-mode/detail` | 维护状态（免 token） |
-| GET | `/xjtlu/sso/mobile/login?code=OC-xxx` | SSO code 换 token + userInfo |
-| GET | `/xjtlu/xjtlu-base-student-timetables/getStudentTimetable` | 近期课表 + 每节课 `signInRecordId` |
-| GET | `/xjtlu/xjtlu-base-student-timetables/getStudentAttendance` | 出勤统计 `{ exceed, attendance }` |
-| GET | `/xjtlu/sign/qRCodeSign?code=<X>&type=1` | 扫码签到（`code` 为二维码内 state） |
-| GET | `/xjtlu/sign/qRCodeSign?code=<X>&type=2` | 签到码签到（`code` 为 8 位签到码） |
-| GET | `/xjtlu/sys-message/unReadCount` | 站内未读数 |
-| GET | `/xjtlu/sys-dict-data/9` · `/13` | 字典（请假开关等） |
+| 方法 | 端点                                                        | 说明                                |
+| ---- | ----------------------------------------------------------- | ----------------------------------- |
+| GET  | `/xjtlu/sys-maintenance-mode/detail`                        | 维护状态（免 token）                |
+| GET  | `/xjtlu/sso/mobile/login?code=OC-xxx`                       | SSO code 换 token + userInfo        |
+| GET  | `/xjtlu/xjtlu-base-student-timetables/getStudentTimetable`  | 近期课表 + 每节课 `signInRecordId`  |
+| GET  | `/xjtlu/xjtlu-base-student-timetables/getStudentAttendance` | 出勤统计 `{ exceed, attendance }`   |
+| GET  | `/xjtlu/sign/qRCodeSign?code=<X>&type=1`                    | 扫码签到（`code` 为二维码内 state） |
+| GET  | `/xjtlu/sign/qRCodeSign?code=<X>&type=2`                    | 签到码签到（`code` 为 8 位签到码）  |
+| GET  | `/xjtlu/sys-message/unReadCount`                            | 站内未读数                          |
+| GET  | `/xjtlu/sys-dict-data/9` · `/13`                            | 字典（请假开关等）                  |
 
 课表数据结构：
 
@@ -90,15 +90,15 @@ data: [{
 3. `POST /token`（form-urlencoded，`grant_type=password&Username=<code>`）→
    `{ access_token, userId, userName }`，此后请求带 `Authorization: Bearer <token>`
 
-| 方法 | 端点 | 说明 |
-| --- | --- | --- |
-| GET | `/api/v1/Search/DbList` | 库列表：`EXAMXJTLU`(试卷, dbId=3)、`ETDXJTLU`(FYP)、`ETDXJTLU1`(Dissertation-PGT)、`ETDXJTLU2`(Thesis-PGR) |
-| GET | `/api/v1/Search/<DbCode>?userId=` | 检索字段与分类（试卷库：`PaperCode`/`PaperTitle`/`Year`；分类 Year/Semster/Type） |
-| POST | `/api/v1/Search/Search` | 检索（body 见下） |
-| GET | `/api/v1/Detail?userId&dbId&dbCode&recordId` | 详情与权限 `{ hasBrowserRight, hasDownloadRight, flag }` |
-| GET | `/api/v1/file/BrowserUrl/<flag>?userId&dbId&dbCode&recordId` | 获取服务端签名的在线查看 URL（含 timestamp/signature/clientIp） |
-| GET | `/api/v1/File/BrowserFile?...` | 在线查看的文件本体（实测返回 `application/pdf`，约 727 KB） |
-| GET | `/api/v1/File/DownloadFile/...` | 归档下载端点；学生角色由服务端策略限制 |
+| 方法 | 端点                                                         | 说明                                                                                                       |
+| ---- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| GET  | `/api/v1/Search/DbList`                                      | 库列表：`EXAMXJTLU`(试卷, dbId=3)、`ETDXJTLU`(FYP)、`ETDXJTLU1`(Dissertation-PGT)、`ETDXJTLU2`(Thesis-PGR) |
+| GET  | `/api/v1/Search/<DbCode>?userId=`                            | 检索字段与分类（试卷库：`PaperCode`/`PaperTitle`/`Year`；分类 Year/Semster/Type）                          |
+| POST | `/api/v1/Search/Search`                                      | 检索（body 见下）                                                                                          |
+| GET  | `/api/v1/Detail?userId&dbId&dbCode&recordId`                 | 详情与权限 `{ hasBrowserRight, hasDownloadRight, flag }`                                                   |
+| GET  | `/api/v1/file/BrowserUrl/<flag>?userId&dbId&dbCode&recordId` | 获取服务端签名的在线查看 URL（含 timestamp/signature/clientIp）                                            |
+| GET  | `/api/v1/File/BrowserFile?...`                               | 在线查看的文件本体（实测返回 `application/pdf`，约 727 KB）                                                |
+| GET  | `/api/v1/File/DownloadFile/...`                              | 归档下载端点；学生角色由服务端策略限制                                                                     |
 
 检索请求体（实测格式）：
 
@@ -143,17 +143,17 @@ Search（按模块名/代码检索） → Detail（取 recordId 与权限）
 网关 `/ic-web/`（页面 `config.js` 的 `window.g.ApiUrl`），请求头
 `token: <32hex>` + `lan: 2`。响应 `{ code: 0|1|302|405, data, message }`。
 
-| 方法 | 端点 | 说明 |
-| --- | --- | --- |
-| GET | `/ic-web/seatMenu` | 校区/楼层/区域树（含 `totalCount` / `remainCount`） |
-| GET | `/ic-web/reserve?roomIds=<areaId>&resvDates=<YYYYMMDD>,<YYYYMMDD>&sysKind=8` | 座位图与单个座位详情（坐标、占用、规则） |
-| GET | `/ic-web/seatRoom/openScope?roomId&sysKind&resvDate` | 开放时段（按星期） |
-| POST | `/ic-web/reserve` | 预约座位（`devIds`、`resvDates`、起止时间、`sysKind`，规则要求时带 captcha） |
-| POST | `/ic-web/reserve/quickResv` | 快速预约 |
-| GET | `/ic-web/seatDevice/resvStatus` | 全馆统计 `{ available, used }` |
-| GET | `/ic-web/reserve/punishInfo` | 违约记录 |
-| GET | `/ic-web/psgSeat/resvInfo` | 我的预约详情（需起止时间参数） |
-| GET | `/ic-web/news` · `/ic-web/news/questions` | 公告 / FAQ |
+| 方法 | 端点                                                                         | 说明                                                                         |
+| ---- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| GET  | `/ic-web/seatMenu`                                                           | 校区/楼层/区域树（含 `totalCount` / `remainCount`）                          |
+| GET  | `/ic-web/reserve?roomIds=<areaId>&resvDates=<YYYYMMDD>,<YYYYMMDD>&sysKind=8` | 座位图与单个座位详情（坐标、占用、规则）                                     |
+| GET  | `/ic-web/seatRoom/openScope?roomId&sysKind&resvDate`                         | 开放时段（按星期）                                                           |
+| POST | `/ic-web/reserve`                                                            | 预约座位（`devIds`、`resvDates`、起止时间、`sysKind`，规则要求时带 captcha） |
+| POST | `/ic-web/reserve/quickResv`                                                  | 快速预约                                                                     |
+| GET  | `/ic-web/seatDevice/resvStatus`                                              | 全馆统计 `{ available, used }`                                               |
+| GET  | `/ic-web/reserve/punishInfo`                                                 | 违约记录                                                                     |
+| GET  | `/ic-web/psgSeat/resvInfo`                                                   | 我的预约详情（需起止时间参数）                                               |
+| GET  | `/ic-web/news` · `/ic-web/news/questions`                                    | 公告 / FAQ                                                                   |
 
 `sysKind`：8=座位、1=研修间。座位状态为位掩码（`4`=使用中，`128`=已结束）。
 预约规则示例（3F-North）：最短 30 分钟、单次最长 840 分钟、开始前 30 分钟可取消、
@@ -168,14 +168,14 @@ Search（按模块名/代码检索） → Detail（取 recordId 与权限）
 
 认证：SSO 免登 + Laravel CSRF `_token`（页面 `meta[name=csrf-token]`）。
 
-| 方法 | 端点 | 说明 |
-| --- | --- | --- |
-| GET | `/entry/room?parktype_id=<id>&day=<YYYY-MM-DD>` | 时段表；格子为 `<td class="new" data-starttime="<unix>" data-roomid="<id>">` |
-| GET | `/entry/add?start_time=<unix>&end_time=<unix>&room=<roomId>` | 预约表单（可预约窗口为今天起 7 天） |
-| POST | `/entry/add` | 提交预约，字段：`_token, room_id, name(必填), start_date, start_time, end_date, end_time, memberlist, date` |
-| GET | `/entry/member/add?sid=<学号或AD>&room_id=` | 成员校验，返回 `{ data: { sid, ad, name } }` |
-| GET | `/myentry/list`（移动端 `/h5/entry/mylist`） | 我的预约列表 |
-| POST | （列表行内 URL）`{ id, action, _token }` | 取消预约 |
+| 方法 | 端点                                                         | 说明                                                                                                        |
+| ---- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| GET  | `/entry/room?parktype_id=<id>&day=<YYYY-MM-DD>`              | 时段表；格子为 `<td class="new" data-starttime="<unix>" data-roomid="<id>">`                                |
+| GET  | `/entry/add?start_time=<unix>&end_time=<unix>&room=<roomId>` | 预约表单（可预约窗口为今天起 7 天）                                                                         |
+| POST | `/entry/add`                                                 | 提交预约，字段：`_token, room_id, name(必填), start_date, start_time, end_date, end_time, memberlist, date` |
+| GET  | `/entry/member/add?sid=<学号或AD>&room_id=`                  | 成员校验，返回 `{ data: { sid, ad, name } }`                                                                |
+| GET  | `/myentry/list`（移动端 `/h5/entry/mylist`）                 | 我的预约列表                                                                                                |
+| POST | （列表行内 URL）`{ id, action, _token }`                     | 取消预约                                                                                                    |
 
 区域：`54`=SIP 讨论室、`55`=SIP 静音舱、`56`=TC 讨论室、`58`=SIP 讨论室 2。
 房间号（节选）：讨论室 FBG48=763 / FBG50=764 / FBG52=765；静音舱 FB145=753 … FB175=762；
@@ -195,11 +195,11 @@ Search（按模块名/代码检索） → Detail（取 recordId 与权限）
 现有 `src/features/shuttle/school-adapter.ts` 已按该站点实现只读解析，
 本节补齐其预约闭环所需的写接口。
 
-| 方法 | 端点 | 说明 |
-| --- | --- | --- |
-| GET | `/schedule/list?route_id=<1 或 2>&date=<YYYY-MM-DD>` | 班次卡片列表（route 1=去 TC，2=去 SIP），每张卡片内嵌预约表单 |
-| POST | `/schedule/book/<scheduleId>` | 预约：表单字段 `_token + departure_date`；成功与失败均以 302 + 页面 flash 提示返回 |
-| GET | `/booking/list` | 我的预约（含乘车二维码与取消入口） |
+| 方法 | 端点                                                 | 说明                                                                               |
+| ---- | ---------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| GET  | `/schedule/list?route_id=<1 或 2>&date=<YYYY-MM-DD>` | 班次卡片列表（route 1=去 TC，2=去 SIP），每张卡片内嵌预约表单                      |
+| POST | `/schedule/book/<scheduleId>`                        | 预约：表单字段 `_token + departure_date`；成功与失败均以 302 + 页面 flash 提示返回 |
+| GET  | `/booking/list`                                      | 我的预约（含乘车二维码与取消入口）                                                 |
 
 规则（页面明示并实测确认）：每日 16:00 前可预约次日班车；当月爽约
 （预约后未扫码且未取消）3 次会被系统限制预约至次月 1 日。取消入口在
