@@ -566,5 +566,11 @@
   "Check-in closed": "签到已关闭",
   "Checked in": "已签到",
   "Late": "迟到",
-  "Absent": "缺勤"
+  "Absent": "缺勤",
+  "Android app": "Android 客户端",
+  "Check in with your teacher’s class code": "输入教师课堂签到码完成签到",
+  "Class check-in": "课堂签到",
+  "Not connected yet": "暂未接入",
+  "School services": "学校服务",
+  "Use your university account in the Campus Helper Android app.": "在 Campus Helper Android 客户端中使用学校账号登录。"
 }
