@@ -2,7 +2,7 @@
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { snapshotSchema, normalizeSnapshot } from "./schemas";
 const native = registerPlugin<{
-  connect(options: { actorId: string }): Promise<unknown>;
+  connect(options: { actorId: string; silent?: boolean }): Promise<unknown>;
   forgetConnection(options: { actorId: string }): Promise<void>;
 }>("SchoolTimetable");
 export const schoolTimetableAvailable = () =>
@@ -23,11 +23,12 @@ export const readSyncState = async (): Promise<SyncState> =>
 export async function syncSchoolTimetable(
   expectedActor: string,
   stillActive: () => boolean = () => true,
+  silent = false,
 ): Promise<SyncState> {
   if (!schoolTimetableAvailable())
     throw Error("Automatic school connection requires the Android app.");
   const before = await readSyncState();
-  const snapshot = snapshotSchema.parse(await native.connect({ actorId: expectedActor }));
+  const snapshot = snapshotSchema.parse(await native.connect({ actorId: expectedActor, silent }));
   normalizeSnapshot(snapshot);
   if (!stillActive()) throw Error("Timetable connection cancelled.");
   return responseData(
@@ -45,7 +46,15 @@ export function connectionError(error: unknown) {
     return "This school term is not configured yet. Your saved timetable is unchanged.";
   if (code === "TIMED_OUT") return "School connection timed out. Please reconnect.";
   if (code === "UPDATE_WEBVIEW") return "Update Android System WebView before connecting.";
-  return error instanceof Error && !code && !error.message.includes("[")
+  if (
+    code === "NATIVE_UNAVAILABLE" ||
+    (error instanceof Error && error.message === "NATIVE_UNAVAILABLE")
+  )
+    return "Update and open the Android app to restore your school connection. Saved courses are kept.";
+  return error instanceof Error &&
+    !code &&
+    !error.message.includes("[") &&
+    !/^[A-Z_]+$/.test(error.message)
     ? error.message
     : "Could not read the school timetable. Check your connection and reconnect. Your saved timetable is unchanged.";
 }

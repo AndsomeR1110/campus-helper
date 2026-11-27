@@ -333,6 +333,15 @@
   }
 }
 
+/* Plain box-shadow keeps pill-shaped keyboard focus visible in older WebViews
+ * where the generated ring shadow can compute to none. */
+@layer utilities {
+  .nav-focus:focus-visible,
+  :focus-visible > .nav-focus {
+    box-shadow: 0 0 0 2px var(--color-focus-ring);
+  }
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;

@@ -42,12 +42,15 @@ export function LoginForm({ nextPath }: LoginFormProps) {
     }
     setFieldErrors({});
     setSubmitting(true);
+    const requestBody = JSON.stringify(parsed.data);
+    // Next may retain a hidden route after navigation; do not leave its password input populated.
+    setPassword("");
 
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
+        body: requestBody,
       });
       const payload = (await response.json()) as
         { data: unknown } | { error: { code: string; message: string } };

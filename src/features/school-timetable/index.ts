@@ -1,4 +1,5 @@
-export { SchoolTimetableConnection } from "./connection";
+export { ConnectionSkeleton, SchoolTimetableConnection } from "./connection";
+export { classCount, formatWeeks } from "./sync-status";
 export {
   schoolTimetableAvailable,
   readSyncState,
