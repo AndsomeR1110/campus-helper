@@ -560,5 +560,12 @@
   "School timetable settings": "学校课表设置",
   "Shuttle bus": "校车 / 区间车",
   "Synced {time}": "已同步 · {time}",
-  "Syncing": "同步中"
+  "Syncing": "同步中",
+  "Not open yet": "尚未开放",
+  "Check-in open": "签到开放中",
+  "Check-in closed": "签到已关闭",
+  "Checked in": "已签到",
+  "Late": "迟到",
+  "Absent": "缺勤",
+  "Class check-in": "课堂签到"
 }
