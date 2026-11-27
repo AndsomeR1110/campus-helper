@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { CircleAlert, CircleCheck, Info, X, type LucideIcon } from "lucide-react";
 import { useEffect, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
@@ -66,6 +67,7 @@ const STYLES: Record<ToastType, { icon: LucideIcon; iconClass: string }> = {
 };
 
 function ToastView({ item }: { item: ToastItem }) {
+  const t = useTranslations();
   const { icon: Icon, iconClass } = STYLES[item.type];
 
   useEffect(() => {
@@ -79,11 +81,11 @@ function ToastView({ item }: { item: ToastItem }) {
       className="pointer-events-auto flex w-full items-start gap-3 rounded-md border glass-strong p-4 shadow-overlay md:w-90"
     >
       <Icon className={cn("mt-0.5 size-5 shrink-0", iconClass)} aria-hidden />
-      <p className="flex-1 text-body-sm text-text">{item.message}</p>
+      <p className="flex-1 text-body-sm text-text">{t(item.message)}</p>
       <button
         type="button"
         onClick={() => dismiss(item.id)}
-        aria-label="Dismiss"
+        aria-label={t("Dismiss")}
         className="-m-1 rounded-sm p-1 text-text-muted hover:text-text"
       >
         <X className="size-4" />

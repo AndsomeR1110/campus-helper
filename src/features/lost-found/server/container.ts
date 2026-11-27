@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 
 import { DEMO_POSTS } from "../demo-data";
+import type { LostFoundRepository } from "./repository";
 import { createMemoryRepository } from "./memory-repository";
 import { createPrismaLostFoundRepository } from "./prisma-repository";
 import { createLostFoundService, type LostFoundService } from "./service";
@@ -13,6 +14,7 @@ import { getCurrentViewer } from "./viewer";
 
 interface LostFoundRuntime {
   service: LostFoundService;
+  repository: LostFoundRepository;
   storage: ImageStorage;
   /** True when the demo data is in use instead of PostgreSQL. */
   demo: boolean;
@@ -50,7 +52,7 @@ export function getLostFoundRuntime(): LostFoundRuntime {
     storage,
   });
 
-  const runtime: LostFoundRuntime = { service, storage, demo };
+  const runtime: LostFoundRuntime = { service, repository, storage, demo };
   globalStore.__lostFoundRuntime = runtime;
   return runtime;
 }

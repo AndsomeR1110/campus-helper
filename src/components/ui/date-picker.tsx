@@ -1,8 +1,10 @@
 "use client";
 
+import { useLocale, useTranslations } from "@/lib/i18n/client";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState, type AriaAttributes, type KeyboardEvent } from "react";
-import { dayKey, formatDate } from "@/lib/time";
+import type { Locale } from "@/lib/i18n/messages";
+import { dayKey, formatDate, formatDateWithYear } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { controlClasses, useFieldControlProps } from "./form-field";
@@ -62,12 +64,14 @@ export function clampDay(key: string, min?: string, max?: string) {
 }
 
 /** "Thu 12 Nov 2026" */
-function formatLong(key: string) {
+function formatLong(key: string, locale: Locale) {
+  if (locale === "zh-CN") return formatDateWithYear(`${key}T12:00:00+08:00`, locale);
   return `${formatDate(`${key}T12:00:00+08:00`)} ${key.slice(0, 4)}`;
 }
 
 /** "Thursday, 12 November 2026", for screen readers. */
-function formatSpoken(key: string) {
+function formatSpoken(key: string, locale: Locale) {
+  if (locale === "zh-CN") return formatLong(key, locale);
   const d = new Date(toUtc(key));
   const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][
     d.getUTCDay()
@@ -116,6 +120,8 @@ export function DatePicker({
   className,
   ...props
 }: DatePickerProps) {
+  const locale = useLocale();
+  const t = useTranslations();
   const field = useFieldControlProps(props);
   const [open, setOpen] = useState(false);
   const [today, setToday] = useState("");
@@ -179,9 +185,9 @@ export function DatePicker({
 
   const shortcuts = today
     ? [
-        { label: "Yesterday", key: addDays(today, -1) },
-        { label: "Today", key: today },
-        { label: "Tomorrow", key: addDays(today, 1) },
+        { label: t("Yesterday"), key: addDays(today, -1) },
+        { label: t("Today"), key: today },
+        { label: t("Tomorrow"), key: addDays(today, 1) },
       ].filter((s) => inRange(s.key))
     : [];
 
@@ -206,18 +212,18 @@ export function DatePicker({
       >
         <CalendarDays className="size-5 shrink-0 text-text-muted" aria-hidden />
         <span className="flex-1 truncate tabular-nums">
-          {value ? formatLong(value) : placeholder}
+          {value ? formatLong(value, locale) : t(placeholder)}
         </span>
       </button>
 
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title="Choose a date"
+        title={t("Choose a date")}
         footer={
           value ? (
             <Button variant="ghost" onClick={() => setOpen(false)}>
-              Keep {formatLong(value)}
+              {t("Keep")} {formatLong(value, locale)}
             </Button>
           ) : undefined
         }
@@ -246,7 +252,7 @@ export function DatePicker({
 
             <div className="flex items-center gap-1">
               <IconButton
-                aria-label="Previous month"
+                aria-label={t("Previous month")}
                 disabled={!!lo && prevMonthEnd < lo}
                 onClick={() => goTo(addMonths(focusDay, -1), false)}
               >
@@ -254,7 +260,7 @@ export function DatePicker({
               </IconButton>
               <div className="flex flex-1 justify-center gap-2">
                 <select
-                  aria-label="Month"
+                  aria-label={t("Month")}
                   value={Number(focusDay.slice(5, 7)) - 1}
                   onChange={(e) =>
                     goTo(
@@ -269,12 +275,12 @@ export function DatePicker({
                 >
                   {MONTHS.map((name, i) => (
                     <option key={name} value={i}>
-                      {name}
+                      {t(name)}
                     </option>
                   ))}
                 </select>
                 <select
-                  aria-label="Year"
+                  aria-label={t("Year")}
                   value={viewYear}
                   onChange={(e) =>
                     goTo(addMonths(focusDay, (Number(e.target.value) - viewYear) * 12), false)
@@ -289,7 +295,7 @@ export function DatePicker({
                 </select>
               </div>
               <IconButton
-                aria-label="Next month"
+                aria-label={t("Next month")}
                 disabled={!!hi && nextMonthStart > hi}
                 onClick={() => goTo(addMonths(focusDay, 1), false)}
               >
@@ -300,13 +306,16 @@ export function DatePicker({
             <div
               ref={gridRef}
               role="group"
-              aria-label={`${MONTHS[Number(focusDay.slice(5, 7)) - 1]} ${viewYear}`}
+              aria-label={t("{month} {year}", {
+                month: t(MONTHS[Number(focusDay.slice(5, 7)) - 1]),
+                year: viewYear,
+              })}
               onKeyDown={onGridKeyDown}
               className="grid grid-cols-7 gap-y-1 text-center"
             >
               {WEEKDAYS.map((d) => (
                 <span key={d} aria-hidden className="pb-1 text-caption text-text-muted">
-                  {d}
+                  {t(d)}
                 </span>
               ))}
               {days.map((key) => {
@@ -321,7 +330,7 @@ export function DatePicker({
                       data-day={key}
                       tabIndex={key === focusDay ? 0 : -1}
                       disabled={!enabled}
-                      aria-label={formatSpoken(key)}
+                      aria-label={formatSpoken(key, locale)}
                       aria-pressed={selected}
                       aria-current={isToday ? "date" : undefined}
                       onClick={() => choose(key)}
@@ -333,7 +342,7 @@ export function DatePicker({
                           : cn(
                               "hover:bg-surface-muted",
                               outside ? "text-text-disabled" : "text-text",
-                              isToday && "font-semibold text-primary ring-1 ring-primary/50",
+                              isToday && "font-semibold text-primary ring-1 ring-primary-soft",
                             ),
                       )}
                     >
@@ -376,6 +385,7 @@ export function DateTimePicker({
   timeStep = 30,
   ...props
 }: DateTimePickerProps) {
+  const t = useTranslations();
   const field = useFieldControlProps(props);
   const [date, setDate] = useState(value.slice(0, 10));
   const [time, setTime] = useState(value.slice(11, 16));
@@ -406,14 +416,14 @@ export function DateTimePicker({
       <DatePicker {...props} {...field} value={date} onChange={(d) => update(d, time)} />
       <TimeSelect
         id={field.id ? `${field.id}-time` : undefined}
-        aria-label="Time"
+        aria-label={t("Time")}
         aria-describedby={field["aria-describedby"]}
         aria-invalid={field["aria-invalid"]}
         disabled={props.disabled}
         from={timeFrom}
         to={timeTo}
         step={timeStep}
-        placeholder="Time"
+        placeholder={t("Time")}
         value={time}
         onChange={(event) => update(date, event.target.value)}
       />

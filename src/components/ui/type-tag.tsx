@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/lib/i18n/client";
 import {
   Armchair,
   BookOpen,
@@ -48,7 +49,7 @@ export function TypeTag({ type, className }: { type: TagType; className?: string
       )}
     >
       <Icon className="size-3.5" aria-hidden />
-      {label}
+      <LocalizedText value={label} />
     </span>
   );
 }

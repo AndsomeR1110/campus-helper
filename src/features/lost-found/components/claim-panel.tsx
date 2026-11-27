@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -35,6 +36,7 @@ interface Props {
  * enforces who may answer (LF-AC-06, LF-AC-07).
  */
 export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
+  const t = useTranslations();
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState<string | null>(null);
@@ -54,11 +56,11 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
         error?: { message: string; fields?: Record<string, string> };
       };
       if (!response.ok) {
-        toast.error(payload.error?.fields?.message ?? payload.error?.message ?? "Claim failed.");
+        toast.error(payload.error?.fields?.message ?? payload.error?.message ?? t("Claim failed."));
         return;
       }
       setMessage("");
-      toast.success("Claim sent to the author.");
+      toast.success(t("Claim sent to the author."));
       router.refresh();
     } finally {
       setPending(null);
@@ -75,10 +77,10 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
       });
       const payload = (await response.json()) as { error?: { message: string } };
       if (!response.ok) {
-        toast.error(payload.error?.message ?? "This claim could not be updated.");
+        toast.error(payload.error?.message ?? t("This claim could not be updated."));
         return;
       }
-      toast.success(accept ? "Claim accepted." : "Claim rejected.");
+      toast.success(accept ? t("Claim accepted.") : t("Claim rejected."));
       router.refresh();
     } finally {
       setPending(null);
@@ -92,17 +94,17 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
       <section className="flex flex-col gap-3" aria-labelledby="claims-heading">
         <div className="flex items-center gap-2">
           <h2 id="claims-heading" className="text-caption tracking-wide text-text-muted uppercase">
-            Claims
+            {t("Claims")}
           </h2>
           {pendingCount > 0 && (
             <span className="rounded-full bg-warning-subtle px-2 py-0.5 text-caption text-warning">
-              {pendingCount} waiting
+              {t("{count} waiting", { count: pendingCount })}
             </span>
           )}
         </div>
         <p className="flex items-center gap-1.5 text-caption text-text-muted">
           <Lock className="size-3.5" aria-hidden />
-          Only you can read these messages.
+          {t("Only you can read these messages.")}
         </p>
         {claims && claims.length > 0 ? (
           <ul className="flex flex-col gap-3">
@@ -136,7 +138,7 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
                     </div>
                     <StatusBadge kind="claim" status={claim.status} />
                   </div>
-                  <blockquote className="rounded-sm border-l-4 border-primary/40 bg-surface-muted/70 px-3 py-2 text-body-sm whitespace-pre-line text-text">
+                  <blockquote className="rounded-sm border-l-4 border-primary-soft bg-surface-translucent px-3 py-2 text-body-sm whitespace-pre-line text-text">
                     {claim.message}
                   </blockquote>
                   {open ? (
@@ -148,7 +150,7 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
                         onClick={() => setDecision({ id: claim.id, accept: false })}
                       >
                         <X />
-                        Reject
+                        {t("Reject")}
                       </Button>
                       <Button
                         size="sm"
@@ -157,7 +159,7 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
                         onClick={() => setDecision({ id: claim.id, accept: true })}
                       >
                         <Check />
-                        Accept
+                        {t("Accept")}
                       </Button>
                     </div>
                   ) : null}
@@ -169,8 +171,8 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
           <Card className="p-0">
             <EmptyState
               icon={MessageSquare}
-              title="No claims yet"
-              description="When someone thinks this is theirs, their message appears here."
+              title={t("No claims yet")}
+              description={t("When someone thinks this is theirs, their message appears here.")}
               className="py-6"
             />
           </Card>
@@ -178,13 +180,15 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
 
         <ConfirmDialog
           open={decision !== null}
-          title={decision?.accept ? "Accept this claim?" : "Reject this claim?"}
+          title={decision?.accept ? t("Accept this claim?") : t("Reject this claim?")}
           description={
             decision?.accept
-              ? "The other pending claims will be rejected. The post stays open until you mark it resolved."
-              : "The claimant will be told no. The post stays open for other claims."
+              ? t(
+                  "The other pending claims will be rejected. The post stays open until you mark it resolved.",
+                )
+              : t("The claimant will be told no. The post stays open for other claims.")
           }
-          confirmLabel={decision?.accept ? "Accept claim" : "Reject claim"}
+          confirmLabel={decision?.accept ? t("Accept claim") : t("Reject claim")}
           tone={decision?.accept ? "primary" : "danger"}
           onClose={() => setDecision(null)}
           onConfirm={async () => {
@@ -206,9 +210,11 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
         </span>
         <div className="flex flex-col">
           <h2 id="claim-heading" className="text-subtitle">
-            Is it yours?
+            {t("Is it yours?")}
           </h2>
-          <p className="text-body-sm text-text-muted">This post is no longer taking claims.</p>
+          <p className="text-body-sm text-text-muted">
+            {t("This post is no longer taking claims.")}
+          </p>
         </div>
       </section>
     );
@@ -226,25 +232,28 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
         </span>
         <div className="flex flex-col gap-0.5">
           <h2 id="claim-heading" className="text-subtitle">
-            Is it yours?
+            {t("Is it yours?")}
           </h2>
           <p className="flex items-center gap-1.5 text-body-sm text-text-muted">
             <Lock className="size-3.5 shrink-0" aria-hidden />
-            Only the person who posted this item can read your message.
+            {t("Only the person who posted this item can read your message.")}
           </p>
         </div>
       </div>
       <FormField
-        label="Your claim"
+        label={t("Your claim")}
         required
-        hint={`Mention a detail only the owner would know, like a mark, a sticker or what is inside. ${CLAIM_MIN_LENGTH}–${CLAIM_MAX_LENGTH} characters.`}
+        hint={t(
+          "Mention a detail only the owner would know, like a mark, a sticker or what is inside. {min}–{max} characters.",
+          { min: CLAIM_MIN_LENGTH, max: CLAIM_MAX_LENGTH },
+        )}
       >
         <Textarea
           name="message"
           rows={4}
           maxLength={CLAIM_MAX_LENGTH}
           value={message}
-          placeholder="Describe a detail only the owner would know."
+          placeholder={t("Describe a detail only the owner would know.")}
           onChange={(event) => setMessage(event.target.value)}
         />
       </FormField>
@@ -257,7 +266,7 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
           aria-live="polite"
         >
           {length < CLAIM_MIN_LENGTH
-            ? `${CLAIM_MIN_LENGTH - length} more characters needed`
+            ? t("{count} more characters needed", { count: CLAIM_MIN_LENGTH - length })
             : `${length} / ${CLAIM_MAX_LENGTH}`}
         </span>
         <Button
@@ -266,7 +275,7 @@ export function ClaimPanel({ post, claims, isAuthor, canClaim }: Props) {
           disabled={length < CLAIM_MIN_LENGTH}
         >
           <Send />
-          Send claim
+          {t("Send claim")}
         </Button>
       </div>
     </section>
