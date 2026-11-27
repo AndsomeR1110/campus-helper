@@ -25,7 +25,7 @@ export function EmptyState({
     <div className={cn("flex flex-col items-center gap-2 px-4 py-12 text-center", className)}>
       <span
         aria-hidden
-        className="mb-1 flex size-16 items-center justify-center rounded-full bg-primary-subtle text-primary ring-6 ring-primary-subtle/40"
+        className="mb-1 flex size-16 items-center justify-center rounded-full bg-primary-subtle text-primary"
       >
         <Icon className="size-7" strokeWidth={1.5} />
       </span>

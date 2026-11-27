@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -13,6 +14,7 @@ export interface ReportActionsProps {
 
 /** The two decisions available on a pending report. */
 export function ReportActions({ report }: ReportActionsProps) {
+  const t = useTranslations();
   const router = useRouter();
   const [decision, setDecision] = useState<ReportDecision | null>(null);
   const [pending, setPending] = useState(false);
@@ -29,14 +31,14 @@ export function ReportActions({ report }: ReportActionsProps) {
         const body = (await response.json().catch(() => null)) as {
           error?: { message?: string };
         } | null;
-        toast.error(body?.error?.message ?? "The decision could not be saved.");
+        toast.error(body?.error?.message ?? t("The decision could not be saved."));
         return;
       }
-      toast.success(next === "HIDE" ? "Post hidden." : "Report dismissed.");
+      toast.success(next === "HIDE" ? t("Post hidden.") : t("Report dismissed."));
       setDecision(null);
       router.refresh();
     } catch {
-      toast.error("The decision could not be saved. Check your connection.");
+      toast.error(t("The decision could not be saved. Check your connection."));
     } finally {
       setPending(false);
     }
@@ -45,28 +47,33 @@ export function ReportActions({ report }: ReportActionsProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button size="sm" onClick={() => setDecision("HIDE")}>
-        Hide post
+        {t("Hide post")}
       </Button>
       <Button variant="secondary" size="sm" onClick={() => setDecision("DISMISS")}>
-        Keep post
+        {t("Keep post")}
       </Button>
 
       <ConfirmDialog
         open={decision !== null}
-        title={decision === "HIDE" ? "Hide this post?" : "Dismiss this report?"}
+        title={decision === "HIDE" ? t("Hide this post?") : t("Dismiss this report?")}
         description={
           decision === "HIDE"
-            ? `"${report.postTitle}" will disappear from browse and stop taking claims. The author is not notified in this version.`
-            : `"${report.postTitle}" stays visible and the report is closed as dismissed.`
+            ? t(
+                '"{title}" will disappear from browse and stop taking claims. The author is not notified in this version.',
+                { title: report.postTitle },
+              )
+            : t('"{title}" stays visible and the report is closed as dismissed.', {
+                title: report.postTitle,
+              })
         }
-        confirmLabel={decision === "HIDE" ? "Hide post" : "Dismiss report"}
+        confirmLabel={decision === "HIDE" ? t("Hide post") : t("Dismiss report")}
         tone={decision === "HIDE" ? "danger" : "primary"}
         onClose={() => setDecision(null)}
         onConfirm={async () => {
           if (decision) await apply(decision);
         }}
       />
-      {pending ? <span className="text-caption text-text-muted">Saving…</span> : null}
+      {pending ? <span className="text-caption text-text-muted">{t("Saving…")}</span> : null}
     </div>
   );
 }

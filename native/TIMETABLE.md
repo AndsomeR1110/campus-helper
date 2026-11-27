@@ -1,6 +1,6 @@
 # Android automatic school timetable sync
 
-Implementation workspace: `E:/ENT/campus-shuttle-app`, branch `feat/timetable-native-sync`. This builds on the existing local Android/shuttle integration and Claude UI baseline `1607a8c`. The interface is a functional connection/status screen; final design remains assigned to Claude.
+Implementation branch: `feat/timetable-native-sync`. This builds on the existing Android/shuttle integration and UI baseline `1607a8c`. The interface is a functional connection/status screen; final design remains assigned to Claude.
 
 ## End-to-end behavior
 

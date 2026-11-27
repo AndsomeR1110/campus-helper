@@ -1,5 +1,7 @@
+import { getTranslations } from "@/lib/i18n/server";
 import { Armchair, BellRing, CalendarClock, SearchCheck } from "lucide-react";
 import type { ReactNode } from "react";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { AppLogo, CampusIllustration } from "@/components/ui";
 
 const HIGHLIGHTS = [
@@ -13,15 +15,16 @@ const HIGHLIGHTS = [
  * Sign in / register frame: campus-map hero beside a glass form card on
  * desktop, stacked on phones. Pages render their own heading and form.
  */
-export default function AuthLayout({ children }: { children: ReactNode }) {
+export default async function AuthLayout({ children }: { children: ReactNode }) {
+  const t = await getTranslations();
   return (
     <main className="mx-auto grid w-full max-w-5xl flex-1 items-center gap-6 px-4 py-8 md:px-6 lg:grid-cols-[1fr_minmax(0,28rem)] lg:gap-12 lg:py-12">
-      <section aria-label="About CAMPUS HELPER" className="flex flex-col gap-5 lg:gap-8">
+      <section aria-label={t("About CAMPUS HELPER")} className="flex flex-col gap-5 lg:gap-8">
         <div className="flex items-center gap-3">
           <AppLogo className="size-11 drop-shadow-sm" />
           <div className="flex flex-col">
             <span className="text-subtitle tracking-wide">CAMPUS HELPER</span>
-            <span className="text-body-sm text-text-muted">Your campus, made simple.</span>
+            <span className="text-body-sm text-text-muted">{t("Your campus, made simple.")}</span>
           </div>
         </div>
         <div className="relative hidden overflow-hidden rounded-lg sm:block">
@@ -29,17 +32,20 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
         <ul className="hidden flex-col gap-3 lg:flex">
           {HIGHLIGHTS.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex items-center gap-3 text-body text-text">
+            <li key={t(text)} className="flex items-center gap-3 text-body text-text">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-primary-subtle text-primary">
                 <Icon className="size-5" aria-hidden />
               </span>
-              {text}
+              {t(text)}
             </li>
           ))}
         </ul>
       </section>
 
       <div className="flex flex-col gap-6 rounded-lg border liquid-glass p-5 md:p-8">
+        <div className="self-end">
+          <LanguageSwitcher />
+        </div>
         {children}
       </div>
     </main>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import {
   FileQuestion,
   RotateCw,
@@ -58,6 +59,7 @@ export function ErrorState({
   action,
   className,
 }: ErrorStateProps) {
+  const t = useTranslations();
   const defaults = DEFAULTS[kind];
   const Icon = defaults.icon;
   return (
@@ -66,14 +68,18 @@ export function ErrorState({
       className={cn("flex flex-col items-center gap-2 px-4 py-12 text-center", className)}
     >
       <Icon className="mb-2 size-12 text-text-disabled" strokeWidth={1.5} aria-hidden />
-      <h2 className="text-subtitle text-text">{title ?? defaults.title}</h2>
-      <p className="max-w-80 text-body-sm text-text-muted">{description ?? defaults.description}</p>
+      <h2 className="text-subtitle text-text">{t(title ?? defaults.title)}</h2>
+      <p className="max-w-80 text-body-sm text-text-muted">
+        {typeof description === "string"
+          ? t(description)
+          : (description ?? t(defaults.description))}
+      </p>
       {(onRetry || action) && (
         <div className="mt-4 flex gap-2">
           {onRetry && (
             <Button variant="secondary" onClick={onRetry}>
               <RotateCw />
-              Try again
+              {t("Try again")}
             </Button>
           )}
           {action}

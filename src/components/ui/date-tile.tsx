@@ -1,4 +1,7 @@
+"use client";
+
 import { cn } from "@/lib/utils";
+import { useTranslations } from "@/lib/i18n/client";
 import { formatDate } from "@/lib/time";
 import { typeColorClasses, type TagType } from "./type-tag";
 
@@ -19,6 +22,7 @@ export function DateTile({
   className?: string;
 }) {
   // formatDate → "Thu 12 Nov" in Asia/Shanghai
+  const t = useTranslations();
   const [weekday, day, month] = formatDate(iso).split(" ");
   return (
     <span
@@ -30,11 +34,11 @@ export function DateTile({
         className,
       )}
     >
-      <span className="text-[10px] font-semibold tracking-wider uppercase">{month}</span>
+      <span className="text-[10px] font-semibold tracking-wider uppercase">{t(month)}</span>
       <span className={cn("font-bold tabular-nums", size === "lg" ? "text-display" : "text-title")}>
         {day}
       </span>
-      <span className="text-[10px] font-medium opacity-80">{weekday}</span>
+      <span className="text-[10px] font-medium opacity-80">{t(weekday)}</span>
     </span>
   );
 }

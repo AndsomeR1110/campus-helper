@@ -12,6 +12,8 @@
  * calling `connection()`), or pass `now` explicitly.
  */
 
+import type { Locale } from "./i18n/messages";
+
 export const APP_TIME_ZONE = "Asia/Shanghai";
 
 type DateInput = Date | string;
@@ -67,14 +69,30 @@ export function dayKey(value: DateInput) {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
-/** "Mon 3 Nov" */
-export function formatDate(value: DateInput) {
+const dateInChinese = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: APP_TIME_ZONE,
+  month: "numeric",
+  day: "numeric",
+  weekday: "short",
+});
+
+const fullDateInChinese = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: APP_TIME_ZONE,
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+/** "Mon 3 Nov" / "11月3日周一" */
+export function formatDate(value: DateInput, locale: Locale = "en") {
+  if (locale === "zh-CN") return dateInChinese.format(toDate(value));
   const p = zonedParts(value);
   return `${p.weekday} ${p.day} ${p.month}`;
 }
 
 /** "3 Nov 2026" */
-export function formatDateWithYear(value: DateInput) {
+export function formatDateWithYear(value: DateInput, locale: Locale = "en") {
+  if (locale === "zh-CN") return fullDateInChinese.format(toDate(value));
   const p = zonedParts(value);
   return `${p.day} ${p.month} ${p.year}`;
 }
@@ -111,14 +129,18 @@ export function formatRelativeDay(value: DateInput, now: DateInput = new Date())
  * Notification timestamps: "Just now", "5 min ago", "3 h ago" within a day,
  * then falls back to formatDate().
  */
-export function formatRelativeTime(value: DateInput, now: DateInput = new Date()) {
+export function formatRelativeTime(
+  value: DateInput,
+  now: DateInput = new Date(),
+  locale: Locale = "en",
+) {
   const diffMs = toDate(now).getTime() - toDate(value).getTime();
   const minutes = Math.floor(diffMs / 60_000);
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 1) return locale === "zh-CN" ? "刚刚" : "Just now";
+  if (minutes < 60) return locale === "zh-CN" ? `${minutes} 分钟前` : `${minutes} min ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} h ago`;
-  return formatDate(value);
+  if (hours < 24) return locale === "zh-CN" ? `${hours} 小时前` : `${hours} h ago`;
+  return formatDate(value, locale);
 }
 
 /** "Good morning" (05:00–11:59), "Good afternoon" (12:00–17:59) or "Good evening", in the app time zone. */

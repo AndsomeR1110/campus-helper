@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import { CalendarClock, Armchair, BookOpen, SearchCheck, type LucideIcon } from "lucide-react";
 import { BuildingPin, CampusIllustration, Card } from "@/components/ui";
 import { CAMPUS_BUILDINGS } from "@/lib/campus";
@@ -15,27 +16,35 @@ function SectionTitle({ id, children }: { id: string; children: string }) {
 }
 
 /** Campus map and building directory, in the style of the official campus map. */
-export function CampusGuide() {
+export async function CampusGuide() {
+  const t = await getTranslations();
   return (
     <section aria-labelledby="campus-guide" className="flex flex-col gap-3">
-      <SectionTitle id="campus-guide">Campus guide</SectionTitle>
+      <SectionTitle id="campus-guide">{t("Campus guide")}</SectionTitle>
       <Card variant="widget" className="flex flex-col gap-4 p-0">
         <div className="relative overflow-hidden rounded-t-lg">
           <CampusIllustration className="mx-auto max-w-xl px-2 pt-3" />
-          <p className="absolute bottom-2 left-4 rounded-full bg-surface/80 px-2.5 py-0.5 text-caption text-text-muted backdrop-blur">
-            The ring links buildings A–G
+          <p className="absolute bottom-2 left-4 rounded-full bg-surface-translucent px-2.5 py-0.5 text-caption text-text-muted backdrop-blur">
+            {t("The ring links buildings A–G")}
           </p>
         </div>
         <div className="grid gap-x-6 gap-y-1 px-4 pb-2 md:grid-cols-2">
-          <BuildingList title="Teaching buildings" buildings={ACADEMIC} />
-          <BuildingList title="Facilities" buildings={FACILITIES} />
+          <BuildingList title={t("Teaching buildings")} buildings={ACADEMIC} />
+          <BuildingList title={t("Facilities")} buildings={FACILITIES} />
         </div>
       </Card>
     </section>
   );
 }
 
-function BuildingList({ title, buildings }: { title: string; buildings: typeof CAMPUS_BUILDINGS }) {
+async function BuildingList({
+  title,
+  buildings,
+}: {
+  title: string;
+  buildings: typeof CAMPUS_BUILDINGS;
+}) {
+  const t = await getTranslations();
   return (
     <div className="flex flex-col">
       <h3 className="pt-2 pb-1 text-body-sm font-medium text-text-muted">{title}</h3>
@@ -44,8 +53,10 @@ function BuildingList({ title, buildings }: { title: string; buildings: typeof C
           <li key={b.code} className="flex items-center gap-3 py-2.5">
             <BuildingPin code={b.code} kind={b.kind} size="md" />
             <div className="flex min-w-0 flex-col">
-              <span className="text-body-sm font-medium">Building {b.code}</span>
-              <span className="truncate text-body-sm text-text-muted">{b.summary}</span>
+              <span className="text-body-sm font-medium">
+                {t("Building")} {b.code}
+              </span>
+              <span className="truncate text-body-sm text-text-muted">{t(b.summary)}</span>
             </div>
           </li>
         ))}
@@ -82,10 +93,11 @@ const TIPS: { icon: LucideIcon; tone: string; title: string; body: string }[] = 
 ];
 
 /** Short how-to cards for the four services. */
-export function ServiceTips() {
+export async function ServiceTips() {
+  const t = await getTranslations();
   return (
     <section aria-labelledby="service-tips" className="flex flex-col gap-3">
-      <SectionTitle id="service-tips">Good to know</SectionTitle>
+      <SectionTitle id="service-tips">{t("Good to know")}</SectionTitle>
       <ul className="-mx-4 flex snap-x [scrollbar-width:none] gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 lg:grid-cols-4">
         {TIPS.map(({ icon: Icon, tone, title, body }) => (
           <li key={title} className="w-64 shrink-0 snap-start md:w-auto">
@@ -93,8 +105,8 @@ export function ServiceTips() {
               <span className={cn("flex size-9 items-center justify-center rounded-sm", tone)}>
                 <Icon className="size-5" aria-hidden />
               </span>
-              <p className="text-subtitle">{title}</p>
-              <p className="text-body-sm text-text-muted">{body}</p>
+              <p className="text-subtitle">{t(title)}</p>
+              <p className="text-body-sm text-text-muted">{t(body)}</p>
             </Card>
           </li>
         ))}

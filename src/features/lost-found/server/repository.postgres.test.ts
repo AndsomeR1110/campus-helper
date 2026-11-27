@@ -104,6 +104,33 @@ describe.skipIf(!url)("Lost & Found Prisma storage", () => {
     });
   });
 
+  it("rolls back a claim decision that races with closing a lost post", async () => {
+    const postId = await newPost();
+    const pending = await repos[0].createClaim(claimFor(postId, claimantId, "PENDING"));
+    const deciding = createLostFoundService({
+      repository: {
+        ...repos[0],
+        async transaction(work) {
+          // The decision has read the open post, but a second connection closes it before it writes.
+          await serviceFor(1, author).setPostStatus(postId, "CLOSED");
+          return repos[0].transaction(work);
+        },
+      },
+      currentViewer: async () => author,
+      now: () => new Date("2026-11-04T09:00:00.000Z"),
+      nextId,
+    });
+
+    await expect(deciding.decideClaim(pending.id, "REJECT")).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    await expect(repos[1].getPost(postId)).resolves.toMatchObject({ status: "CLOSED" });
+    await expect(repos[1].getClaim(pending.id)).resolves.toMatchObject({ status: "PENDING" });
+    await expect(serviceFor(1, stranger).getPost(postId)).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+  });
+
   it("lets only one of two concurrent pending claims through (LF-AC-05)", async () => {
     const postId = await newPost();
     const results = await Promise.allSettled(

@@ -1,4 +1,5 @@
 "use client";
+import { useLocale, useTranslations } from "@/lib/i18n/client";
 import { Clock, MapPin } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,16 +20,18 @@ import { formatDateWithYear, formatTimeRange } from "@/lib/time";
 import { BOOKING_TAGS } from "../constants";
 import type { BookingItem } from "../types";
 export function BookingDetail({ booking, now }: { booking: BookingItem; now: string }) {
+  const locale = useLocale();
+  const t = useTranslations();
   const router = useRouter();
   const offline = useOffline();
   const [open, setOpen] = useState(false);
   const [failure, setFailure] = useState<string>();
   const canCancel =
     booking.status === "CONFIRMED" && Date.parse(booking.startsAt) > Date.parse(now);
-  const time = `${formatDateWithYear(booking.startsAt)}, ${formatTimeRange(booking.startsAt, booking.endsAt)}`;
+  const time = `${formatDateWithYear(booking.startsAt, locale)}, ${formatTimeRange(booking.startsAt, booking.endsAt)}`;
   async function cancel() {
     if (offline) {
-      setFailure("Unavailable offline");
+      setFailure(t("Unavailable offline"));
       throw new Error("offline");
     }
     setFailure(undefined);
@@ -41,20 +44,20 @@ export function BookingDetail({ booking, now }: { booking: BookingItem; now: str
         const body = await response.json();
         throw new Error(
           response.status >= 500
-            ? "We couldn’t cancel this booking. Please try again."
-            : (body.error?.message ?? "We couldn’t cancel this booking."),
+            ? t("We couldn’t cancel this booking. Please try again.")
+            : (body.error?.message ?? t("We couldn’t cancel this booking.")),
         );
       }
       setOpen(false);
-      toast.success("Booking cancelled");
+      toast.success(t("Booking cancelled"));
       router.refresh();
     } catch (error) {
       setFailure(
         error instanceof TypeError
-          ? "Check your connection and try again."
+          ? t("Check your connection and try again.")
           : error instanceof Error
             ? error.message
-            : "We couldn’t cancel this booking.",
+            : t("We couldn’t cancel this booking."),
       );
       throw error;
     }
@@ -71,18 +74,18 @@ export function BookingDetail({ booking, now }: { booking: BookingItem; now: str
             <StatusBadge kind="booking" status={booking.status} />
           </div>
         </div>
-        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-muted/60 px-4">
+        <dl className="flex flex-col divide-y divide-liquid-edge rounded-md bg-surface-translucent px-4">
           <div className="flex items-center gap-3 py-3">
             <dt className="flex items-center gap-2 text-body-sm text-text-muted">
               <Clock className="size-4" aria-hidden />
-              Time
+              {t("Time")}
             </dt>
             <dd className="ml-auto text-right text-body-sm tabular-nums">{time}</dd>
           </div>
           <div className="flex items-center gap-3 py-3">
             <dt className="flex items-center gap-2 text-body-sm text-text-muted">
               <MapPin className="size-4" aria-hidden />
-              Location
+              {t("Location")}
             </dt>
             <dd className="ml-auto min-w-0 text-right text-body-sm">
               {booking.location ? (
@@ -93,21 +96,22 @@ export function BookingDetail({ booking, now }: { booking: BookingItem; now: str
                   className="justify-end text-right"
                 />
               ) : (
-                "Location not specified"
+                t("Location not specified")
               )}
             </dd>
           </div>
         </dl>
-        <p className="text-caption text-text-muted">Times shown in Asia/Shanghai.</p>
+        <p className="text-caption text-text-muted">{t("Times shown in Asia/Shanghai.")}</p>
       </Card>
       {!canCancel && (
         <p className="text-body-sm text-text-muted">
-          Only confirmed bookings that have not started can be cancelled. Cancelled bookings stay in
-          your history.
+          {t(
+            "Only confirmed bookings that have not started can be cancelled. Cancelled bookings stay in your history.",
+          )}
         </p>
       )}
       <StickyActionBar summary={time}>
-        {offline && <p className="text-body-sm text-text-muted">Unavailable offline</p>}
+        {offline && <p className="text-body-sm text-text-muted">{t("Unavailable offline")}</p>}
         {failure && !open && (
           <p role="alert" className="text-body-sm text-danger">
             {failure}
@@ -123,17 +127,17 @@ export function BookingDetail({ booking, now }: { booking: BookingItem; now: str
             setFailure(undefined);
           }}
         >
-          Cancel booking
+          {t("Cancel booking")}
         </Button>
       </StickyActionBar>
       <ConfirmDialog
         open={open}
         onClose={() => setOpen(false)}
-        title="Cancel this booking?"
+        title={t("Cancel this booking?")}
         description={
           <>
-            {booking.title} · {time}. The place will become available to others. The record will be
-            kept.
+            {booking.title} · {time}
+            {t(". The place will become available to others. The record will be kept.")}
             {failure && (
               <span role="alert" className="mt-2 block text-danger">
                 {failure}
@@ -141,8 +145,8 @@ export function BookingDetail({ booking, now }: { booking: BookingItem; now: str
             )}
           </>
         }
-        confirmLabel="Cancel booking"
-        cancelLabel="Keep booking"
+        confirmLabel={t("Cancel booking")}
+        cancelLabel={t("Keep booking")}
         onConfirm={cancel}
       />
     </>

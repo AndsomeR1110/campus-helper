@@ -55,15 +55,15 @@ describe("handler envelopes (CONTRIBUTING §6)", () => {
     });
   });
 
-  it("returns 403 for a claim on a finished item", async () => {
+  it("returns 404 for a claim on a finished lost post", async () => {
     const { handlers } = makeHandlers(teacher);
     const response = await handlers.submitClaim(
       jsonRequest({ message: "This book is mine, I lost it in the study room." }),
       "post-04",
     );
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(404);
     expect((await body(response)) as { error: { code: string } }).toMatchObject({
-      error: { code: "FORBIDDEN" },
+      error: { code: "NOT_FOUND" },
     });
   });
 

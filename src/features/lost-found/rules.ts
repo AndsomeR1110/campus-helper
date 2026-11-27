@@ -46,13 +46,16 @@ export function publicAuthorName(post: LostFoundPost): string {
   return formatDisplayName(post.authorName);
 }
 
-/**
- * Hidden posts stay readable for their author and for administrators, which is
- * how LF-AC-09 is reviewed after a decision.
- */
+export function isPublicPost(post: LostFoundPost): boolean {
+  return (
+    post.status !== "HIDDEN" &&
+    !(post.kind === "LOST" && (post.status === "RESOLVED" || post.status === "CLOSED"))
+  );
+}
+
+/** Authors and administrators can still open posts removed from public browsing. */
 export function canViewPost(post: LostFoundPost, viewer: Viewer | null): boolean {
-  if (post.status !== "HIDDEN") return true;
-  return isAdmin(viewer) || isAuthor(post, viewer);
+  return isPublicPost(post) || isAdmin(viewer) || isAuthor(post, viewer);
 }
 
 /**
@@ -78,7 +81,7 @@ export function canDecideClaimForPost(
   claim: LostFoundClaim,
   viewer: Viewer | null,
 ): boolean {
-  return claim.status === "PENDING" && isAuthor(post, viewer);
+  return acceptsClaims(post) && claim.status === "PENDING" && isAuthor(post, viewer);
 }
 
 export function canSetPostStatus(

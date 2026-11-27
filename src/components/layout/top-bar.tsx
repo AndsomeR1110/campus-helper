@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -25,6 +26,7 @@ export interface TopBarProps {
  * Includes the offline banner (§4.15) underneath the bar.
  */
 export function TopBar({ title, backHref, actions, variant = "default" }: TopBarProps) {
+  const t = useTranslations();
   const router = useRouter();
   const large = variant === "large";
 
@@ -33,7 +35,7 @@ export function TopBar({ title, backHref, actions, variant = "default" }: TopBar
       <div className="relative mx-auto flex h-top-bar max-w-list items-center gap-1 px-2 md:px-4">
         {backHref && !large && (
           <IconButton
-            aria-label="Back"
+            aria-label={t("Back")}
             onClick={() => (hasInAppHistory() ? router.back() : router.push(backHref))}
           >
             <ChevronLeft />
@@ -51,7 +53,7 @@ export function TopBar({ title, backHref, actions, variant = "default" }: TopBar
                 ),
           )}
         >
-          {title}
+          {t(title)}
         </h1>
         {actions && <div className="ml-auto flex items-center">{actions}</div>}
       </div>

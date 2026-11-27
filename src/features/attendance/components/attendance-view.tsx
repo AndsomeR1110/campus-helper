@@ -90,7 +90,7 @@ export function AttendanceView(props: AttendanceViewProps) {
             </p>
           </div>
         </div>
-        <p className="flex items-start gap-2 rounded-sm bg-surface-muted/60 px-3 py-2 text-body-sm">
+        <p className="flex items-start gap-2 rounded-sm bg-surface-translucent px-3 py-2 text-body-sm">
           <Info className="mt-0.5 size-4 shrink-0 text-text-muted" aria-hidden />
           The class code is a short code for this lesson. It’s not your account password.
         </p>

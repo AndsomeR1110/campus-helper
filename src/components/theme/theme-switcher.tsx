@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { Monitor, Moon, Sun, type LucideIcon } from "lucide-react";
 import { useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
@@ -48,12 +49,13 @@ function setPreference(value: ThemePreference) {
 
 /** Segmented System / Light / Dark control. The choice is stored on this device only. */
 export function ThemeSwitcher({ className }: { className?: string }) {
+  const t = useTranslations();
   const current = useSyncExternalStore(subscribe, readPreference, () => "system" as const);
 
   return (
     <div
       role="group"
-      aria-label="Theme"
+      aria-label={t("Theme")}
       className={cn("flex gap-1 rounded-full bg-surface-muted p-1", className)}
     >
       {OPTIONS.map(({ value, label, icon: Icon }) => {
@@ -70,7 +72,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
             )}
           >
             <Icon className="size-4" aria-hidden />
-            {label}
+            {t(label)}
           </button>
         );
       })}

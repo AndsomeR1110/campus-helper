@@ -1,5 +1,7 @@
-import type { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client";
 
+import { CLAIMABLE_STATUSES } from "../constants";
+import { LostFoundError } from "../rules";
 import type { ImageMeta, LostFoundClaim, LostFoundPost } from "../types";
 import type { ClaimPatch, LostFoundRepository, PostPatch } from "./repository";
 
@@ -30,6 +32,23 @@ export function createPrismaLostFoundRepository(client: Client): LostFoundReposi
       return rows.map(toPost);
     },
 
+    async listMatchCandidates({ category, excludeAuthorId, from, through, limit }) {
+      const rows = await client.lostFoundPost.findMany({
+        where: {
+          kind: "FOUND",
+          category,
+          authorId: { not: excludeAuthorId },
+          status: { in: [...CLAIMABLE_STATUSES] },
+          occurredAt: { gte: from, lte: through },
+          claims: { none: { status: "APPROVED" } },
+        },
+        orderBy: [{ occurredAt: "asc" }, { id: "asc" }],
+        take: limit,
+        select: { id: true, title: true, description: true, location: true, occurredAt: true },
+      });
+      return rows.map((row) => ({ ...row, occurredAt: row.occurredAt.toISOString() }));
+    },
+
     async getPost(id) {
       const row = await client.lostFoundPost.findUnique({ where: { id }, ...postShape });
       return row ? toPost(row) : null;
@@ -56,14 +75,29 @@ export function createPrismaLostFoundRepository(client: Client): LostFoundReposi
       return toPost(row);
     },
 
-    async updatePost(id, patch: PostPatch) {
+    async updatePost(id, patch: PostPatch, options) {
       const data: Prisma.LostFoundPostUpdateInput = {};
       if (patch.status) data.status = patch.status;
       if (patch.updatedAt) data.updatedAt = new Date(patch.updatedAt);
       if (patch.image !== undefined) Object.assign(data, imageColumns(patch.image));
 
-      const row = await client.lostFoundPost.update({ where: { id }, data, ...postShape });
-      return toPost(row);
+      try {
+        const row = await client.lostFoundPost.update({
+          where: { id, ...(options?.activeOnly && { status: { in: [...CLAIMABLE_STATUSES] } }) },
+          data,
+          ...postShape,
+        });
+        return toPost(row);
+      } catch (error) {
+        if (
+          options?.activeOnly &&
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2025"
+        ) {
+          throw new LostFoundError("NOT_FOUND", "This post is not available.");
+        }
+        throw error;
+      }
     },
 
     async listClaimsForPost(postId) {
