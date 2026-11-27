@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -9,6 +10,7 @@ import { registerSchema } from "@/lib/auth/schemas";
 
 /** PG-01 registration form (AUTH-AC-01). New accounts are always STUDENT. */
 export function RegisterForm() {
+  const t = useTranslations();
   const router = useRouter();
   const [values, setValues] = useState({ name: "", email: "", password: "", studentNo: "" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -70,24 +72,24 @@ export function RegisterForm() {
   }
 
   const fields = [
-    { key: "name" as const, label: "Full name", type: "text", placeholder: "Mia Chen" },
+    { key: "name" as const, label: t("Full name"), type: "text", placeholder: "Mia Chen" },
     {
       key: "studentNo" as const,
-      label: "Student number (optional)",
+      label: t("Student number (optional)"),
       type: "text",
       placeholder: "2270001",
     },
     {
       key: "email" as const,
-      label: "Email",
+      label: t("Email"),
       type: "email",
       placeholder: "you@student.example.edu",
     },
     {
       key: "password" as const,
-      label: "Password",
+      label: t("Password"),
       type: "password",
-      placeholder: "At least 8 characters",
+      placeholder: t("At least 8 characters"),
     },
   ];
 
@@ -108,18 +110,18 @@ export function RegisterForm() {
 
       {formError ? (
         <p role="alert" className="rounded-md bg-danger-subtle px-3 py-2 text-body-sm text-danger">
-          {formError}
+          {t(formError)}
         </p>
       ) : null}
 
       <Button type="submit" size="lg" fullWidth loading={submitting}>
-        {submitting ? "Creating account…" : "Create account"}
+        {submitting ? t("Creating account…") : t("Create account")}
       </Button>
 
       <p className="text-center text-body-sm text-text-muted">
-        Already registered?{" "}
+        {t("Already registered?")}{" "}
         <Link href="/login" className="font-medium text-primary hover:underline">
-          Sign in
+          {t("Sign in")}
         </Link>
       </p>
     </form>

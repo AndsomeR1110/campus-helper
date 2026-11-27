@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/client";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { TABS, type TabId } from "./nav-config";
@@ -9,16 +12,18 @@ interface NavItemsProps {
 }
 
 function UnreadBadge({ count }: { count: number }) {
+  const t = useTranslations();
   return (
     <span className="absolute -top-1 left-1/2 ml-1.5 min-w-5 rounded-full bg-danger-solid px-1 text-center text-caption leading-5 text-white">
       {count > 99 ? "99+" : count}
-      <span className="sr-only"> unread notifications</span>
+      <span className="sr-only"> {t("unread notifications")}</span>
     </span>
   );
 }
 
 /** Tab links shared by BottomNav and SideNav. */
 export function NavItems({ active, unreadCount = 0, orientation }: NavItemsProps) {
+  const t = useTranslations();
   const vertical = orientation === "vertical";
   return (
     <ul className={cn("flex", vertical ? "flex-col gap-1" : "h-full items-stretch")}>
@@ -57,7 +62,7 @@ export function NavItems({ active, unreadCount = 0, orientation }: NavItemsProps
                 />
                 {id === "home" && unreadCount > 0 && <UnreadBadge count={unreadCount} />}
               </span>
-              {label}
+              {t(label)}
             </Link>
           </li>
         );

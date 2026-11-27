@@ -25,6 +25,11 @@ export interface Course {
   /** Exact school week set; absent for manual courses. */
   schoolWeeks?: number[];
   source?: "school";
+  /**
+   * School courses only: the enabled reminder of a manual course in the same slot, which
+   * the combined view hides. Its reminders keep firing, so the list links to that course.
+   */
+  inheritedReminder?: { courseId: string; offsetMinutes: number };
   id: string;
   /** Owner (student) identifier. */
   ownerId: string;

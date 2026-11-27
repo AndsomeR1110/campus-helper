@@ -1,3 +1,4 @@
+import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -29,6 +30,8 @@ const weekLink = buttonStyles({ variant: "ghost", size: "sm", className: "size-1
 
 /** PG-11 weekly timetable (FR-CR-05 entry point, CR-AC-01). */
 async function WeekTimetable({ week }: { week: number }) {
+  const t = await getTranslations();
+  const locale = await getLocale();
   await connection();
   const user = await getCurrentUser();
   const view = await loadWeekView(user.id, week);
@@ -38,11 +41,11 @@ async function WeekTimetable({ week }: { week: number }) {
       <Card className="p-0">
         <EmptyState
           icon={CalendarDays}
-          title={`No classes in week ${view.week}`}
-          description="Add your courses and they will appear here every teaching week."
+          title={t("No classes in week {week}", { week: view.week })}
+          description={t("Add your courses and they will appear here every teaching week.")}
           action={
             <Link href="/courses/new" className={buttonStyles({ size: "sm" })}>
-              Add a course
+              {t("Add a course")}
             </Link>
           }
         />
@@ -60,14 +63,14 @@ async function WeekTimetable({ week }: { week: number }) {
     <div className="flex flex-col gap-6">
       {view.days.map((day) => {
         const isToday = day.date === today;
-        const label = formatDate(`${day.date}T12:00:00+08:00`);
+        const label = formatDate(`${day.date}T12:00:00+08:00`, locale);
         return (
           <section key={day.date} aria-label={label} className="flex flex-col gap-3">
             <h2 className="flex items-center gap-2 px-1">
               <span className="text-subtitle text-text">{label}</span>
               {isToday && (
                 <span className="rounded-full bg-primary px-2 py-0.5 text-caption text-on-primary">
-                  Today
+                  {t("Today")}
                 </span>
               )}
             </h2>
@@ -107,7 +110,9 @@ async function WeekTimetable({ week }: { week: number }) {
                         <span className="flex items-center gap-2">
                           <TypeTag type={tag} />
                           {next && (
-                            <span className="text-caption font-semibold text-primary">Up next</span>
+                            <span className="text-caption font-semibold text-primary">
+                              {t("Up next")}
+                            </span>
                           )}
                         </span>
                         <span className="truncate text-subtitle text-text">{event.title}</span>
@@ -152,7 +157,8 @@ function TimetableSkeleton() {
   );
 }
 
-function WeekPicker({ week, current }: { week: number; current: number }) {
+async function WeekPicker({ week, current }: { week: number; current: number }) {
+  const t = await getTranslations();
   const previous = Math.max(MIN_WEEK, week - 1);
   const next = Math.min(MAX_WEEK, week + 1);
 
@@ -161,20 +167,24 @@ function WeekPicker({ week, current }: { week: number; current: number }) {
       <div className="flex w-full max-w-sm items-center justify-between gap-3 rounded-full border liquid-glass p-1">
         <Link
           href={`/schedule?week=${previous}`}
-          aria-label="Previous week"
+          aria-label={t("Previous week")}
           className={week === MIN_WEEK ? `${weekLink} pointer-events-none opacity-40` : weekLink}
         >
           <ChevronLeft aria-hidden />
         </Link>
         <p className="flex flex-col items-center text-subtitle text-text tabular-nums">
-          Week {week}
+          {t("Week {week}", { week })}
           <span className="text-caption text-text-muted">
-            {week === current ? "This week" : week < current ? "Past week" : "Upcoming week"}
+            {week === current
+              ? t("This week")
+              : week < current
+                ? t("Past week")
+                : t("Upcoming week")}
           </span>
         </p>
         <Link
           href={`/schedule?week=${next}`}
-          aria-label="Next week"
+          aria-label={t("Next week")}
           className={week === MAX_WEEK ? `${weekLink} pointer-events-none opacity-40` : weekLink}
         >
           <ChevronRight aria-hidden />
@@ -185,7 +195,7 @@ function WeekPicker({ week, current }: { week: number; current: number }) {
           href={`/schedule?week=${current}`}
           className="text-body-sm font-medium text-primary hover:underline"
         >
-          Back to this week
+          {t("Back to this week")}
         </Link>
       )}
     </div>
@@ -197,6 +207,8 @@ export default async function SchedulePage({
 }: {
   searchParams: Promise<{ week?: string }>;
 }) {
+  const t = await getTranslations();
+  await connection();
   const { week: rawWeek } = await searchParams;
   const requested = Number(rawWeek);
   const current = currentTeachingWeek(new Date());
@@ -207,16 +219,16 @@ export default async function SchedulePage({
 
   return (
     <>
-      <TopBar title="Schedule" variant="large" />
+      <TopBar title={t("Schedule")} variant="large" />
       <PageContainer>
         <WeekPicker week={week} current={current} />
         <Suspense key={week} fallback={<TimetableSkeleton />}>
           <WeekTimetable week={week} />
         </Suspense>
         <p className="text-center text-body-sm text-text-muted">
-          Classes come from{" "}
+          {t("Classes come from")}{" "}
           <Link href="/courses" className="text-primary underline-offset-2 hover:underline">
-            your courses
+            {t("your courses")}
           </Link>
           .
         </p>

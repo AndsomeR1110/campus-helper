@@ -1,3 +1,4 @@
+import { LocalizedText } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils";
 
 type Tone = "success" | "warning" | "danger" | "info" | "neutral";
@@ -82,7 +83,7 @@ export function StatusBadge<K extends StatusKind>({
         className,
       )}
     >
-      {label}
+      <LocalizedText value={label} />
     </span>
   );
 }

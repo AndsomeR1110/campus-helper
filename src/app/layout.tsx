@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Suspense } from "react";
 import { ServiceWorkerRegistrar } from "@/components/pwa";
 import { THEME_SCRIPT } from "@/components/theme";
 import { Toaster } from "@/components/ui";
+import { LOCALE_COOKIE } from "@/lib/i18n/messages";
+import { LocaleBoundary } from "@/lib/i18n/server";
 import "./globals.css";
 
 // Self-hosted so builds work without access to Google Fonts (e.g. on the campus
@@ -44,6 +47,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const LANGUAGE_SCRIPT = `if (document.cookie.split("; ").includes("${LOCALE_COOKIE}=zh-CN")) document.documentElement.lang = "zh-CN";`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // The inline script sets data-theme before first paint, so React must accept the DOM value.
@@ -55,10 +60,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: LANGUAGE_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col">
-        {children}
-        <Toaster />
+        <Suspense fallback={null}>
+          <LocaleBoundary>
+            {children}
+            <Toaster />
+          </LocaleBoundary>
+        </Suspense>
         <ServiceWorkerRegistrar />
       </body>
     </html>

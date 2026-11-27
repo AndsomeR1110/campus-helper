@@ -10,3 +10,5 @@ export type { LostFoundService, LostFoundServiceDeps } from "./service";
 export { createDiskImageStorage } from "./storage";
 export type { ImageStorage, StoredImage } from "./storage";
 export { DEMO_ADMIN, DEMO_STUDENT, getCurrentAdmin, getCurrentViewer } from "./viewer";
+export { canFindMatches } from "./matching";
+export { readMatchConfig } from "./match-provider";

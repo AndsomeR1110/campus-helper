@@ -34,7 +34,12 @@ export async function findCourses(ownerId: string): Promise<Course[]> {
     orderBy: [{ weekday: "asc" }, { startTime: "asc" }],
   });
 
-  return mergeCourseSources(rows.map(toCourse), await listSchoolCourses(ownerId));
+  const reminders = new Map(
+    rows.flatMap((row) =>
+      row.reminderRule?.enabled ? [[row.id, row.reminderRule.offsetMinutes] as const] : [],
+    ),
+  );
+  return mergeCourseSources(rows.map(toCourse), await listSchoolCourses(ownerId), reminders);
 }
 
 export async function findCourse(ownerId: string, id: string): Promise<Course> {

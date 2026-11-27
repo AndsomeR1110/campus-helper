@@ -1,9 +1,11 @@
+import { getTranslations } from "@/lib/i18n/server";
 import { PageContainer, TopBar } from "@/components/layout";
 import { Skeleton } from "@/components/ui";
-export default function Loading() {
+export default async function Loading() {
+  const t = await getTranslations();
   return (
     <>
-      <TopBar title="My bookings" backHref="/profile" />
+      <TopBar title={t("My bookings")} backHref="/profile" />
       <PageContainer>
         <Skeleton className="h-40" />
       </PageContainer>

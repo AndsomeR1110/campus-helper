@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
@@ -32,10 +33,11 @@ async function CourseEditor({ id }: { id: string }) {
   return <CourseForm course={course} />;
 }
 
-function EditorSkeleton() {
+async function EditorSkeleton() {
+  const t = await getTranslations();
   return (
     <>
-      <TopBar title="Edit course" backHref="/courses" />
+      <TopBar title={t("Edit course")} backHref="/courses" />
       <PageContainer width="content">
         <Skeleton className="h-64 w-full" aria-hidden />
       </PageContainer>

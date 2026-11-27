@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "@/lib/i18n/client";
 import { CalendarCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,7 @@ export function BookingList({
   result: BookingListResult;
   filter: BookingKind | "all";
 }) {
+  const t = useTranslations();
   const router = useRouter();
   const visible = result.bookings.filter((b) => filter === "all" || b.kind === filter);
   const relevant =
@@ -32,36 +34,38 @@ export function BookingList({
   return (
     <>
       <DemoDataNotice />
-      <ChipGroup label="Booking type">
+      <ChipGroup label={t("Booking type")}>
         {(["all", "office", "space"] as const).map((kind) => (
           <Chip
             key={kind}
             selected={filter === kind}
             onClick={() => router.push(kind === "all" ? "/bookings" : `/bookings?type=${kind}`)}
           >
-            {kind === "all" ? "All types" : BOOKING_LABELS[kind]}
+            {kind === "all" ? t("All types") : t(BOOKING_LABELS[kind])}
           </Chip>
         ))}
       </ChipGroup>
       {result.unavailable.map((kind) => (
         <Card key={kind}>
           <p role="status" className="text-body-sm">
-            {BOOKING_LABELS[kind]} bookings are unavailable.{" "}
+            {t(BOOKING_LABELS[kind])} {t("bookings are unavailable.")}{" "}
             {kind === "office"
-              ? "The Office Hour service is not connected yet or could not be loaded."
-              : "We couldn’t load your seat bookings."}{" "}
-            Other available bookings are shown below.
+              ? t("The Office Hour service is not connected yet or could not be loaded.")
+              : t("We couldn’t load your seat bookings.")}{" "}
+            {t("Other available bookings are shown below.")}
           </p>
           <Button variant="secondary" onClick={() => router.refresh()}>
-            Try again
+            {t("Try again")}
           </Button>
         </Card>
       ))}
       {visible.length === 0 && relevant.length === 0 ? (
         <EmptyState
           icon={CalendarCheck}
-          title="No bookings to show"
-          description="Bookings of this type will appear here after you reserve a seat or an Office Hour."
+          title={t("No bookings to show")}
+          description={t(
+            "Bookings of this type will appear here after you reserve a seat or an Office Hour.",
+          )}
         />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
@@ -84,7 +88,9 @@ export function BookingList({
                 {b.location ? (
                   <LocationText location={b.location} className="text-body-sm text-text-muted" />
                 ) : (
-                  <span className="text-body-sm text-text-muted">Location not specified</span>
+                  <span className="text-body-sm text-text-muted">
+                    {t("Location not specified")}
+                  </span>
                 )}
               </span>
             </Link>

@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bus, CalendarSync, DoorOpen } from "lucide-react";
@@ -9,10 +10,11 @@ import { CampusGuide, ServiceTips } from "./campus-guide";
 export const metadata: Metadata = { title: "Services" };
 
 // PG-03
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const t = await getTranslations();
   return (
     <>
-      <TopBar title="Services" variant="large" />
+      <TopBar title={t("Services")} variant="large" />
       <PageContainer>
         <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {SERVICES.map((service) => (
@@ -23,14 +25,14 @@ export default function ServicesPage() {
           {[
             {
               href: "/courses/sync",
-              label: "School timetable",
-              description: "Connect your school account and sync classes",
+              label: t("School timetable"),
+              description: t("Connect your school account and sync classes"),
               Icon: CalendarSync,
             },
             {
               href: "/services/rooms",
-              label: "Discussion rooms",
-              description: "Check Taicang rooms and prepare a reservation",
+              label: t("Discussion rooms"),
+              description: t("Check Taicang rooms and prepare a reservation"),
               Icon: DoorOpen,
             },
           ].map(({ href, label, description, Icon }) => (
@@ -66,9 +68,9 @@ export default function ServicesPage() {
                 <Bus className="size-6" aria-hidden />
               </span>
               <span className="flex flex-col gap-0.5">
-                <span className="text-subtitle">Shuttle bus</span>
+                <span className="text-subtitle">{t("Shuttle bus")}</span>
                 <span className="text-body-sm text-text-muted">
-                  Book, board and manage campus trips
+                  {t("Book, board and manage campus trips")}
                 </span>
               </span>
             </Link>
