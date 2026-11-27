@@ -566,5 +566,6 @@
   "Check-in closed": "签到已关闭",
   "Checked in": "已签到",
   "Late": "迟到",
-  "Absent": "缺勤"
+  "Absent": "缺勤",
+  "Class check-in": "课堂签到"
 }
