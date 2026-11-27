@@ -1,4 +1,4 @@
-import type { ClaimStatus, LostFoundClaim, LostFoundPost } from "../types";
+import type { ClaimStatus, LostFoundClaim, LostFoundPost, PostCategory } from "../types";
 
 /** Fields the service is allowed to change after creation. */
 export interface PostPatch {
@@ -12,6 +12,19 @@ export interface ClaimPatch {
   decidedAt: string;
 }
 
+export interface MatchCandidateQuery {
+  category: PostCategory;
+  excludeAuthorId: string;
+  from: Date;
+  through: Date;
+  limit: number;
+}
+
+export type MatchCandidate = Pick<
+  LostFoundPost,
+  "id" | "title" | "description" | "location" | "occurredAt"
+>;
+
 /**
  * Storage contract for the Lost & Found module.
  *
@@ -20,10 +33,12 @@ export interface ClaimPatch {
  * write that changes more than one row MUST run inside `transaction`.
  */
 export interface LostFoundRepository {
+  listMatchCandidates(query: MatchCandidateQuery): Promise<MatchCandidate[]>;
   listPosts(): Promise<LostFoundPost[]>;
   getPost(id: string): Promise<LostFoundPost | null>;
   createPost(post: LostFoundPost): Promise<LostFoundPost>;
-  updatePost(id: string, patch: PostPatch): Promise<LostFoundPost>;
+  /** An active-only update must reject if the post has ended since the caller read it. */
+  updatePost(id: string, patch: PostPatch, options?: { activeOnly: true }): Promise<LostFoundPost>;
 
   listClaimsForPost(postId: string): Promise<LostFoundClaim[]>;
   getClaim(id: string): Promise<LostFoundClaim | null>;

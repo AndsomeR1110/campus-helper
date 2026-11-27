@@ -60,3 +60,4 @@ export {
   canViewPost,
   publicAuthorName,
 } from "./rules";
+export { PossibleMatches } from "./components/possible-matches";

@@ -7,6 +7,16 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 describe("AUTO-01 school page automation", () => {
+  it.each([
+    [401, "AUTH_REQUIRED"],
+    [403, "AUTH_REQUIRED"],
+    [503, "SCHOOL_UNAVAILABLE"],
+    [412, "SCHOOL_UNAVAILABLE"],
+  ])("distinguishes HTTP %s from an expired login", async (status, code) => {
+    vi.stubGlobal("location", new URL("https://timetableplus.xjtlu.edu.cn/pt/#/" + "a".repeat(64)));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status }));
+    await expect(fetchSchoolTimetable()).rejects.toThrow(String(code));
+  });
   it("clicks the actual input-button SSO entry without accessing login fields", () => {
     vi.stubGlobal("location", new URL("https://ebridge.xjtlu.edu.cn/"));
     document.body.innerHTML = '<input type="button" value="XJTLU Account">';

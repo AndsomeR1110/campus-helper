@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useEffect } from "react";
 
 import { Button, ErrorState } from "@/components/ui";
@@ -18,6 +19,7 @@ export default function OfficeHoursError({
   error: Error & { digest?: string };
   retry: () => void;
 }) {
+  const t = useTranslations();
   useEffect(() => {
     console.error("[office-hours] render error:", error);
   }, [error]);
@@ -28,7 +30,7 @@ export default function OfficeHoursError({
         kind="server"
         action={
           <Button variant="secondary" onClick={() => retry()}>
-            Try again
+            {t("Try again")}
           </Button>
         }
       />

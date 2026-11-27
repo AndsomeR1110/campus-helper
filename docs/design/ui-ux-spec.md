@@ -190,6 +190,7 @@ Schedule、Home 和 My Bookings 中，三类事件使用固定的颜色 + 图标
 
 - `<html data-theme="light|dark">` 由根布局 `<head>` 中的内联脚本在首帧前设置（`@/components/theme` 的 `THEME_SCRIPT`），默认跟随系统；用户可在 Profile → Appearance 用 `ThemeSwitcher` 选择 System / Light / Dark，保存在本机 `localStorage`。
 - 深色色值只在 `globals.css` 的 `:root[data-theme="dark"]` 中覆盖同名 Token，业务代码**无需**写 `dark:`；只用语义 Token 就自动支持深色模式。确有需要时可用 `dark:` 变体。
+- **不要在主题色上使用透明度修饰**（如 `bg-surface/80`、`ring-primary/40`）：Tailwind 会为不支持 `color-mix()` 的浏览器生成取自浅色值的静态回退色，深色模式下会出现发白的色块。需要半透明时用按主题分别定义的 Token（`surface-translucent`、`primary-soft`、`glass`、`liquid-*`），或用 `opacity-*`。`theme-opacity.test.ts` 会检查。`black` / `white` 不受限制。
 - 深色模式为暖石墨灰（背景 `#131211`），不使用蓝紫色调；主色改为地图标记的兰花紫 `#D9AEE0`，背景光斑极淡。不用纯黑，层级靠表面变亮区分。
 - Logo 使用固定品牌色 `brand` / `brand-on` / `brand-accent`（紫底、白色学士帽、阳光黄地图钉流苏），两种主题下一致。
 

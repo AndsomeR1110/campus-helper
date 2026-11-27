@@ -41,3 +41,7 @@ The native worktree now includes Claude UI redesign commit `1607a8c` (PR #62), m
 MuMu exposed an Android ICU issue: en-CA formatted dates as MM/DD/YYYY, crashing the new calendar. The shared dayKey helper now assembles year/month/day from formatToParts; its regression test failed before the fix and passed afterward. MuMu calendar opening, Sunday selection and authenticated school schedule query passed after migration. No new real bookings were created during UI synchronization.
 
 Services and the web-only shuttle platform notice were checked at 375/768/1280px in light/dark themes: no horizontal overflow or page errors. Android dark-theme tokens and calendar rendering were confirmed separately. Earlier booking/QR/cancellation results above are pre-migration evidence, not a repeated write test after migration.
+
+## Custom school sign-in (2026-11-14)
+
+The `SchoolAuth` bridge supports custom credentials/image-code inputs and an official slider-only challenge. This branch wires Claude's #70 sheet into timetable and shuttle through #71's facade. See [SCHOOL-SIGNIN-UI.md](SCHOOL-SIGNIN-UI.md) for the integrated UI and [SCHOOL-AUTH.md](SCHOOL-AUTH.md) for native contracts and verification limits. The self-drawn slider remains preview-only; the real adapter uses the official challenge control.

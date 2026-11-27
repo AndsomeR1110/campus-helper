@@ -1,3 +1,4 @@
+import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { CalendarPlus, ChevronRight, Clock, Eye, TriangleAlert, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -35,6 +36,7 @@ export const instant = false;
  * of getting a 500 (the API still returns 403 — AUTH-AC-04).
  */
 export default async function TeacherOfficeHoursPage() {
+  const t = await getTranslations();
   let user;
   try {
     user = await requireTeacher();
@@ -46,13 +48,13 @@ export default async function TeacherOfficeHoursPage() {
   return (
     <>
       <TopBar
-        title="My office hours"
+        title={t("My office hours")}
         backHref="/profile"
         actions={
           <Link
             href="/office-hours"
-            aria-label="View student side"
-            title="View student side"
+            aria-label={t("View student side")}
+            title={t("View student side")}
             className="flex size-11 items-center justify-center rounded-full text-primary hover:bg-surface-muted"
           >
             <Eye className="size-5" aria-hidden />
@@ -61,7 +63,9 @@ export default async function TeacherOfficeHoursPage() {
       />
       <PageContainer>
         <p className="text-body-sm text-text-muted">
-          Create slots and see how many students have booked. You can only manage your own slots.
+          {t(
+            "Create slots and see how many students have booked. You can only manage your own slots.",
+          )}
         </p>
 
         <DemoDataNotice />
@@ -75,6 +79,8 @@ export default async function TeacherOfficeHoursPage() {
 }
 
 async function TeacherDashboard({ userId }: { userId: string }) {
+  const t = await getTranslations();
+  const locale = await getLocale();
   const [slots, profile] = await Promise.all([
     listSlotsForTeacher(userId),
     prisma.teacherProfile.findUnique({
@@ -87,7 +93,9 @@ async function TeacherDashboard({ userId }: { userId: string }) {
     return (
       <p className="flex items-start gap-2 rounded-md bg-warning-subtle px-4 py-3 text-body-sm text-warning">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-        This account has the TEACHER role but no teacher profile yet. Ask an admin to create one.
+        {t(
+          "This account has the TEACHER role but no teacher profile yet. Ask an admin to create one.",
+        )}
       </p>
     );
   }
@@ -95,12 +103,12 @@ async function TeacherDashboard({ userId }: { userId: string }) {
   const upcoming = slots.filter((slot) => !slot.isPast);
   const past = slots.filter((slot) => slot.isPast);
   const stats = [
-    { label: "Upcoming slots", value: upcoming.filter((s) => s.status === "OPEN").length },
+    { label: t("Upcoming slots"), value: upcoming.filter((s) => s.status === "OPEN").length },
     {
-      label: "Booked",
+      label: t("Booked"),
       value: upcoming.filter((s) => s.status === "OPEN" && s.bookingCount > 0).length,
     },
-    { label: "Past slots", value: past.length },
+    { label: t("Past slots"), value: past.length },
   ];
 
   const days = new Map<string, typeof upcoming>();
@@ -112,7 +120,7 @@ async function TeacherDashboard({ userId }: { userId: string }) {
   return (
     <>
       <section
-        aria-label="Your profile"
+        aria-label={t("Your profile")}
         className={cardStyles({ variant: "widget", className: "flex flex-col gap-4" })}
       >
         <div className="flex items-center gap-4">
@@ -122,7 +130,7 @@ async function TeacherDashboard({ userId }: { userId: string }) {
             <p className="truncate text-body-sm text-text-muted">{profile.department}</p>
             {profile.office ? (
               <LocationText
-                location={`Office ${profile.office}`}
+                location={t("Office {location}", { location: profile.office })}
                 className="text-body-sm text-text-muted"
               />
             ) : null}
@@ -132,7 +140,7 @@ async function TeacherDashboard({ userId }: { userId: string }) {
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col items-center gap-0.5 rounded-md bg-surface-muted/70 px-2 py-3"
+              className="flex flex-col items-center gap-0.5 rounded-md bg-surface-translucent px-2 py-3"
             >
               <dd className="text-title-lg text-text tabular-nums">{stat.value}</dd>
               <dt className="text-center text-caption text-text-muted">{stat.label}</dt>
@@ -147,19 +155,19 @@ async function TeacherDashboard({ userId }: { userId: string }) {
         <Card className="p-0">
           <EmptyState
             icon={CalendarPlus}
-            title="No upcoming slots"
-            description="Create a slot above and students will see it immediately."
+            title={t("No upcoming slots")}
+            description={t("Create a slot above and students will see it immediately.")}
           />
         </Card>
       ) : (
         [...days.entries()].map(([key, daySlots]) => (
           <section
             key={key}
-            aria-label={formatDate(daySlots[0].startsAt)}
+            aria-label={formatDate(daySlots[0].startsAt, locale)}
             className="flex flex-col gap-2"
           >
             <h2 className="text-caption tracking-wide text-text-muted uppercase">
-              {formatDate(daySlots[0].startsAt)}
+              {formatDate(daySlots[0].startsAt, locale)}
             </h2>
             <ul className="grid gap-2 md:grid-cols-2">
               {daySlots.map((slot) => (
@@ -177,7 +185,8 @@ async function TeacherDashboard({ userId }: { userId: string }) {
               className="size-4 transition-transform group-open:rotate-90"
               aria-hidden
             />
-            Past slots ({past.length})
+            {t("Past slots (")}
+            {past.length})
           </summary>
           <ul className="mt-2 grid gap-2 opacity-80 md:grid-cols-2">
             {past.map((slot) => (
@@ -190,13 +199,15 @@ async function TeacherDashboard({ userId }: { userId: string }) {
   );
 }
 
-function SlotRow({
+async function SlotRow({
   slot,
   showDate = false,
 }: {
   slot: Awaited<ReturnType<typeof listSlotsForTeacher>>[number];
   showDate?: boolean;
 }) {
+  const t = await getTranslations();
+  const locale = await getLocale();
   return (
     <li className={cardStyles({ className: "flex items-center gap-3" })}>
       <span
@@ -210,7 +221,7 @@ function SlotRow({
           {formatTimeRange(slot.startsAt, slot.endsAt)}
           {showDate ? (
             <span className="ml-2 text-body-sm font-normal text-text-muted">
-              {formatDate(slot.startsAt)}
+              {formatDate(slot.startsAt, locale)}
             </span>
           ) : null}
         </p>
@@ -219,7 +230,7 @@ function SlotRow({
           {slot.bookingCount > 0 ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-info-subtle px-2.5 py-0.5 text-caption text-info">
               <Users className="size-3.5" aria-hidden />
-              {slot.bookingCount} booked
+              {slot.bookingCount} {t("booked")}
             </span>
           ) : null}
           {slot.location ? (

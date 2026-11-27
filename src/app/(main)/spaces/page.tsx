@@ -1,3 +1,4 @@
+import { getTranslations } from "@/lib/i18n/server";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { PageContainer, TopBar } from "@/components/layout";
@@ -5,10 +6,15 @@ import { Skeleton } from "@/components/ui";
 import { dayKey } from "@/lib/time";
 import { SpaceList } from "@/features/spaces";
 import { resolveSpaceQuery, spaceService, type SpaceSearchParams } from "@/features/spaces/server";
-export default function SpacesPage({ searchParams }: { searchParams: Promise<SpaceSearchParams> }) {
+export default async function SpacesPage({
+  searchParams,
+}: {
+  searchParams: Promise<SpaceSearchParams>;
+}) {
+  const t = await getTranslations();
   return (
     <>
-      <TopBar title="Find a study space" backHref="/services" />
+      <TopBar title={t("Find a study space")} backHref="/services" />
       <PageContainer>
         <Suspense fallback={<Skeleton className="h-40" />}>
           <SpacesContent searchParams={searchParams} />

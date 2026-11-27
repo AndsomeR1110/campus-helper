@@ -5,6 +5,7 @@ import {
   canSetPostStatus,
   canSubmitClaim,
   canViewPost,
+  isPublicPost,
   claimStatusesAfterAccept,
   LostFoundError,
   postStatusAfterReject,
@@ -50,19 +51,11 @@ export function createLostFoundService({
   nextId,
   storage,
 }: LostFoundServiceDeps) {
-  function isListed(post: LostFoundPost): boolean {
-    // Hidden posts disappear from browse and from "My posts". The author keeps
-    // them reachable through the detail page, which is enough for the notice.
-    return post.status !== "HIDDEN";
-  }
-
   return {
     /** Public list with search, kind and category filters applied. */
     async listPosts(filters: PostFilters): Promise<PostListItem[]> {
-      const viewer = await currentViewer();
       const posts = (await repository.listPosts())
-        .filter(isListed)
-        .filter((post) => canViewPost(post, viewer) && matchesFilters(post, filters))
+        .filter((post) => isPublicPost(post) && matchesFilters(post, filters))
         .sort(byNewestFirst);
       const counts = await repository.countClaims(posts.map((post) => post.id));
       return posts.map((post) => ({ ...post, claimCount: counts.get(post.id) ?? 0 }));
@@ -154,10 +147,12 @@ export function createLostFoundService({
       };
 
       return repository.transaction(async (tx) => {
-        const created = await tx.createClaim(claim);
-        if (post.status === "OPEN")
-          await tx.updatePost(postId, { status: "CLAIM_PENDING", updatedAt: at });
-        return created;
+        await tx.updatePost(
+          postId,
+          { status: "CLAIM_PENDING", updatedAt: at },
+          { activeOnly: true },
+        );
+        return tx.createClaim(claim);
       });
     },
 
@@ -192,16 +187,21 @@ export function createLostFoundService({
             await tx.updateClaim(id, { status, decidedAt: at });
           }
           const accepted = await tx.updateClaim(claimId, { status: "APPROVED", decidedAt: at });
-          const updated = await tx.updatePost(post.id, { status: "CLAIM_PENDING", updatedAt: at });
+          const updated = await tx.updatePost(
+            post.id,
+            { status: "CLAIM_PENDING", updatedAt: at },
+            { activeOnly: true },
+          );
           return { claim: accepted, post: updated };
         }
 
         const rejected = await tx.updateClaim(claimId, { status: "REJECTED", decidedAt: at });
         const remaining = await tx.countPendingClaims(post.id);
-        const updated = await tx.updatePost(post.id, {
-          status: postStatusAfterReject(remaining),
-          updatedAt: at,
-        });
+        const updated = await tx.updatePost(
+          post.id,
+          { status: postStatusAfterReject(remaining), updatedAt: at },
+          { activeOnly: true },
+        );
         return { claim: rejected, post: updated };
       });
     },
@@ -216,7 +216,11 @@ export function createLostFoundService({
       if (!canSetPostStatus(post, viewer, next)) {
         throw new LostFoundError("FORBIDDEN", "Only the author can change this post.");
       }
-      return repository.updatePost(postId, { status: next, updatedAt: now().toISOString() });
+      return repository.updatePost(
+        postId,
+        { status: next, updatedAt: now().toISOString() },
+        { activeOnly: true },
+      );
     },
 
     /**

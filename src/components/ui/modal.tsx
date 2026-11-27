@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { X } from "lucide-react";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,7 @@ export function Modal({
   role = "dialog",
   className,
 }: ModalProps) {
+  const t = useTranslations();
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -88,16 +90,16 @@ export function Modal({
         <div className="flex items-start gap-2 px-4 pt-4 md:px-6 md:pt-6">
           <div className="flex flex-1 flex-col gap-1 pt-2">
             <h2 id={titleId} className="text-title">
-              {title}
+              {t(title)}
             </h2>
             {description && (
               <div id={descriptionId} className="text-body-sm text-text-muted">
-                {description}
+                {typeof description === "string" ? t(description) : description}
               </div>
             )}
           </div>
           {dismissible && (
-            <IconButton aria-label="Close" onClick={onClose} className="-mr-2">
+            <IconButton aria-label={t("Close")} onClick={onClose} className="-mr-2">
               <X />
             </IconButton>
           )}

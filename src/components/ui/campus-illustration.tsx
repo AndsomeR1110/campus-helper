@@ -73,7 +73,7 @@ export function CampusIllustration({ className }: { className?: string }) {
       {/* Sports ground and courts */}
       <rect x="22" y="104" width="46" height="84" rx="23" className="fill-map-track" />
       <rect x="29" y="113" width="32" height="66" rx="16" className="fill-map-lawn-deep" />
-      <rect x="78" y="160" width="26" height="24" rx="6" className="fill-info/45" />
+      <rect x="78" y="160" width="26" height="24" rx="6" className="fill-map-river" />
 
       {/* Outer radial buildings */}
       {OUTER_ANGLES.map((angle) => {

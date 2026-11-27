@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -17,6 +18,7 @@ interface LoginFormProps {
  * the route handler re-validates (never trust the client).
  */
 export function LoginForm({ nextPath }: LoginFormProps) {
+  const t = useTranslations();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,12 +42,15 @@ export function LoginForm({ nextPath }: LoginFormProps) {
     }
     setFieldErrors({});
     setSubmitting(true);
+    const requestBody = JSON.stringify(parsed.data);
+    // Next may retain a hidden route after navigation; do not leave its password input populated.
+    setPassword("");
 
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
+        body: requestBody,
       });
       const payload = (await response.json()) as
         { data: unknown } | { error: { code: string; message: string } };
@@ -66,7 +71,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
-      <FormField label="Email" error={fieldErrors.email}>
+      <FormField label={t("Email")} error={fieldErrors.email}>
         <Input
           type="email"
           name="email"
@@ -78,7 +83,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
         />
       </FormField>
 
-      <FormField label="Password" error={fieldErrors.password}>
+      <FormField label={t("Password")} error={fieldErrors.password}>
         <Input
           type="password"
           name="password"
@@ -91,18 +96,18 @@ export function LoginForm({ nextPath }: LoginFormProps) {
 
       {formError ? (
         <p role="alert" className="rounded-md bg-danger-subtle px-3 py-2 text-body-sm text-danger">
-          {formError}
+          {t(formError)}
         </p>
       ) : null}
 
       <Button type="submit" size="lg" fullWidth loading={submitting}>
-        {submitting ? "Signing in…" : "Sign in"}
+        {submitting ? t("Signing in…") : t("Sign in")}
       </Button>
 
       <p className="text-center text-body-sm text-text-muted">
-        No account yet?{" "}
+        {t("No account yet?")}{" "}
         <Link href="/register" className="font-medium text-primary hover:underline">
-          Create one
+          {t("Create one")}
         </Link>
       </p>
     </form>

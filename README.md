@@ -10,6 +10,7 @@ A campus companion PWA for students: book teacher office hours, reserve study sp
 - **Study Spaces** — filter seats by building / floor / date / time and reserve them
 - **Class Reminder** — weekly timetable, unified schedule, `.ics` export and notifications
 - **Lost & Found** — post & search lost/found items, private claims, admin moderation
+- **Interface language** — switch between English and Simplified Chinese on the sign-in / registration screens or in Profile. The preference is saved in the current browser. User posts and other stored content are shown in their original language.
 
 ## Tech Stack
 

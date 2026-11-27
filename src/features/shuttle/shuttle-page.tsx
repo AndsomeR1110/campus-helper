@@ -32,6 +32,11 @@ import {
 import { formatDate, formatTimeRange } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { BoardingPass } from "./boarding-pass";
+import {
+  SchoolAccountSignIn,
+  schoolAuthAvailable,
+  restoreSchoolConnection,
+} from "@/features/school-auth";
 import { shuttle, shuttleAvailable, shuttleError } from "./bridge";
 import type { Schedule, Trip } from "./schemas";
 import {
@@ -51,19 +56,25 @@ const dayLabel = (date: string) => formatDate(`${date}T12:00:00+08:00`);
 const timeRange = (j: Schedule | Trip) => formatTimeRange(journeyStart(j), journeyEnd(j));
 const routeText = (j: Schedule | Trip) => `${campusShort(j.from)} → ${campusShort(j.to)}`;
 
-type Account = "unknown" | "connected" | "signed-out";
-type Busy = null | "signin" | "search" | "trips" | "write";
+/** Trip and departure reads require a connection confirmed for this app account. */
+type Account = "not-connected" | "connected" | "expired";
+type Busy = null | "search" | "trips" | "write";
 type Notice = { tone: "success" | "warning" | "info"; title: string; text: string } | null;
 
-export function ShuttlePage({ initialDate }: { initialDate: string }) {
+// The sign-in sheet needs both native plugins; there is no whole-page fallback.
+const nativeReady = () => shuttleAvailable() && schoolAuthAvailable();
+
+export function ShuttlePage({ initialDate, actorId }: { initialDate: string; actorId: string }) {
   const offline = useOffline();
-  const available = useSyncExternalStore(subscribe, shuttleAvailable, () => null);
+  const available = useSyncExternalStore(subscribe, nativeReady, () => null);
   const [date, setDate] = useState(initialDate);
   const [route, setRoute] = useState<Route>(2);
   const [schedules, setSchedules] = useState<Schedule[] | null>(null);
   const [searched, setSearched] = useState<{ date: string; route: Route } | null>(null);
   const [trips, setTrips] = useState<Trip[] | null>(null);
-  const [account, setAccount] = useState<Account>("unknown");
+  const [account, setAccount] = useState<Account>("not-connected");
+  const [signingIn, setSigningIn] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   // The school bridge has a single request channel: one request at a time.
   const [busy, setBusy] = useState<Busy>(null);
   const [searchError, setSearchError] = useState("");
@@ -88,6 +99,41 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
       active.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    let live = true;
+    const abort = new AbortController();
+    queueMicrotask(async () => {
+      if (!live || !available || !navigator.onLine) return;
+      running.current = true;
+      setRestoring(true);
+      try {
+        await restoreSchoolConnection(actorId, "shuttle", () => live, abort.signal);
+        if (!live) return;
+        setAccount("connected");
+        await readTrips();
+      } catch (e) {
+        if (!live) return;
+        const code =
+          e && typeof e === "object" && "code" in e
+            ? String(e.code)
+            : e instanceof Error
+              ? e.message
+              : "";
+        if (code === "AUTH_REQUIRED") setAccount("expired");
+        else if (code !== "ACCOUNT_SWITCH_REQUIRED" && code !== "CANCELLED")
+          setTripsError(shuttleError(e));
+      } finally {
+        running.current = false;
+        if (live) setRestoring(false);
+      }
+    });
+    return () => {
+      live = false;
+      abort.abort();
+    };
+    // This attempt belongs to the mounted actor. User actions handle later retries.
+  }, [actorId, available]);
 
   /** Serialises bridge requests; returns false if another one is running. */
   async function exclusive(kind: NonNullable<Busy>, action: () => Promise<void>) {
@@ -115,7 +161,7 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
     } catch (e) {
       if (!active.current) return null;
       if (failureKind(e) === "auth") {
-        setAccount("signed-out");
+        setAccount("expired");
         setTrips(null);
       } else setTripsError(shuttleError(e));
       return null;
@@ -127,24 +173,10 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
       await readTrips();
     });
 
-  useEffect(() => {
-    if (available && navigator.onLine) void loadTrips();
-    // Load My trips once when the page opens in the app.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [available]);
-
   function signIn() {
-    void exclusive("signin", async () => {
-      setNotice(null);
-      try {
-        await shuttle.login();
-      } catch (e) {
-        if (active.current)
-          setNotice({ tone: "warning", title: "Not signed in", text: shuttleError(e) });
-        return;
-      }
-      await readTrips();
-    });
+    if (running.current) return;
+    setNotice(null);
+    setSigningIn(true);
   }
 
   function search() {
@@ -160,7 +192,7 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
       } catch (e) {
         if (!active.current) return;
         setSchedules(null);
-        if (failureKind(e) === "auth") setAccount("signed-out");
+        if (failureKind(e) === "auth") setAccount("expired");
         else setSearchError(shuttleError(e));
         return;
       }
@@ -186,14 +218,14 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
         kind === "unknown-result"
           ? "Result not confirmed"
           : kind === "auth"
-            ? "Sign in again"
+            ? "Connect again"
             : "Trip changed at the school",
       text:
         kind === "unknown-result"
           ? "The school hasn’t confirmed this change. My trips has been refreshed — check it before trying again."
           : shuttleError(e),
     });
-    if (kind === "auth") setAccount("signed-out");
+    if (kind === "auth") setAccount("expired");
     else await readTrips();
   }
 
@@ -266,11 +298,25 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
   if (available === null) return <ShuttleSkeleton />;
   if (!available) return <Unsupported />;
 
-  const locked = busy !== null || offline || pass !== null;
+  const locked = busy !== null || offline || pass !== null || signingIn || restoring;
   const selected = ROUTES.find((r) => r.route === route)!;
 
   return (
     <div className="flex flex-col gap-6">
+      {signingIn && (
+        <SchoolAccountSignIn
+          actorId={actorId}
+          service="shuttle"
+          onClose={() => setSigningIn(false)}
+          onConnected={() => {
+            // Connected only after the shuttle session was read back natively.
+            setAccount("connected");
+            setSchedules(null);
+            setSearched(null);
+            void loadTrips();
+          }}
+        />
+      )}
       <Card variant="widget" className="flex flex-col gap-4">
         <div className="flex items-start gap-3">
           <span className="flex size-14 shrink-0 items-center justify-center rounded-md bg-accent-subtle text-accent">
@@ -286,7 +332,7 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
 
         <AccountRow
           account={account}
-          loading={busy === "signin"}
+          loading={signingIn || restoring}
           disabled={locked}
           onSignIn={signIn}
         />
@@ -327,7 +373,7 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
         <Button
           size="lg"
           fullWidth
-          disabled={locked || !date || account === "signed-out"}
+          disabled={locked || !date || account !== "connected"}
           loading={busy === "search"}
           onClick={search}
         >
@@ -359,7 +405,7 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
         <Departures
           loading={busy === "search"}
           error={searchError}
-          signedOut={account === "signed-out" && schedules === null}
+          signedOut={account !== "connected" && schedules === null}
           schedules={schedules}
           trips={trips}
           disabled={locked}
@@ -376,7 +422,7 @@ export function ShuttlePage({ initialDate }: { initialDate: string }) {
           <SectionHeading id="trips-heading">My trips</SectionHeading>
           <IconButton
             aria-label="Refresh my trips"
-            disabled={locked}
+            disabled={locked || account !== "connected"}
             onClick={() => void loadTrips()}
             className="[&_svg]:size-5"
           >
@@ -473,18 +519,18 @@ function AccountRow({
 }) {
   if (account === "connected")
     return (
-      <p className="flex items-center gap-2 rounded-sm bg-surface-muted/60 px-3 py-2 text-body-sm">
+      <p className="flex items-center gap-2 rounded-sm bg-surface-translucent px-3 py-2 text-body-sm">
         <CircleCheck className="size-4 shrink-0 text-success" aria-hidden />
-        Signed in to your school account
+        University account connected
       </p>
     );
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-sm bg-surface-muted/60 px-3 py-2">
+    <div className="flex flex-wrap items-center gap-3 rounded-sm bg-surface-translucent px-3 py-2">
       <KeyRound className="size-4 shrink-0 text-text-muted" aria-hidden />
       <p className="min-w-0 flex-1 text-body-sm">
-        {account === "signed-out"
-          ? "Sign in to your school account to search and book."
-          : "Checking your school account…"}
+        {account === "expired"
+          ? "Your university session ended. Connect again to continue."
+          : "Connect your university account to search and book."}
       </p>
       <Button
         size="sm"
@@ -493,7 +539,7 @@ function AccountRow({
         disabled={disabled}
         onClick={onSignIn}
       >
-        Sign in
+        {account === "expired" ? "Reconnect" : "Connect"}
       </Button>
     </div>
   );
@@ -554,7 +600,7 @@ function Departures({
   if (signedOut)
     return (
       <p className="text-body-sm text-text-muted">
-        Sign in to your school account above to see live departures.
+        Connect your university account above to see live departures.
       </p>
     );
   if (schedules === null)
@@ -643,10 +689,10 @@ function MyTrips({
 }) {
   if (loading) return <CardSkeletons count={1} />;
   if (error) return <ErrorState description={error} onRetry={onRetry} />;
-  if (account === "signed-out")
+  if (account !== "connected")
     return (
       <p className="text-body-sm text-text-muted">
-        Your school shuttle bookings appear here after you sign in.
+        Your shuttle bookings appear here after you connect your university account.
       </p>
     );
   if (trips === null)

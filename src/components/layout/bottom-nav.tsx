@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { usePathname } from "next/navigation";
 import { getActiveTab, shouldShowBottomNav } from "./nav-config";
 import { NavItems } from "./nav-items";
@@ -10,6 +11,7 @@ import { NavItems } from "./nav-items";
  * Uses usePathname, so AppShell wraps it in <Suspense>.
  */
 export function BottomNav({ unreadCount }: { unreadCount?: number }) {
+  const t = useTranslations();
   const pathname = usePathname();
   if (!shouldShowBottomNav(pathname)) return null;
 
@@ -21,7 +23,7 @@ export function BottomNav({ unreadCount }: { unreadCount?: number }) {
         className="h-[calc(var(--spacing-bottom-nav)+24px+env(safe-area-inset-bottom))] lg:hidden"
       />
       <nav
-        aria-label="Main"
+        aria-label={t("Main")}
         className="pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden"
       >
         <div className="pointer-events-auto mx-auto h-bottom-nav max-w-[480px] rounded-full border liquid-glass px-1.5">

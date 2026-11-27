@@ -109,3 +109,17 @@ export const CATEGORY_OPTIONS = POST_CATEGORIES.map((value) => ({
   value,
   label: CATEGORY_LABELS[value],
 }));
+
+/** Client input is a post ID. The server loads the text from the repository. */
+export const matchPostIdSchema = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/);
+
+export const modelMatchesSchema = z.strictObject({
+  matches: z
+    .array(
+      z.strictObject({
+        candidate: z.number().int().min(1),
+        reason: z.string().trim().min(1).max(240),
+      }),
+    )
+    .max(12),
+});

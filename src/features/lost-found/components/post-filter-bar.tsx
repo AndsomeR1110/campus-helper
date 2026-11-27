@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
@@ -17,6 +18,7 @@ const KINDS: Array<{ value: PostKind | ""; label: string }> = [
 
 /** Filters live in the URL so a filtered list can be shared and reloaded (FR-LF-03). */
 export function PostFilterBar({ filters }: { filters: PostFilters }) {
+  const t = useTranslations();
   const router = useRouter();
   const [query, setQuery] = useState(filters.query ?? "");
   const [kind, setKind] = useState<PostKind | "">(filters.kind ?? "");
@@ -37,19 +39,19 @@ export function PostFilterBar({ filters }: { filters: PostFilters }) {
   }
 
   return (
-    <section className="flex flex-col gap-3" aria-label="Filter posts">
+    <section className="flex flex-col gap-3" aria-label={t("Filter posts")}>
       <form onSubmit={onSubmit} className="flex items-end gap-2">
-        <FormField label="Search posts" className="flex-1" hint={undefined}>
+        <FormField label={t("Search posts")} className="flex-1" hint={undefined}>
           <Input
             name="q"
             type="search"
             value={query}
-            placeholder="Item, description or place"
+            placeholder={t("Item, description or place")}
             onChange={(event) => setQuery(event.target.value)}
           />
         </FormField>
         <Button type="submit" variant="secondary">
-          Search
+          {t("Search")}
         </Button>
       </form>
 
@@ -68,7 +70,7 @@ export function PostFilterBar({ filters }: { filters: PostFilters }) {
         ))}
       </div>
 
-      <FormField label="Category">
+      <FormField label={t("Category")}>
         <Select
           value={category}
           onChange={(event) => {
@@ -77,10 +79,10 @@ export function PostFilterBar({ filters }: { filters: PostFilters }) {
             go({ category: value });
           }}
         >
-          <option value="">All categories</option>
+          <option value="">{t("All categories")}</option>
           {POST_CATEGORIES.map((value) => (
             <option key={value} value={value}>
-              {CATEGORY_LABELS[value]}
+              {t(CATEGORY_LABELS[value])}
             </option>
           ))}
         </Select>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/client";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +48,7 @@ export function DateStrip({
   startIsToday = true,
   onChange,
 }: DateStripProps) {
+  const t = useTranslations();
   const keys = Array.from({ length: days }, (_, i) =>
     addDays(start, direction === "future" ? i : -i),
   );
@@ -68,20 +70,20 @@ export function DateStrip({
           const p = parts(key);
           const relative =
             startIsToday && key === start
-              ? "Today"
+              ? t("Today")
               : startIsToday &&
                   index === 1 &&
                   key === addDays(start, direction === "future" ? 1 : -1)
                 ? direction === "future"
-                  ? "Tomorrow"
-                  : "Yesterday"
-                : p.weekday;
+                  ? t("Tomorrow")
+                  : t("Yesterday")
+                : t(p.weekday);
           return (
             <button
               key={key}
               type="button"
               aria-pressed={selected}
-              aria-label={`${relative === p.weekday ? p.weekday : relative}, ${p.day} ${p.month}`}
+              aria-label={`${relative}, ${p.day} ${t(p.month)}`}
               onClick={() => {
                 setValue(key);
                 onChange?.(key);
@@ -94,7 +96,10 @@ export function DateStrip({
               )}
             >
               <span
-                className={cn("text-caption", selected ? "text-on-primary/85" : "text-text-muted")}
+                className={cn(
+                  "text-caption",
+                  selected ? "text-on-primary opacity-85" : "text-text-muted",
+                )}
               >
                 {relative}
               </span>

@@ -1,5 +1,13 @@
+import { getTranslations } from "@/lib/i18n/server";
 import Link from "next/link";
-import { Bus, ChevronRight, ClipboardCheck, DoorOpen, type LucideIcon } from "lucide-react";
+import {
+  Bus,
+  CalendarSync,
+  ChevronRight,
+  ClipboardCheck,
+  DoorOpen,
+  type LucideIcon,
+} from "lucide-react";
 import { cardStyles } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +25,14 @@ interface SchoolService {
 /** Services that use the student's university account (Android app). */
 const SCHOOL_SERVICES: readonly SchoolService[] = [
   {
+    href: "/courses/sync",
+    label: "School timetable",
+    description: "Connect your school account and sync classes",
+    icon: CalendarSync,
+    tone: "bg-event-class-subtle text-event-class",
+    availability: "Android app",
+  },
+  {
     href: "/services/shuttle",
     label: "Shuttle bus",
     description: "Book, board and manage campus trips",
@@ -27,33 +43,34 @@ const SCHOOL_SERVICES: readonly SchoolService[] = [
   {
     href: "/services/rooms",
     label: "Discussion rooms",
-    description: "Book a group room at Taicang campus",
+    description: "Check Taicang rooms and prepare a reservation",
     icon: DoorOpen,
     tone: "bg-event-space-subtle text-event-space",
-    availability: "Not connected yet",
+    availability: "Android app",
   },
   {
     href: "/services/attendance",
     label: "Class check-in",
     description: "Check in with your teacher’s class code",
     icon: ClipboardCheck,
-    tone: "bg-event-class-subtle text-event-class",
+    tone: "bg-primary-subtle text-primary",
     availability: "Not connected yet",
   },
 ];
 
-export function SchoolServices() {
+export async function SchoolServices() {
+  const t = await getTranslations();
   return (
     <section aria-labelledby="school-services" className="flex flex-col gap-3">
       <div className="flex flex-col gap-0.5">
         <h2 id="school-services" className="text-caption tracking-wide text-text-muted uppercase">
-          School services
+          {t("School services")}
         </h2>
         <p className="text-body-sm text-text-muted">
-          Use your university account in the Campus Helper Android app.
+          {t("Use your university account in the Campus Helper Android app.")}
         </p>
       </div>
-      <ul className="grid gap-3 md:grid-cols-3">
+      <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {SCHOOL_SERVICES.map((s) => (
           <li key={s.href}>
             <Link
@@ -73,9 +90,9 @@ export function SchoolServices() {
                 <s.icon className="size-6" aria-hidden />
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-subtitle">{s.label}</span>
-                <span className="text-body-sm text-text-muted">{s.description}</span>
-                <span className="text-caption text-text-muted">{s.availability}</span>
+                <span className="text-subtitle">{t(s.label)}</span>
+                <span className="text-body-sm text-text-muted">{t(s.description)}</span>
+                <span className="text-caption text-text-muted">{t(s.availability)}</span>
               </span>
               <ChevronRight className="size-5 shrink-0 text-text-muted md:hidden" aria-hidden />
             </Link>

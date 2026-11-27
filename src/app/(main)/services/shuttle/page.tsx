@@ -9,8 +9,9 @@ import { dayKey } from "@/lib/time";
 export const metadata: Metadata = { title: "Shuttle bus" };
 
 async function Content() {
-  if (!(await getCurrentUser())) redirect("/login?next=/services/shuttle");
-  return <ShuttlePage initialDate={dayKey(new Date())} />;
+  const user = await getCurrentUser();
+  if (!user) redirect("/login?next=/services/shuttle");
+  return <ShuttlePage key={user.id} actorId={user.id} initialDate={dayKey(new Date())} />;
 }
 export default function Page() {
   return (
