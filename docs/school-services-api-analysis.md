@@ -11,7 +11,7 @@
 方法说明：在浏览器登录各服务 → 用浏览器 Performance API 与页面请求日志列出
 页面调用的端点 → 从服务自身的前端脚本中整理接口定义 → 用同源 fetch 验证
 请求/响应结构 → 最后在 Android WebView 沙箱中按
-[school-adapter 模式](../../src/features/shuttle/school-adapter.ts) 复验。
+[school-adapter 模式](../src/features/shuttle/school-adapter.ts) 复验。
 
 ---
 
@@ -60,7 +60,7 @@ data: [{
     startTime: "2026-11-19 10:00:00",
     status: 0,            // 签到状态
     signTime: null,
-    signInRecordId: 1865629500,
+    signInRecordId: 1000000001, // 示例占位 ID
   }]
 }]
 ```
