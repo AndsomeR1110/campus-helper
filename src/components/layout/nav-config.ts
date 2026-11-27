@@ -66,6 +66,7 @@ export function getActiveTab(pathname: string): TabId | null {
  * Add a pattern here when you create a new detail or form route.
  */
 const FOCUSED_ROUTES: readonly RegExp[] = [
+  /^\/courses\/sync$/, // School account connection
   /^\/office-hours\/[^/]+$/, // PG-05 Teacher Detail
   /^\/spaces\/[^/]+$/, // PG-09 Space Detail
   /^\/bookings\/[^/]+$/, // PG-10 Booking Detail

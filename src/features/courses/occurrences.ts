@@ -23,9 +23,10 @@ export interface OccurrenceDay {
  * matching the odd / even pattern (FR-CR-01 "Teaching Weeks").
  */
 export function isWeekActive(
-  course: Pick<Course, "firstWeek" | "lastWeek" | "weekParity">,
+  course: Pick<Course, "firstWeek" | "lastWeek" | "weekParity" | "schoolWeeks">,
   weekNumber: number,
 ): boolean {
+  if (course.schoolWeeks) return course.schoolWeeks.includes(weekNumber);
   if (weekNumber < course.firstWeek || weekNumber > course.lastWeek) {
     return false;
   }
@@ -43,7 +44,7 @@ export function isWeekActive(
 
 /** Every teaching week the course actually runs in, clamped to the term. */
 export function listActiveWeeks(
-  course: Pick<Course, "firstWeek" | "lastWeek" | "weekParity">,
+  course: Pick<Course, "firstWeek" | "lastWeek" | "weekParity" | "schoolWeeks">,
 ): number[] {
   const first = Math.max(MIN_WEEK, course.firstWeek);
   const last = Math.min(MAX_WEEK, course.lastWeek);

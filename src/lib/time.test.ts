@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   dayKey,
   formatDate,
@@ -16,6 +16,19 @@ const start = "2026-11-03T06:00:00Z";
 const end = "2026-11-03T08:00:00Z";
 
 describe("time formatting (Asia/Shanghai)", () => {
+  it("keeps ISO day keys when a WebView formats en-CA dates with slashes", () => {
+    const DateTimeFormat = Intl.DateTimeFormat;
+    const spy = vi.spyOn(Intl, "DateTimeFormat").mockImplementation(function (locale, options) {
+      const formatter = new DateTimeFormat(locale, options);
+      Object.defineProperty(formatter, "format", { value: () => "11/03/2026" });
+      return formatter;
+    });
+    try {
+      expect(dayKey("2026-11-02T17:30:00Z")).toBe("2026-11-03");
+    } finally {
+      spy.mockRestore();
+    }
+  });
   it("formats dates and times in the app time zone", () => {
     expect(formatDate(start)).toBe("Tue 3 Nov");
     expect(formatDateWithYear(start)).toBe("3 Nov 2026");

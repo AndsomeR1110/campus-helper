@@ -14,13 +14,19 @@ import {
   buttonStyles,
   cardStyles,
 } from "@/components/ui";
-import { WEEKDAY_LABELS } from "@/features/courses";
+import { WEEKDAY_LABELS, type Course } from "@/features/courses";
 import { getCurrentUser, listCourses } from "@/features/courses/server";
 
 export const metadata: Metadata = { title: "My courses" };
 
 /** Reads the session and the database, so it must render per request. */
 export const instant = false;
+
+/** A school course with an inherited reminder opens the hidden manual course to manage it. */
+function courseHref(course: Course) {
+  if (course.inheritedReminder) return `/courses/${course.inheritedReminder.courseId}/edit`;
+  return course.source === "school" ? "/courses/sync" : `/courses/${course.id}/edit`;
+}
 
 /** PG-12 course list — the timetable is edited from here. */
 async function CourseList() {
@@ -53,8 +59,13 @@ async function CourseList() {
       {courses.map((course) => (
         <li key={course.id}>
           <Link
-            href={`/courses/${course.id}/edit`}
-            aria-label={t("Edit {name}", { name: course.code })}
+            href={courseHref(course)}
+            aria-label={t(
+              course.source === "school" && !course.inheritedReminder
+                ? "View school {name}"
+                : "Edit {name}",
+              { name: course.code },
+            )}
             className={cardStyles({ interactive: true })}
           >
             <ListItem
@@ -68,6 +79,13 @@ async function CourseList() {
                 <span className="flex flex-wrap items-center gap-x-2 tabular-nums">
                   {t(WEEKDAY_LABELS[course.weekday])} {course.startTime}–{course.endTime}
                   {course.location ? <LocationText location={course.location} /> : null}
+                  {course.inheritedReminder ? (
+                    <span>
+                      {t("{count} min before class", {
+                        count: course.inheritedReminder.offsetMinutes,
+                      })}
+                    </span>
+                  ) : null}
                 </span>
               }
               trailing={<ChevronRight className="size-5 text-text-muted" aria-hidden />}
@@ -110,6 +128,12 @@ export default async function CoursesPage() {
         }
       />
       <PageContainer>
+        <Link
+          href="/courses/sync"
+          className={buttonStyles({ variant: "secondary", className: "mb-4" })}
+        >
+          {t("Connect school timetable")}
+        </Link>
         <Suspense fallback={<CourseListSkeleton />}>
           <CourseList />
         </Suspense>
